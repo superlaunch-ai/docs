@@ -1,0 +1,34 @@
+---
+title: "Brand profiles and kits"
+description: "Give your team and agent the brand guidance they need."
+---
+
+Use **Brands** to keep a brand profile and structured kit in your workspace.
+
+## Create a profile
+
+Open **Brands** and select **New brand**. Add the name, website, industry, description, markets, and languages that apply. Save the profile, then open **Edit brand** to add its kit.
+
+Creating a brand through MCP does not link ad accounts. Treat account assignment as a separate setup task.
+
+## Add a brand kit
+
+Use the kit to record:
+
+- **Main message**: the brand's positioning.
+- **Tagline** and supporting proof points.
+- Colors with roles such as primary, accent, background, and text.
+- Heading and body fonts.
+- Voice traits and writing guidance.
+
+Use concrete guidance, such as “Use short sentences and describe the product's function before its benefits.” Give your agent verified proof points instead of claims it must infer.
+
+## Use the kit through MCP
+
+`brands_list` finds the profile and `brands_get` returns its active kit. Ask your agent to read it before writing campaign copy.
+
+> Read the brand kit for this brand. Draft three ad headlines using its main message and voice guidance. Use only the supporting claims in the kit.
+
+`brands_update` accepts partial updates. Omitted fields keep their values; empty lists clear list fields. A changed kit creates a new immutable version. When no active kit exists, the kit needs `positioning`.
+
+Brand kits hold structured brand guidance. Use [Memory](/guides/memory) for additional facts you explicitly want to retain.

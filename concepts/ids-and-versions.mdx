@@ -1,0 +1,34 @@
+---
+title: "IDs, versions, and retries"
+description: "Use the right identifiers and avoid duplicate operations."
+---
+
+Resolve IDs from Superlaunch before creating or changing an object. A name helps you find an object; it does not uniquely identify it.
+
+| Identifier | Meaning | How to obtain it |
+| --- | --- | --- |
+| `ad_account_id` | Superlaunch account UUID | `ad_accounts_list` |
+| `brand_id` | Superlaunch brand UUID | `brands_list` |
+| Provider campaign, ad-set, or ad ID | Object in Meta | `assets_list`, `launcher_targets_list`, or a creation result |
+| Launcher creative ID | Creative family in the workspace library | `launcher_creatives_list` |
+| Creative version ID | Exact saved content version | `launcher_creatives_get` |
+| Template version ID | Exact saved launch settings | `launcher_templates_get` |
+| Run or activity ID | Submitted work or its audit record | Submission result or activity list |
+
+A Launcher creative ID and a Meta creative ID refer to different objects. Keep the names and IDs together while planning a launch.
+
+## Versions
+
+Read an object before editing it. Tools that accept `expected_version` or `expected_lock_version` require the current value from a read. If another person edits it first, refresh the object and review the change before trying again.
+
+A saved creative or template version preserves the inputs used by an earlier launch. Saving a newer version does not rewrite those earlier inputs. Approval applies to an exact creative version.
+
+## Request IDs and keys
+
+For operations that advertise idempotent retries, generate one request UUID or key for one intended operation. Retry the same operation with the same inputs and key. Use a new key when the inputs or intended operation change.
+
+Do not assume that every write tool is idempotent. Check its reference page. In particular, rule status changes and archival rely on a current version check; a supplied `request_id` does not make them replayable.
+
+## After a timeout
+
+Read the submitted run, action result, or [activity record](/guides/activity) before issuing a second write. A client timeout does not prove that the provider rejected the operation.

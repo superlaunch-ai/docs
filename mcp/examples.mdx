@@ -1,0 +1,150 @@
+---
+title: "MCP argument examples"
+description: "Valid argument shapes for discovery, reporting, campaign validation, memory, and launch polling."
+---
+
+These examples show argument objects for named MCP tools. Send them through your authenticated client. Replace example UUIDs with IDs from discovery reads and generate a fresh request UUID for a new operation.
+
+The read examples do not change advertising objects. `memory_remember` stores a fact; use it only with consent. The campaign example sets `dry_run: true`.
+
+## List accessible accounts
+
+**Tool:** `ad_accounts_list`
+
+Read account IDs, currencies, and time zones before choosing a target.
+
+```json
+{
+  "limit": 25
+}
+```
+
+## Read daily campaign metrics
+
+**Tool:** `insights_query`
+
+Replace the account UUID. Call insights_capabilities first. Inspect complete and next_cursor in the result.
+
+```json
+{
+  "ad_account_ids": [
+    "00000000-0000-4000-8000-000000000001"
+  ],
+  "date_from": "2026-10-01",
+  "date_to": "2026-10-07",
+  "metrics": [
+    "spend",
+    "impressions",
+    "clicks"
+  ],
+  "entity_level": "campaign",
+  "report_spec": "base_daily",
+  "grain": "daily",
+  "limit": 25
+}
+```
+
+## Rank purchase ROAS
+
+**Tool:** `insights_rank`
+
+Choose the purchase event and attribution window that match your analysis. The result distinguishes numeric extremes and includes data-through information.
+
+```json
+{
+  "ad_account_ids": [
+    "00000000-0000-4000-8000-000000000001"
+  ],
+  "date_from": "2026-10-01",
+  "date_to": "2026-10-07",
+  "entity_level": "campaign",
+  "rank_by": "roas",
+  "action_type": "omni_purchase",
+  "attribution_window": "7d_click",
+  "direction": "both",
+  "rank_scope": "global",
+  "min_spend": 100,
+  "limit": 5
+}
+```
+
+## Validate a paused campaign
+
+**Tool:** `campaigns_create`
+
+This defaults to validation without creating the intended campaign. Check actions_capabilities first. Review the result before a live request; use a new request_id when changing dry_run to false.
+
+```json
+{
+  "payload": {
+    "request_id": "00000000-0000-4000-8000-000000000002",
+    "ad_account_id": "00000000-0000-4000-8000-000000000001",
+    "name": "October traffic test",
+    "objective": "OUTCOME_TRAFFIC",
+    "special_ad_categories": [],
+    "status": "PAUSED",
+    "dry_run": true
+  }
+}
+```
+
+## Save a fact after explicit consent
+
+**Tool:** `memory_remember`
+
+Use this only after the user asks you to save the fact or approves that suggestion. Replace the brand UUID and generate a request UUID. Inspect the returned persistence state.
+
+```json
+{
+  "payload": {
+    "request_id": "00000000-0000-4000-8000-000000000002",
+    "fact": "Use British English for this brand's campaign copy.",
+    "scope": {
+      "kind": "brand",
+      "target_id": "00000000-0000-4000-8000-000000000003"
+    },
+    "consent": "explicit_user_request"
+  }
+}
+```
+
+## Find failed tool activity
+
+**Tool:** `activity_list`
+
+Follow next_cursor with the same filters to read the complete set.
+
+```json
+{
+  "payload": {
+    "query": "campaigns_create",
+    "limit": 25,
+    "cursor": 0
+  }
+}
+```
+
+## Discover saved creatives
+
+**Tool:** `launcher_creatives_list`
+
+Inspect the returned version and approval information before selecting content.
+
+```json
+{
+  "limit": 25
+}
+```
+
+## Poll an accepted launch
+
+**Tool:** `launcher_launches_get`
+
+Use the account and launch IDs from the submission. Inspect launcher_run_operations for individual provider outcomes.
+
+```json
+{
+  "ad_account_id": "00000000-0000-4000-8000-000000000001",
+  "launch_id": "00000000-0000-4000-8000-000000000004"
+}
+```

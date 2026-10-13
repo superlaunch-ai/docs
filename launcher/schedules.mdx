@@ -1,0 +1,33 @@
+---
+title: "Schedule recurring launches"
+description: "Set recurring timing, selection behavior, and batch limits."
+---
+
+A recurring schedule prepares launches from saved configuration. You need scheduling access as well as the permissions required for the launch.
+
+## Create a schedule
+
+1. Open launch setup.
+2. Choose a supported operation and saved template version.
+3. Choose a collection and review its selection behavior.
+4. Select recurring timing.
+5. Set the frequency, time, and **Schedule time zone**.
+6. Set the batch count and budget limits.
+7. Review whether created objects stay paused or activate.
+8. Save the schedule.
+
+The schedule time zone determines when the recurring job starts. Provider delivery settings in the template are separate.
+
+## Check pinned inputs
+
+Schedules keep pinned recurring inputs. Review the exact template and collection version references before saving. When editing a schedule, preserve the references you intend to keep. An occurrence that has already started keeps its recorded inputs.
+
+A schedule is not a guarantee that every occurrence will launch. Current approval, account access, workspace access, billing, and limits still apply.
+
+## Pause, edit, and inspect
+
+Open the schedule to inspect its current status and recent work. Read its lock version before an MCP update. Use `launcher_schedules_change_status` to change status and `launcher_schedules_update` to revise configuration.
+
+Read the resulting launch and operation records after an occurrence. If it fails, review the reason before re-enabling or retrying.
+
+See [Launcher MCP tools](/mcp/reference/launcher-schedules) for exact schedule fields.

@@ -1,0 +1,112 @@
+[
+  {
+    "tool": "ad_accounts_list",
+    "title": "List accessible accounts",
+    "note": "Read account IDs, currencies, and time zones before choosing a target.",
+    "args": {
+      "limit": 25
+    }
+  },
+  {
+    "tool": "insights_query",
+    "title": "Read daily campaign metrics",
+    "note": "Replace the account UUID. Call insights_capabilities first. Inspect complete and next_cursor in the result.",
+    "args": {
+      "ad_account_ids": [
+        "00000000-0000-4000-8000-000000000001"
+      ],
+      "date_from": "2026-10-01",
+      "date_to": "2026-10-07",
+      "metrics": [
+        "spend",
+        "impressions",
+        "clicks"
+      ],
+      "entity_level": "campaign",
+      "report_spec": "base_daily",
+      "grain": "daily",
+      "limit": 25
+    }
+  },
+  {
+    "tool": "insights_rank",
+    "title": "Rank purchase ROAS",
+    "note": "Choose the purchase event and attribution window that match your analysis. The result distinguishes numeric extremes and includes data-through information.",
+    "args": {
+      "ad_account_ids": [
+        "00000000-0000-4000-8000-000000000001"
+      ],
+      "date_from": "2026-10-01",
+      "date_to": "2026-10-07",
+      "entity_level": "campaign",
+      "rank_by": "roas",
+      "action_type": "omni_purchase",
+      "attribution_window": "7d_click",
+      "direction": "both",
+      "rank_scope": "global",
+      "min_spend": 100,
+      "limit": 5
+    }
+  },
+  {
+    "tool": "campaigns_create",
+    "title": "Validate a paused campaign",
+    "note": "This defaults to validation without creating the intended campaign. Check actions_capabilities first. Review the result before a live request; use a new request_id when changing dry_run to false.",
+    "args": {
+      "payload": {
+        "request_id": "00000000-0000-4000-8000-000000000002",
+        "ad_account_id": "00000000-0000-4000-8000-000000000001",
+        "name": "October traffic test",
+        "objective": "OUTCOME_TRAFFIC",
+        "special_ad_categories": [],
+        "status": "PAUSED",
+        "dry_run": true
+      }
+    }
+  },
+  {
+    "tool": "memory_remember",
+    "title": "Save a fact after explicit consent",
+    "note": "Use this only after the user asks you to save the fact or approves that suggestion. Replace the brand UUID and generate a request UUID. Inspect the returned persistence state.",
+    "args": {
+      "payload": {
+        "request_id": "00000000-0000-4000-8000-000000000002",
+        "fact": "Use British English for this brand's campaign copy.",
+        "scope": {
+          "kind": "brand",
+          "target_id": "00000000-0000-4000-8000-000000000003"
+        },
+        "consent": "explicit_user_request"
+      }
+    }
+  },
+  {
+    "tool": "activity_list",
+    "title": "Find failed tool activity",
+    "note": "Follow next_cursor with the same filters to read the complete set.",
+    "args": {
+      "payload": {
+        "query": "campaigns_create",
+        "limit": 25,
+        "cursor": 0
+      }
+    }
+  },
+  {
+    "tool": "launcher_creatives_list",
+    "title": "Discover saved creatives",
+    "note": "Inspect the returned version and approval information before selecting content.",
+    "args": {
+      "limit": 25
+    }
+  },
+  {
+    "tool": "launcher_launches_get",
+    "title": "Poll an accepted launch",
+    "note": "Use the account and launch IDs from the submission. Inspect launcher_run_operations for individual provider outcomes.",
+    "args": {
+      "ad_account_id": "00000000-0000-4000-8000-000000000001",
+      "launch_id": "00000000-0000-4000-8000-000000000004"
+    }
+  }
+]

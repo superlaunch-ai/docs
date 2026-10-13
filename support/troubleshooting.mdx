@@ -1,0 +1,36 @@
+---
+title: "Troubleshooting"
+description: "Resolve common workspace, reporting, rule, and launch problems."
+---
+
+Start with the exact workspace, account, date range, and operation you were using.
+
+## Sign-in or workspace access
+
+Complete any email-verification step. If the workspace is missing, confirm that you accepted its invitation with the same email identity. Ask the owner to check membership.
+
+A billing access message needs a billing-state check by the owner. See [Billing and usage](/support/billing).
+
+## Connected account has no data
+
+Check account selection, provider permissions, member access, and the reporting period. The first import can still be running. An account without delivery in the selected period can have an empty report.
+
+If the provider authorization needs renewal, open **Connections → Ad platforms** and reconnect it.
+
+## Report values differ from Meta
+
+Compare the entity level, account time zone, currency, conversion event, attribution window, report grain, and breakdown. Check the data-through date and whether the complete result set has loaded.
+
+A daily report and a period ranking answer different questions. Keep the query definitions together when comparing them.
+
+## Rule did not change an object
+
+Check the rule status, dry-run setting, schedule, current version, target filter, and task conditions. Inspect the run and activity records for skipped targets or errors. A dry run can record decisions without changing provider state.
+
+## Launch partially failed
+
+Read individual operation results. Retry eligible unchanged work or prepare a corrected replacement. Avoid submitting the entire successful and failed set again. See [Recover a launch](/launcher/recovery).
+
+## Contact support
+
+Send the approximate time, workspace name, tool or feature, and activity or run ID through [Contact](https://superlaunch.pro/contact). Include the error code and expected outcome. Do not include access tokens or signed private URLs.

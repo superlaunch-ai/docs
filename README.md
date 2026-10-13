@@ -1,55 +1,39 @@
-# Mintlify Starter Kit
+# Superlaunch documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Live site: https://docs.superlaunch.pro/
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+This repository contains 41 customer documentation pages and reference entries for 97 MCP tools. Mintlify deploys main; content edits use the connected Admin MCP.
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+## Content and execution plan
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+1. Explain the product and guide a new workspace to its first report.
+2. Document connections, permissions, IDs, versions, and retries.
+3. Cover insights, rules, activity, brands, and consent-based memory.
+4. Cover media intake, creative approval, collections, templates, launches, schedules, and recovery.
+5. Document OAuth setup for ChatGPT, Claude, Codex, and remote MCP clients.
+6. Publish all MCP tool names, parameters, nested schemas, and examples.
+7. Provide billing help, troubleshooting, a glossary, and text exports.
+8. Check copy, brand settings, links, schemas, rendering, and live deployment.
 
-## AI-assisted writing
+The initial catalog snapshot comes from MCP commit `b3b258df6a820042599e460e22f1c5cf7b5e2311`, with Core schemas from `eeb8304f734f7c14b8a7b3c83ba7e056635f79bf`. Product instructions were checked against frontend commit `fbd269b` and official client docs on 2026-10-13.
 
-Set up your AI coding tool to work with Mintlify:
+## Local validation
 
-```bash
-npx skills add https://mintlify.com/docs
+```sh
+python3 scripts/verify_docs.py
+npx mint validate
+npx mint dev
 ```
 
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
+`maintenance/tool-catalog.json` stores the reviewed contract. The tool reference includes exact input schemas for nested fields and constraints. Refresh the snapshot and prose together when contracts change. `maintenance/examples.json` records the reviewed argument examples.
 
-See the [AI tools guides](/ai-tools) for tool-specific setup.
+The copy follows Google's developer style guide and Diataxis. `AGENTS.md` records the editing and brand rules.
 
-## Development
+## Text exports
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+Mintlify generates these files from published pages:
+- https://docs.superlaunch.pro/llms.txt
+- https://docs.superlaunch.pro/llms-full.txt
+- Page Markdown, such as https://docs.superlaunch.pro/mcp/overview.md
 
-```
-npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
-mint dev
-```
-
-View your local preview at `http://localhost:3000`.
-
-## Publishing changes
-
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+Do not add hand-maintained copies. Check that exports contain the published guides and complete tool reference after deployment.

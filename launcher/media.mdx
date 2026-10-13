@@ -1,0 +1,34 @@
+---
+title: "Upload and import media"
+description: "Add images and videos to the shared library or import selected Drive files."
+---
+
+Use the Launcher library and imports area to add media before you create a creative version.
+
+## Upload a file
+
+1. Open **Launcher** and choose the workspace.
+2. Open the media library or **Import media**.
+3. Select the upload control and choose your image or video.
+4. Wait for the upload and processing status.
+5. Open the media item and check its preview before using it in a creative.
+
+The upload interface shows the supported file types and size limits. A thumbnail failure does not by itself mean the original file failed to upload. Check the media status and use the thumbnail retry option where available.
+
+## Import from Google Drive
+
+1. Open **Import media** and connect Google Drive.
+2. Complete the browser authorization and file or folder selection.
+3. Browse available files and choose the files to import.
+4. Review the selection and start the import.
+5. Inspect the import results before creating content from the imported media.
+
+Saving a Drive folder or selecting a file does not itself import all its contents. The folder browser can distinguish new, changed, and previously imported files. Review those states when importing a new revision.
+
+## Use with an agent
+
+Call `launcher_discover` for the browser intake handoff. Complete private file upload or Drive authorization in the browser, then provide the stable media IDs to your agent.
+
+Use `launcher_media_list` and `launcher_media_get` to discover saved media. The MCP Drive folder tools list and save folder selections; they do not perform the browser's private file intake.
+
+For direct Meta creative creation, see the separate [signed upload workflow](/mcp/workflows).

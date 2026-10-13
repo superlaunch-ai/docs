@@ -1,0 +1,41 @@
+---
+title: "MCP workflows"
+description: "Use discovery, validation, writes, and result checks in the right order."
+---
+
+Start a workflow by discovering accessible objects and capabilities. Resolve required IDs, review the proposed change, submit it, then inspect the result.
+
+## Rank campaign performance
+
+1. Call `ad_accounts_list`.
+2. Choose the accounts, dates, conversion event, and attribution window.
+3. Use `insights_rank` for compact highest and lowest rankings.
+4. Read the data-through date and warnings.
+
+Apply minimum evidence filters such as spend or conversions. “Highest” and “lowest” are numeric rankings; decide whether each outcome is desirable for the metric.
+
+## Create a draft rule
+
+Call `rules_schema`, resolve accounts, and build the full rule definition. Supply a target filter, tasks with conditions and actions, and a schedule with time zone. Save as a draft with `dry_run: true`.
+
+Read the rule back and run its current version in dry-run mode. Review decisions before activation. See [Rules](/guides/rules).
+
+## Prepare a Launcher batch
+
+Call `launcher_discover`, resolve accounts, and inspect library content and templates. Complete private media intake in the [browser](/launcher/media).
+
+Approve exact creative versions, resolve the selection, inspect an existing target where required, and preview the launch. Submit with one stable request key. Poll the launch and operation records, including partial failures.
+
+## Create Meta objects directly
+
+Call `actions_capabilities` to check configured effects. Creation and duplication tools default to `dry_run: true`; creation starts campaigns, ad sets, and ads paused.
+
+For a direct creative upload, call `media_uploads_create`. An enabled interactive picker can accept the file in the client. With metadata, the tool returns a signed upload URL, required headers, and expiry.
+
+Use the returned method and headers to upload binary bytes. In the interactive flow, `media_uploads_complete` completes one selected file or upload intent. Verify upload status before passing its `media_id` to `creatives_create`.
+
+Create a campaign, then an ad set, then an ad with the required parent IDs. Review dry-run results. Use a new request ID when changing the request from validation to live execution. Inspect the action result after execution.
+
+## Save a confirmed fact
+
+Resolve the scope, then call `memory_remember` only after an explicit save request or focused approval. Report the returned persistence state. Use `memory_recall` for relevant context and `memory_get` for an exact record.

@@ -1,0 +1,618 @@
+---
+title: "Activity tools"
+description: "Use the unified log for tool calls, actions, and rule operations."
+---
+
+Use the unified log for tool calls, actions, and rule operations. Exact filters select known fields; `query` searches text. Follow `next_cursor` until `complete` is true. Time filters form a half-open interval: include `started_after`, exclude `started_before`.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+<span id="activity-list" />
+
+## activity_list
+
+Search the complete authorized tool, action, and rule-run log.  Use exact filters for known fields or ``query`` for case-insensitive text search across tool, action, member, target, request, and error metadata. Follow ``next_cursor`` until ``complete`` is true.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Bounded page request for the unified activity log. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `query` | string or null | `null` | See input schema. |
+| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | See input schema. |
+| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` | See input schema. |
+| `team_member_user_id` | uuid or null | `null` | See input schema. |
+| `initiator_type` | string or null | `null` | See input schema. |
+| `ad_account_id` | uuid or null | `null` | See input schema. |
+| `mcp_connection_id` | uuid or null | `null` | See input schema. |
+| `rule_id` | uuid or null | `null` | See input schema. |
+| `rule_run_id` | uuid or null | `null` | See input schema. |
+| `launch_id` | uuid or null | `null` | See input schema. |
+| `tool_name` | string or null | `null` | See input schema. |
+| `action_name` | string or null | `null` | See input schema. |
+| `target_type` | string or null | `null` | See input schema. |
+| `target_id` | string or null | `null` | See input schema. |
+| `started_after` | date-time or null | `null` | See input schema. |
+| `started_before` | date-time or null | `null` | See input schema. |
+| `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
+| `cursor` | integer | `0` |  minimum: `0`. maximum: `4294967295`. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "ActivityQuery": {
+      "additionalProperties": false,
+      "description": "Bounded page request for the unified activity log.",
+      "properties": {
+        "query": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "activity_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActivityType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActivityStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "team_member_user_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "initiator_type": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ad_account_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mcp_connection_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_run_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "launch_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "action_name": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_type": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "started_after": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "started_before": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "limit": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "default": 0,
+          "maximum": 4294967295,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "ActivityStatus": {
+      "description": "Small shared activity lifecycle.",
+      "enum": [
+        "running",
+        "succeeded",
+        "failed",
+        "denied",
+        "skipped",
+        "undone",
+        "undo_failed",
+        "reconciliation_needed"
+      ],
+      "type": "string"
+    },
+    "ActivityType": {
+      "description": "User-visible kinds of work.",
+      "enum": [
+        "tool_call",
+        "action",
+        "rule_run",
+        "launch_run",
+        "creative_import"
+      ],
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/ActivityQuery"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="activity-get" />
+
+## activity_get
+
+Read one complete authorized activity record by ID.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `activity_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "activity_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "activity_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="activity-summary" />
+
+## activity_summary
+
+Count the complete authorized result set for activity filters.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Permission-filtered search criteria for the unified activity log. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `query` | string or null | `null` | See input schema. |
+| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | See input schema. |
+| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` | See input schema. |
+| `team_member_user_id` | uuid or null | `null` | See input schema. |
+| `initiator_type` | string or null | `null` | See input schema. |
+| `ad_account_id` | uuid or null | `null` | See input schema. |
+| `mcp_connection_id` | uuid or null | `null` | See input schema. |
+| `rule_id` | uuid or null | `null` | See input schema. |
+| `rule_run_id` | uuid or null | `null` | See input schema. |
+| `launch_id` | uuid or null | `null` | See input schema. |
+| `tool_name` | string or null | `null` | See input schema. |
+| `action_name` | string or null | `null` | See input schema. |
+| `target_type` | string or null | `null` | See input schema. |
+| `target_id` | string or null | `null` | See input schema. |
+| `started_after` | date-time or null | `null` | See input schema. |
+| `started_before` | date-time or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "ActivityFilters": {
+      "additionalProperties": false,
+      "description": "Permission-filtered search criteria for the unified activity log.",
+      "properties": {
+        "query": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "activity_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActivityType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActivityStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "team_member_user_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "initiator_type": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ad_account_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mcp_connection_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_run_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "launch_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "action_name": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_type": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "started_after": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "started_before": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "ActivityStatus": {
+      "description": "Small shared activity lifecycle.",
+      "enum": [
+        "running",
+        "succeeded",
+        "failed",
+        "denied",
+        "skipped",
+        "undone",
+        "undo_failed",
+        "reconciliation_needed"
+      ],
+      "type": "string"
+    },
+    "ActivityType": {
+      "description": "User-visible kinds of work.",
+      "enum": [
+        "tool_call",
+        "action",
+        "rule_run",
+        "launch_run",
+        "creative_import"
+      ],
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/ActivityFilters"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

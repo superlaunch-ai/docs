@@ -1,0 +1,726 @@
+---
+title: "Accounts, assets, and brands"
+description: "Resolve Superlaunch account and brand IDs before reading or changing objects."
+---
+
+Resolve Superlaunch account and brand IDs before reading or changing objects. Asset IDs identify provider objects; account IDs identify Superlaunch records.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+<span id="ad-accounts-list" />
+
+## ad_accounts_list
+
+List ad accounts the current user may read.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `25` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="ad-accounts-get" />
+
+## ad_accounts_get
+
+Read one authorized ad account.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="brands-list" />
+
+## brands_list
+
+List brands the current user may read.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `25` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="brands-create" />
+
+## brands_create
+
+Create a brand in the current workspace and grant its creator write access.  Supply a fresh request_id UUID. Reuse it with the same payload to safely retry; changed payloads conflict. Optional profile fields are website, industry, description, markets, and languages. No ad accounts are linked.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Create a workspace brand; reuse request_id only for identical retries. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. pattern: `\S`. |
+| `website` | string or null | `null` | See input schema. |
+| `industry` | string or null | `null` | See input schema. |
+| `description` | string or null | `null` | See input schema. |
+| `markets` | array of string | Optional |  maxItems: `50`. |
+| `languages` | array of string | Optional |  maxItems: `50`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "BrandCreate": {
+      "additionalProperties": false,
+      "description": "Create a workspace brand; reuse request_id only for identical retries.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/BrandName"
+        },
+        "website": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "industry": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 10000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "markets": {
+          "items": {
+            "$ref": "#/$defs/BrandLabel"
+          },
+          "maxItems": 50,
+          "type": "array"
+        },
+        "languages": {
+          "items": {
+            "$ref": "#/$defs/BrandLabel"
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "required": [
+        "request_id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "BrandLabel": {
+      "maxLength": 100,
+      "minLength": 1,
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "BrandName": {
+      "maxLength": 200,
+      "minLength": 1,
+      "pattern": "\\S",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/BrandCreate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="brands-update" />
+
+## brands_update
+
+Update mutable fields on one writable brand.  Supply a fresh request_id UUID and at least one field. Reuse the request_id with the same brand and payload to safely retry; changed payloads conflict. Empty markets or languages clear those lists. Use kit to partially update messaging, voice, colors, or typography; a changed kit creates an immutable version. kit.positioning is required when no active kit exists.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `brand_id` | uuid | Required | See input schema. |
+| `payload` | object | Required | Partially update a brand; reuse request_id only for identical retries. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `name` | string or null | `null` | See input schema. |
+| `website` | string or null | `null` | See input schema. |
+| `industry` | string or null | `null` | See input schema. |
+| `description` | string or null | `null` | See input schema. |
+| `markets` | array of string or null | `null` | See input schema. |
+| `languages` | array of string or null | `null` | See input schema. |
+| `kit` | object or null | `null` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "BrandKitColor": {
+      "additionalProperties": false,
+      "description": "One semantic color in a brand palette.",
+      "properties": {
+        "role": {
+          "enum": [
+            "primary",
+            "secondary",
+            "accent",
+            "background",
+            "text"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "hex": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "name",
+        "hex"
+      ],
+      "type": "object"
+    },
+    "BrandKitPositioning": {
+      "maxLength": 300,
+      "minLength": 1,
+      "type": "string"
+    },
+    "BrandKitTagline": {
+      "maxLength": 160,
+      "type": "string"
+    },
+    "BrandKitTypographyUpdate": {
+      "additionalProperties": false,
+      "description": "Partial primary brand typeface update; null clears a font.",
+      "properties": {
+        "heading_font": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "body_font": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "BrandKitUpdate": {
+      "additionalProperties": false,
+      "description": "Partial versioned kit update; omitted fields retain their current values.",
+      "properties": {
+        "positioning": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrandKitPositioning"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tagline": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrandKitTagline"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "colors": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BrandKitColor"
+              },
+              "maxItems": 5,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "typography": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrandKitTypographyUpdate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "voice": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrandKitVoiceUpdate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "proof_points": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "BrandKitVoiceUpdate": {
+      "additionalProperties": false,
+      "description": "Partial brand voice update; empty traits clear and null clears guidance.",
+      "properties": {
+        "traits": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 5,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "guidance": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "BrandLabel": {
+      "maxLength": 100,
+      "minLength": 1,
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "BrandName": {
+      "maxLength": 200,
+      "minLength": 1,
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "BrandUpdate": {
+      "additionalProperties": false,
+      "description": "Partially update a brand; reuse request_id only for identical retries.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrandName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "website": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "industry": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 10000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "markets": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BrandLabel"
+              },
+              "maxItems": 50,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "languages": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/BrandLabel"
+              },
+              "maxItems": 50,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrandKitUpdate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "request_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "brand_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/BrandUpdate"
+    }
+  },
+  "required": [
+    "brand_id",
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="brands-get" />
+
+## brands_get
+
+Read one authorized brand with its active structured brand kit.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `brand_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "brand_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "brand_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="assets-list" />
+
+## assets_list
+
+List one filtered normalized asset page under an authorized account.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `level` | campaign, adset, ad, creative | Required | See input schema. |
+| `limit` | integer | `25` |  minimum: `1`. maximum: `200`. |
+| `cursor` | string or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "AssetCursor": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "AssetLevel": {
+      "enum": [
+        "campaign",
+        "adset",
+        "ad",
+        "creative"
+      ],
+      "type": "string"
+    },
+    "AssetLimit": {
+      "maximum": 200,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "level": {
+      "$ref": "#/$defs/AssetLevel"
+    },
+    "limit": {
+      "$ref": "#/$defs/AssetLimit",
+      "default": 25
+    },
+    "cursor": {
+      "$ref": "#/$defs/AssetCursor",
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "level"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="assets-get" />
+
+## assets_get
+
+Read one normalized asset under an authorized account.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `asset_id` | string | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "asset_id": {
+      "type": "string"
+    },
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "asset_id",
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

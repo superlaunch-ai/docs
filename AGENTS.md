@@ -1,33 +1,40 @@
-> **First-time setup**: Customize this file for your project. Prompt the user to customize this file for their project.
-> For Mintlify product knowledge (components, configuration, writing standards),
-> install the Mintlify skill: `npx skills add https://mintlify.com/docs`
+# Superlaunch documentation
 
-# Documentation project instructions
+Publish to https://docs.superlaunch.pro/ through Mintlify. Use the Admin MCP for pages, navigation, and configuration. Supporting files can use a Git branch and pull request.
 
-## About this project
+## Audience and structure
 
-- This is a documentation site built on [Mintlify](https://mintlify.com)
-- Pages are MDX files with YAML frontmatter
-- Configuration lives in `docs.json`
-- Use the Mintlify MCP server, `https://mcp.mintlify.com`, to edit content and settings via MCP
-- Use the Mintlify docs MCP server, `https://www.mintlify.com/docs/mcp`, to query information about using Mintlify via MCP
+Write for marketers, workspace owners, and developers connecting AI clients. Keep setup tutorials, task guides, explanations, and tool reference separate. Link between them when readers need another kind of help.
 
-## Terminology
+The sections cover setup and product concepts; workspace connections and permissions; insights, rules, activity, brands, and memory; the Launcher journey; MCP connection and workflows; the complete tool reference; billing and troubleshooting.
 
-{/* Add product-specific terms and preferred usage */}
-{/* Example: Use "workspace" not "project", "member" not "user" */}
+## Voice and copy
 
-## Style preferences
+Use direct, calm, helpful English. Address the reader as you. Use active voice, sentence-case headings, exact UI labels in bold, and code formatting for identifiers. Start guides with the task and prerequisites, then give steps and a verification result.
 
-{/* Add any project-specific style rules below */}
+Remove filler and marketing claims. Avoid leverage, unlock, seamless, powerful, game-changing, delve, simply, easily, in today's landscape, and in conclusion. Avoid artificial contrasts, rhetorical questions, exclamation points, em dashes, and product praise. Describe behavior, constraints, and recovery steps. Apply the Stop Slop rules before shipping.
 
-- Use active voice and second person ("you")
-- Keep sentences concise — one idea per sentence
-- Use sentence case for headings
-- Bold for UI elements: Click **Settings**
-- Code formatting for file names, commands, paths, and code references
+Editorial references:
+- https://developers.google.com/style/tone
+- https://developers.google.com/style/highlights
+- https://diataxis.fr/start-here/
 
-## Content boundaries
+## Product truth
 
-{/* Define what should and shouldn't be documented */}
-{/* Example: Don't document internal admin features */}
+Use current source and official client documentation. Do not invent features, prices, limits, permissions, or tool fields. Keep workspace UUIDs separate from provider IDs and Launcher version IDs. Distinguish preview, acceptance, completion, dry-run mode, and partial failure.
+
+A request UUID does not prove idempotent behavior. Private facts require consent for persistence. Public docs must contain no credentials, customer data, private upload URLs, or internal operational instructions.
+
+The product MCP endpoint is https://mcp.superlaunch.pro/mcp. Documentation exports do not authorize workspace access.
+
+## Brand
+
+Preserve the existing arrow mark and lowercase wordmark. Use accent #E8A33D, page #0B0E11, Space Grotesk headings, and Inter body text. Keep the dark application theme.
+
+## Verification and publishing
+
+Run `python3 scripts/verify_docs.py` and `npx mint validate` before merging. Update the stored tool catalog and reference together. Validate examples against tool input schemas.
+
+Mintlify deploys main. Verify live links, tool anchors, schema accordions, search, and desktop/mobile rendering. Mintlify generates /llms.txt, /llms-full.txt, and page Markdown; verify them after publishing instead of committing static copies.
+
+All manual commits use Bogdan Piven <bogdanpiven@gmail.com>.

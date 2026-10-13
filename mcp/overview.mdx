@@ -1,0 +1,40 @@
+---
+title: "Superlaunch MCP"
+description: "Connect an AI client to your workspace's advertising data and operations."
+---
+
+The Model Context Protocol (MCP) lets an AI client discover and call Superlaunch tools. Use it to inspect accounts, analyze performance, prepare launches, manage rules, and work with approved context.
+
+## Server connection
+
+| Setting | Value |
+| --- | --- |
+| Server URL | `https://mcp.superlaunch.pro/mcp` |
+| Transport | Streamable HTTP |
+| Authentication | OAuth |
+| Client registration | Automatic dynamic client registration |
+| Read scope | `mcp:read` |
+| Write scope | `mcp:write` |
+
+Sign in through the browser, choose a workspace, and approve access. Your agent uses the resulting connection on your behalf. You do not paste your Superlaunch password or provider credentials into the conversation.
+
+## Supported work
+
+- Read authorized ad accounts, brands, assets, and insights.
+- Create and manage rules and inspect their runs.
+- Create, duplicate, or change supported Meta objects.
+- Prepare Launcher library content, collections, templates, launches, and schedules.
+- Save approved facts and retrieve relevant memory.
+- Review unified activity and operation results.
+
+The tool catalog can vary with approved scopes and feature availability. Use capability tools before preparing actions.
+
+## Get started
+
+[Connect your client](/mcp/connect), then use [Your first MCP workflow](/mcp/first-workflow). The [tool index](/mcp/tools) lists the documented methods by task.
+
+## Product MCP and documentation MCP
+
+The product server above operates on your authorized workspace. Mintlify may also offer an MCP connection for searching this public documentation. A documentation connection does not authorize access to your advertising accounts.
+
+For plain-text documentation, use [/llms.txt](/llms.txt) and [/llms-full.txt](/llms-full.txt).

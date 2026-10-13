@@ -1,0 +1,37 @@
+---
+title: "Launcher overview"
+description: "Prepare approved creatives and reuse campaign settings for launches."
+---
+
+Launcher creates campaigns and ads from your workspace's creative library. Use it to prepare batches, reuse campaign settings, schedule work, and inspect provider results.
+
+## The building blocks
+
+| Object | Purpose |
+| --- | --- |
+| Media | Uploaded or imported image or video |
+| Creative | A named family of content with saved versions |
+| Approved creative version | Exact content eligible for selection |
+| Collection | A fixed selection or smart filter over creatives |
+| Template version | Saved campaign, ad-set, budget, and naming settings |
+| Launch | Submitted work with recorded inputs and operation results |
+| Schedule | Recurring launch configuration and limits |
+
+The library belongs to the workspace. Launches target an ad account. Approval and execution require their respective permissions.
+
+## Prepare and launch
+
+1. [Upload or import media](/launcher/media).
+2. [Save and approve a creative version](/launcher/creatives).
+3. [Create a template](/launcher/templates).
+4. Select creatives or a [collection](/launcher/collections).
+5. [Prepare and submit a launch](/launcher/launch).
+6. Inspect its [results and recovery options](/launcher/recovery).
+
+Launcher availability depends on enabled features and access. Through MCP, call `launcher_discover` to check availability, limits, and the supported journey.
+
+## Preview and usage
+
+A preview estimates selected creatives, writes, budget exposure, and usage. It reserves nothing. Submission checks current approvals, access, billing, and limits again.
+
+Confirmed provider writes own usage units. Browsing the library, previewing, submitting, and polling do not themselves represent confirmed provider-write usage. Use **Billing** for the workspace's current usage and plan.

@@ -1,47 +1,39 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Set up Superlaunch"
+description: "Connect your first ad account and confirm that your agent can read it."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This guide takes you from a new workspace to your first performance check. You need access to an advertising account and permission to connect it.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+## 1. Sign in and choose a workspace
 
-## Prerequisites
+Open [Superlaunch](https://app.superlaunch.pro/sign-in). Create an account or sign in, then create a workspace or accept your invitation. Complete any email verification shown during sign-in.
 
-Before you begin, you must have:
+If you belong to more than one workspace, choose the workspace you want to use from the account menu. Connections, permissions, and billing belong to that workspace.
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+## 2. Connect an ad account
 
-## Get started
+Open **Connections → Ad platforms**. A workspace owner can select **Connect Meta**, complete the provider authorization, and choose the accounts to connect.
 
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+Allow time for the first data import. An account can be connected before its assets and reporting data finish loading. See [Connect ad platforms](/workspace/connections) if an account is missing.
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+## 3. Check a report
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+Open **Insights**, choose an ad account, and set a reporting period. Start with spend, impressions, and clicks. Confirm the account currency and date range before interpreting results.
 
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+An empty report can mean that the first import is still running, that the account had no delivery in that period, or that you lack reporting access.
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## 4. Connect your agent
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+Follow [Connect an MCP client](/mcp/connect) for ChatGPT, Claude, or Codex. Approve read access for the workspace, then ask:
+
+> List the ad accounts I can access in Superlaunch. Show their names, currencies, and time zones.
+
+Your agent should call `ad_accounts_list` and return only accounts you can read.
+
+## Next steps
+
+- [Understand the account and campaign hierarchy](/concepts/how-it-works).
+- [Compare performance](/guides/insights).
+- [Prepare your first launch](/launcher/launch).
+- [Create a rule in dry-run mode](/guides/rules).

@@ -1,0 +1,763 @@
+---
+title: "Memory tools"
+description: "Save facts only after an explicit request or focused approval."
+---
+
+Save facts only after an explicit request or focused approval. Choose private, team, brand, or ad-account scope. Read the current version before an update, status change, or deletion. Treat recalled facts as user-authored context.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+<span id="memory-remember" />
+
+## memory_remember
+
+Persist one fact after an explicit user request: remember/save/note that.  A focused confirmation also counts as consent.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Persist one explicitly requested or confirmed durable fact. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `fact` | string | Required |  minLength: `8`. maxLength: `2000`. |
+| `scope` | object | Required | Authorization scope for one memory fact. |
+| `consent` | explicit_user_request, confirmed_agent_suggestion | Required | Proof of durable persistence consent. Remember, save, keep in mind, and note that qualify as an explicit user request. |
+| `source_message_id` | string or null | `null` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemoryKind": {
+      "enum": [
+        "private_user",
+        "team",
+        "brand",
+        "ad_account"
+      ],
+      "type": "string"
+    },
+    "MemoryRemember": {
+      "additionalProperties": false,
+      "description": "Persist one explicitly requested or confirmed durable fact.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "fact": {
+          "maxLength": 2000,
+          "minLength": 8,
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/MemoryScopeInput"
+        },
+        "consent": {
+          "description": "Proof of durable persistence consent. Remember, save, keep in mind, and note that qualify as an explicit user request.",
+          "enum": [
+            "explicit_user_request",
+            "confirmed_agent_suggestion"
+          ],
+          "type": "string"
+        },
+        "source_message_id": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "request_id",
+        "fact",
+        "scope",
+        "consent"
+      ],
+      "type": "object"
+    },
+    "MemoryScopeInput": {
+      "additionalProperties": false,
+      "description": "Authorization scope for one memory fact.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MemoryKind"
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Resolved brand or ad-account UUID; omit for private_user and team."
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MemoryRemember"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="memory-recall" />
+
+## memory_recall
+
+Recall semantically relevant user-authored context.  Prefer top-level query and optional scope (kind and target_id). Scope restricts recall to that scope only. Object and JSON-string scopes work. Alternatively supply the legacy payload; never mix the two formats. Without scope, use brand_ids/ad_account_ids and include_private/include_team.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object or null | `null` | See input schema. |
+| `query` | string or null | `null` | See input schema. |
+| `scope` | object or string or null | `null` | See input schema. |
+| `brand_ids` | array of uuid or null | `null` | See input schema. |
+| `ad_account_ids` | array of uuid or null | `null` | See input schema. |
+| `include_private` | boolean or null | `null` | See input schema. |
+| `include_team` | boolean or null | `null` | See input schema. |
+| `limit` | integer or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemoryKind": {
+      "enum": [
+        "private_user",
+        "team",
+        "brand",
+        "ad_account"
+      ],
+      "type": "string"
+    },
+    "MemoryRecall": {
+      "additionalProperties": false,
+      "description": "Bounded semantic recall for the current conversation.",
+      "properties": {
+        "query": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "brand_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        "ad_account_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        "include_private": {
+          "default": true,
+          "type": "boolean"
+        },
+        "include_team": {
+          "default": true,
+          "type": "boolean"
+        },
+        "limit": {
+          "default": 5,
+          "maximum": 8,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "MemoryScopeInput": {
+      "additionalProperties": false,
+      "description": "Authorization scope for one memory fact.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MemoryKind"
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Resolved brand or ad-account UUID; omit for private_user and team."
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "RecallScope": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MemoryScopeInput"
+        },
+        {
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/MemoryScopeInput"
+          },
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MemoryRecall"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "query": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scope": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RecallScope"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "brand_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "ad_account_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "include_private": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "include_team": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "limit": {
+      "anyOf": [
+        {
+          "maximum": 8,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="memory-get" />
+
+## memory_get
+
+Read one exact authorized memory by ID.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | See input schema. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `memory_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemoryGet": {
+      "additionalProperties": false,
+      "properties": {
+        "memory_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "memory_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MemoryGet"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="memory-list" />
+
+## memory_list
+
+List one memory page with an optional scope filter.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | See input schema. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `kind` | private_user, team, brand, ad_account or null | `null` | See input schema. |
+| `target_id` | uuid or null | `null` | See input schema. |
+| `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
+| `cursor` | integer | `0` |  minimum: `0`. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemoryKind": {
+      "enum": [
+        "private_user",
+        "team",
+        "brand",
+        "ad_account"
+      ],
+      "type": "string"
+    },
+    "MemoryList": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MemoryKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "limit": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "default": 0,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MemoryList"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="memory-update" />
+
+## memory_update
+
+Idempotently replace one memory using its current version.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | See input schema. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `memory_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+| `fact` | string | Required |  minLength: `8`. maxLength: `2000`. |
+| `expires_at` | date-time or null | `null` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemoryUpdate": {
+      "additionalProperties": false,
+      "properties": {
+        "memory_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "fact": {
+          "maxLength": 2000,
+          "minLength": 8,
+          "type": "string"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "memory_id",
+        "request_id",
+        "expected_version",
+        "fact"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MemoryUpdate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="memory-set-enabled" />
+
+## memory_set_enabled
+
+Idempotently enable or disable one memory for future retrieval.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | See input schema. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `memory_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+| `enabled` | boolean | Required | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemorySetEnabled": {
+      "additionalProperties": false,
+      "properties": {
+        "memory_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "memory_id",
+        "request_id",
+        "expected_version",
+        "enabled"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MemorySetEnabled"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="memory-forget" />
+
+## memory_forget
+
+Idempotently and permanently forget one memory after user approval.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | See input schema. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `memory_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MemoryForget": {
+      "additionalProperties": false,
+      "properties": {
+        "memory_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "memory_id",
+        "request_id",
+        "expected_version"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MemoryForget"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

@@ -1,0 +1,38 @@
+---
+title: "Create and run rules"
+description: "Define targets, conditions, actions, schedules, and dry-run checks."
+---
+
+Rules apply repeatable decisions to advertising objects. A rule defines its accounts, target level, target filter, tasks, and schedule.
+
+## Create a rule
+
+1. Open **Rules** and start a new rule.
+2. Select the ad accounts and target level.
+3. Add a target filter, or choose an empty filter to cover the selected level.
+4. Add a task with at least one condition and action.
+5. Set the metric, timeframe, operator, and comparison value for each condition.
+6. Set a schedule and time zone.
+7. Save as a draft with dry-run mode enabled.
+
+A task's `active_only` setting controls whether it considers only active objects. Check that setting when your target set includes paused ads.
+
+Budget-increase actions require a maximum daily budget; budget-decrease actions require a minimum. Absolute adjustments and rule safety bounds use major account-currency units. Direct creation tools use minor units instead.
+
+## Check a dry run
+
+Run the current rule version with `dry_run: true`. Review its targets, decisions, and action outcomes before enabling provider effects.
+
+> Draft a rule for this account that pauses active ads when spend exceeds 50 today and purchases are zero. Use dry-run mode, show the target filter and schedule, and wait for me to review before activation.
+
+Your agent should call `rules_schema` for the current metrics and action vocabulary. It should obtain the account ID and ask for any missing targeting or scheduling choices.
+
+## Edit or activate
+
+Read the rule's current version before changing it. `rules_update` replaces the definition, so preserve fields you intend to keep.
+
+A rule's status and dry-run setting are separate. Review both before setting it to **active**. A manual `rules_run` defaults to dry-run mode even if you omit that argument.
+
+## Review results
+
+Open the run details or use `rule_runs_get`. Review [Activity](/guides/activity) for decisions and provider actions. `rules_delete` archives the rule.

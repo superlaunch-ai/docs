@@ -1,0 +1,204 @@
+---
+title: "Launcher Drive tools"
+description: "Authorize Google Drive and select files or folders in Superlaunch first."
+---
+
+Authorize Google Drive and select files or folders in Superlaunch first. These tools expose selected items under `drive.file`. An empty result does not mean the folder is empty. Folder selection does not grant access to all children or start automatic importing.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
+
+<span id="launcher-drive-folders-list" />
+
+## launcher_drive_folders_list
+
+List saved workspace folders. Connect Google Drive in Superlaunch first.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `connection_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "connection_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "connection_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="launcher-drive-folders-save" />
+
+## launcher_drive_folders_save
+
+Save a folder selected in Superlaunch's Google Picker with drive.file. Folder selection grants no access to its children. Select each new media batch in Google Picker, then refresh the folder list. No automatic import starts.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `connection_id` | uuid | Required | See input schema. |
+| `folder_id` | string | Required |  pattern: `^[A-Za-z0-9_-]{1,200}$`. |
+| `protected_manifest_ref` | uuid or null | `null` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "connection_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "folder_id": {
+      "pattern": "^[A-Za-z0-9_-]{1,200}$",
+      "type": "string"
+    },
+    "protected_manifest_ref": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "connection_id",
+    "folder_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="launcher-drive-folder-files-list" />
+
+## launcher_drive_folder_files_list
+
+List up to 100 selected media files and folders with drive.file. This is a selected subset: an empty page does not mean the folder is empty. Select each new batch in Superlaunch's Google Picker, then refresh this tool. Follow next_page_token for more authorized items; no complete-folder claim or automatic monitoring is made. Child navigation verifies saved-root ancestry. Protected references expire after one hour. Files are not downloaded.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `connection_id` | uuid | Required | See input schema. |
+| `folder_id` | string | Required |  pattern: `^[A-Za-z0-9_-]{1,200}$`. |
+| `parent_folder_id` | string or null | `null` | See input schema. |
+| `parent_manifest_ref` | uuid or null | `null` | See input schema. |
+| `search` | string | `""` |  maxLength: `200`. |
+| `media_type` | all, image, video | `"all"` | See input schema. |
+| `page_token` | string or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "connection_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "folder_id": {
+      "pattern": "^[A-Za-z0-9_-]{1,200}$",
+      "type": "string"
+    },
+    "parent_folder_id": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z0-9_-]{1,200}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_manifest_ref": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "search": {
+      "default": "",
+      "maxLength": 200,
+      "type": "string"
+    },
+    "media_type": {
+      "default": "all",
+      "enum": [
+        "all",
+        "image",
+        "video"
+      ],
+      "type": "string"
+    },
+    "page_token": {
+      "anyOf": [
+        {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "connection_id",
+    "folder_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

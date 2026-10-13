@@ -1,0 +1,39 @@
+---
+title: "Authentication and access"
+description: "Understand OAuth scopes, workspace selection, and revocation."
+---
+
+Superlaunch's product MCP endpoint requires OAuth authorization. Each connection belongs to the member and workspace selected during consent.
+
+## Authorize access
+
+Start the connection in your MCP client. Sign in to Superlaunch in the browser, choose the workspace, and review the requested scopes.
+
+- `mcp:read` permits read tools.
+- `mcp:write` permits write tools and requires read scope.
+
+Selecting write scope does not grant new provider or account permissions. Superlaunch checks the connection, workspace membership, function, and referenced objects when you call a tool.
+
+## Workspace selection
+
+Authorize the workspace you intend the agent to use. Switching workspaces in the web application does not redefine the workspace attached to an existing MCP authorization.
+
+If you need a different workspace, reconnect and choose it during consent. Confirm the returned account list before an operation.
+
+## Discovery for client developers
+
+The public protected-resource metadata is available at:
+
+```text
+https://mcp.superlaunch.pro/.well-known/oauth-protected-resource/mcp
+```
+
+It identifies the resource `https://mcp.superlaunch.pro/mcp`, the authorization server `https://auth.superlaunch.pro/`, and the supported scopes. Use your MCP client's OAuth implementation for registration, authorization, token refresh, and bearer headers.
+
+An unauthenticated request returning HTTP 401 is expected. Adding the URL alone does not authorize access.
+
+## Revoke access
+
+Open **Connections → AI agents** and select **Disconnect**. Superlaunch rechecks revoked connections on calls. Removing an agent from a conversation and revoking its Superlaunch connection are separate actions.
+
+See [MCP troubleshooting](/mcp/troubleshooting) if authorization loops or a tool becomes unavailable.

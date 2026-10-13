@@ -1,0 +1,62 @@
+---
+title: "Connect an MCP client"
+description: "Set up Superlaunch in ChatGPT, Claude, Codex, or another OAuth client."
+---
+
+You need a Superlaunch workspace and an AI client that supports remote MCP with OAuth. Use this server URL:
+
+```text
+https://mcp.superlaunch.pro/mcp
+```
+
+Client interfaces change. The steps below follow the product setup instructions and official client documentation checked on October 13, 2026.
+
+## ChatGPT Work
+
+1. Open the **Plugins** directory in ChatGPT.
+2. Select **+ → Add custom MCP server**.
+3. Name it **Superlaunch** and enter the server URL.
+4. Choose **OAuth** with dynamic client registration. Leave client ID and secret empty.
+5. Review the access notice, create the plugin, and install it from your personal plugins.
+6. Sign in to Superlaunch, choose a workspace, and approve access.
+7. Start a **Work** chat. Type `@` and select Superlaunch.
+
+See the [official plugin connection guide](https://developers.openai.com/plugins/quickstart). If your ChatGPT workspace uses the Apps interface, use **Apps → Create**, enable developer mode where required, enter the same OAuth server, and complete the tool scan. Availability and admin controls depend on the ChatGPT plan; check the [official MCP app guide](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt).
+
+## Claude
+
+1. Open **Customize → Connectors**.
+2. Select **+ Add → Add custom connector**.
+3. Name it **Superlaunch**, enter the URL, and continue.
+4. Choose sign-in authentication and **Register automatically** for the OAuth client.
+5. Add the connector, sign in to Superlaunch, choose a workspace, and approve access.
+6. In the conversation, open **+ → Connectors** and enable Superlaunch.
+
+A Team or Enterprise organization may require an owner to add the connector first. See [Claude's remote connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
+
+## Codex CLI
+
+```bash
+codex mcp add superlaunch --url https://mcp.superlaunch.pro/mcp
+codex mcp login superlaunch
+```
+
+Complete authorization in the browser. Start a new session and use `/mcp` to check the connection. Run `codex mcp list` to inspect configured servers. See the [official MCP guide](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+
+## Claude Code
+
+```bash
+claude mcp add --transport http superlaunch https://mcp.superlaunch.pro/mcp
+```
+
+Start Claude Code, run `/mcp`, and complete OAuth authentication. See the [official Claude Code MCP guide](https://code.claude.com/docs/en/mcp).
+
+## Other clients
+
+Add a remote Streamable HTTP server, enter the URL, and choose OAuth with automatic registration. Complete browser authorization and enable the connection. Ask the client to list the available tools, then run `ad_accounts_list`.
+
+## Verify and disconnect
+
+Open **Connections → AI agents** in Superlaunch. Check that the connection appears and that a tool call updates its activity.
+
+Select **Disconnect** to revoke it. Reconnect through your client when you want to authorize it again.

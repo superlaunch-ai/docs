@@ -3,71 +3,187 @@
   "theme": "mint",
   "name": "Superlaunch",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#E8A33D",
+    "light": "#E8A33D",
+    "dark": "#E8A33D"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "pages": [
       {
-        "group": "Getting Started",
+        "group": "Start here",
         "pages": [
           "index",
-          "quickstart"
+          "quickstart",
+          "concepts/how-it-works",
+          "concepts/ids-and-versions"
+        ]
+      },
+      {
+        "group": "Workspace",
+        "pages": [
+          "workspace/connections",
+          "workspace/permissions"
+        ]
+      },
+      {
+        "group": "Workflows",
+        "pages": [
+          "guides/insights",
+          "guides/rules",
+          "guides/activity",
+          "guides/brands",
+          "guides/memory"
+        ]
+      },
+      {
+        "group": "Launcher",
+        "pages": [
+          "launcher/overview",
+          "launcher/media",
+          "launcher/creatives",
+          "launcher/collections",
+          "launcher/templates",
+          "launcher/launch",
+          "launcher/schedules",
+          "launcher/recovery"
+        ]
+      },
+      {
+        "group": "MCP",
+        "pages": [
+          "mcp/overview",
+          "mcp/connect",
+          "mcp/authentication",
+          "mcp/first-workflow",
+          "mcp/workflows",
+          "mcp/troubleshooting",
+          "mcp/tools",
+          "mcp/examples"
+        ]
+      },
+      {
+        "group": "MCP reference",
+        "pages": [
+          "mcp/reference/accounts-brands",
+          "mcp/reference/insights",
+          "mcp/reference/rules",
+          "mcp/reference/actions",
+          "mcp/reference/activity",
+          "mcp/reference/memory",
+          "mcp/reference/launcher-library",
+          "mcp/reference/launcher-launches",
+          "mcp/reference/launcher-schedules",
+          "mcp/reference/launcher-drive"
+        ]
+      },
+      {
+        "group": "Support",
+        "pages": [
+          "support/billing",
+          "support/troubleshooting",
+          "reference/glossary",
+          "reference/ai-access"
         ]
       }
     ],
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Superlaunch",
+          "icon": "arrow-up-right-from-square",
+          "href": "https://superlaunch.pro/"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "icon": "circle-question",
+          "href": "https://superlaunch.pro/contact"
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/superlaunch.svg",
+    "dark": "/logo/superlaunch.svg",
+    "href": "https://docs.superlaunch.pro/"
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:support@mintlify.com"
+        "href": "https://superlaunch.pro/contact"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Open Superlaunch",
+      "href": "https://app.superlaunch.pro/"
     }
   },
   "contextual": {
     "options": [
       "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      "view"
     ]
   },
   "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+    "links": [
+      {
+        "header": "Superlaunch",
+        "items": [
+          {
+            "label": "Website",
+            "href": "https://superlaunch.pro/"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://superlaunch.pro/pricing"
+          },
+          {
+            "label": "Contact",
+            "href": "https://superlaunch.pro/contact"
+          }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          {
+            "label": "Privacy",
+            "href": "https://superlaunch.pro/privacy.html"
+          },
+          {
+            "label": "Terms",
+            "href": "https://superlaunch.pro/terms.html"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Set up Superlaunch, manage advertising workflows, and connect AI agents through MCP.",
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "light": "#0B0E11",
+      "dark": "#0B0E11"
     }
   },
-  "description": "Superlaunch documentation: connect AI agents to your Meta ad accounts to analyze performance, launch creatives in bulk, and automate optimizations at scale."
+  "seo": {
+    "organization": {
+      "name": "Superlaunch",
+      "url": "https://superlaunch.pro/"
+    },
+    "indexing": "navigable"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Space Grotesk"
+    },
+    "body": {
+      "family": "Inter"
+    }
+  }
 }

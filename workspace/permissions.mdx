@@ -1,0 +1,35 @@
+---
+title: "Team and permissions"
+description: "Manage workspace members and control access to accounts, rules, and launches."
+---
+
+Your workspace owner manages members and their permissions from **Team**. Superlaunch applies access checks in the API and MCP service as well as in the web application.
+
+## Invite a teammate
+
+1. Open **Team** in the correct workspace.
+2. Invite the teammate with the email address they will use to sign in.
+3. Ask them to accept the invitation.
+4. Review the accounts and functions they need before granting access.
+
+Membership and account access are separate. A teammate can belong to your workspace without permission to read a particular ad account.
+
+## Review permissions
+
+Open the member's permissions. Grant the required functions for the relevant ad accounts, such as reading assets or insights, managing rules, or performing provider actions.
+
+Launcher uses its own read, author, approval, execution, scheduling, and control permissions. Authoring a creative does not imply permission to approve it or launch it. Use the available permission definitions in the member editor.
+
+Brand and memory access also depend on their scope. A private memory belongs to its author; team, brand, and ad-account memories follow their corresponding access rules.
+
+## MCP access
+
+An MCP connection uses the member who authorized it. `mcp:read` permits read tools; `mcp:write` permits write tools in addition to read access. These scopes do not expand the member's account or functional permissions.
+
+Superlaunch rechecks membership, connection status, and target access on tool calls. If access changes, an existing conversation can lose access too.
+
+## Resolve an access error
+
+Check the workspace, account, member permissions, OAuth scopes, and connection status. If a rule targets several accounts, the member needs the required access to its complete target set.
+
+See [MCP authentication](/mcp/authentication) and [Troubleshooting](/support/troubleshooting).
