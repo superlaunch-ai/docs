@@ -23,7 +23,7 @@ Read account IDs, currencies, and time zones before choosing a target.
 
 **Tool:** `insights_query`
 
-Replace the account UUID. Call insights_capabilities first. Inspect complete and next_cursor in the result.
+Replace the account UUID and dates. Call `insights_capabilities` first. Check `complete` and `next_cursor` in the result.
 
 ```json
 {
@@ -72,7 +72,7 @@ Choose the purchase event and attribution window that match your analysis. The r
 
 **Tool:** `campaigns_create`
 
-This defaults to validation without creating the intended campaign. Check actions_capabilities first. Review the result before a live request; use a new request_id when changing dry_run to false.
+This example validates the inputs without creating a campaign. Check `actions_capabilities` first. Review the result before a live request; use a new `request_id` when changing `dry_run` to `false`.
 
 ```json
 {
@@ -112,12 +112,13 @@ Use this only after the user asks you to save the fact or approves that suggesti
 
 **Tool:** `activity_list`
 
-Follow next_cursor with the same filters to read the complete set.
+Filter by the exact tool name and failed status. Follow `next_cursor` with the same filters to read the complete set.
 
 ```json
 {
   "payload": {
-    "query": "campaigns_create",
+    "tool_name": "campaigns_create",
+    "status": "failed",
     "limit": 25,
     "cursor": 0
   }
@@ -140,7 +141,7 @@ Inspect the returned version and approval information before selecting content.
 
 **Tool:** `launcher_launches_get`
 
-Use the account and launch IDs from the submission. Inspect launcher_run_operations for individual provider outcomes.
+Use the account and launch IDs from the submission. Use `launcher_run_operations` to check the outcome of each operation.
 
 ```json
 {

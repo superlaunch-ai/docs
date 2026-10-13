@@ -8,7 +8,7 @@ A recurring schedule prepares launches from saved configuration. You need schedu
 ## Create a schedule
 
 1. Open launch setup.
-2. Choose a supported operation and saved template version.
+2. Choose **Test new creatives** and a saved template version.
 3. Choose a collection and review its selection behavior.
 4. Select recurring timing.
 5. Set the frequency, time, and **Schedule time zone**.
@@ -18,11 +18,11 @@ A recurring schedule prepares launches from saved configuration. You need schedu
 
 The schedule time zone determines when the recurring job starts. Provider delivery settings in the template are separate.
 
-## Check pinned inputs
+## Check saved settings
 
-Schedules keep pinned recurring inputs. Review the exact template and collection version references before saving. When editing a schedule, preserve the references you intend to keep. An occurrence that has already started keeps its recorded inputs.
+The schedule uses specific template and collection versions. Review them before saving; editing a template later does not update the version selected by the schedule. Runs that have already started keep their original settings.
 
-A schedule is not a guarantee that every occurrence will launch. Current approval, account access, workspace access, billing, and limits still apply.
+Superlaunch skips overlapping and missed runs. Each new run checks creative approval, access, billing, and limits before launching.
 
 ## Pause, edit, and inspect
 

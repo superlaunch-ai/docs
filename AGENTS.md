@@ -29,7 +29,7 @@ The product MCP endpoint is https://mcp.superlaunch.pro/mcp. Documentation expor
 
 ## Brand
 
-Preserve the existing arrow mark and lowercase wordmark. Use accent #E8A33D, page #0B0E11, Space Grotesk headings, and Inter body text. Keep the dark application theme.
+Preserve the existing arrow mark and lowercase wordmark. Use accent #E8A33D, page #0B0E11, Space Grotesk headings, and Inter body text. The header wordmark matches superlaunch.pro: IBM Plex Mono, weight 500. Keep its SVG text outlined to avoid font fallback. Keep the dark application theme.
 
 ## Verification and publishing
 

@@ -12,7 +12,7 @@ Start a workflow by discovering accessible objects and capabilities. Resolve req
 3. Use `insights_rank` for compact highest and lowest rankings.
 4. Read the data-through date and warnings.
 
-Apply minimum evidence filters such as spend or conversions. “Highest” and “lowest” are numeric rankings; decide whether each outcome is desirable for the metric.
+Set a minimum spend or conversion count to exclude results with too little data. For cost metrics such as CPA, lower values can be better.
 
 ## Create a draft rule
 
@@ -22,19 +22,27 @@ Read the rule back and run its current version in dry-run mode. Review decisions
 
 ## Prepare a Launcher batch
 
-Call `launcher_discover`, resolve accounts, and inspect library content and templates. Complete private media intake in the [browser](/launcher/media).
+Call `launcher_discover`, choose an account, and inspect saved creatives and templates. [Upload or import media](/launcher/media) if you need new files.
 
 Approve exact creative versions, resolve the selection, inspect an existing target where required, and preview the launch. Submit with one stable request key. Poll the launch and operation records, including partial failures.
 
 ## Create Meta objects directly
 
-Call `actions_capabilities` to check configured effects. Creation and duplication tools default to `dry_run: true`; creation starts campaigns, ad sets, and ads paused.
+Call `actions_capabilities` to check whether live changes are enabled. Creation and duplication tools default to `dry_run: true`; creation starts campaigns, ad sets, and ads paused.
 
-For a direct creative upload, call `media_uploads_create`. An enabled interactive picker can accept the file in the client. With metadata, the tool returns a signed upload URL, required headers, and expiry.
+For media, call `media_uploads_create` to open the upload picker when your client supports it. `media_uploads_complete` uploads one to ten selected files and returns a result for each file. Check those results before using the media.
 
-Use the returned method and headers to upload binary bytes. In the interactive flow, `media_uploads_complete` completes one selected file or upload intent. Verify upload status before passing its `media_id` to `creatives_create`.
+For a signed upload without the picker, provide file metadata to `media_uploads_create`. Upload the file bytes using the returned URL, method, and headers before the URL expires. A successful upload saves the file in the workspace library. Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`.
 
 Create a campaign, then an ad set, then an ad with the required parent IDs. Review dry-run results. Use a new request ID when changing the request from validation to live execution. Inspect the action result after execution.
+
+## Reuse a successful setup
+
+Use `campaigns_duplicate`, `adsets_duplicate`, or `ads_duplicate` to copy an existing Meta setup. Copies stay in the same account: an ad-set copy stays in its campaign, and an ad copy stays in its ad set. The copies start paused.
+
+To use a setup in a different account, prepare a new launch with that account's assets and compatible template settings. Check its currency, Pages, pixels, audiences, and permissions before submitting.
+
+For successful Launcher tests, choose **Promote successful tests** and select the source ads. See [Prepare and submit a launch](/launcher/launch).
 
 ## Save a confirmed fact
 

@@ -5,23 +5,21 @@ description: "Discover exact provider assets and targets before preparing a laun
 
 Discover exact provider assets and targets before preparing a launch. Preview reserves nothing. Submission uses one stable request key and returns work to track. Read operation results before retrying; corrected replacement inputs require a new request key.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
-
-Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="launcher-promotion-sources-list" />
 
 ## launcher_promotion_sources_list
 
-Choose confirmed test ads to promote using their exact source item IDs.
+Find ads created by earlier tests that are available for promotion.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -69,18 +67,22 @@ Choose confirmed test ads to promote using their exact source item IDs.
 
 ## launcher_assets_list
 
-Find named Meta assets without copying IDs from another product. Pages, apps, pixels and audiences use the selected account. Forms, Instagram and catalogs require parent_id=Page ID. Product sets require parent_id=catalog ID plus page_id. Pages and Instagram accounts come from the synced ClickHouse catalog; inspect sync_status and synced_at for freshness. Other assets use live Meta discovery. Follow next_cursor; discovery does not guarantee launch eligibility.
+Find Meta Pages, Instagram accounts, pixels, audiences, and other assets by name.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+Pages, apps, pixels, and audiences use the selected ad account. Forms, Instagram accounts, and catalogs require a Page ID in `parent_id`. Product sets require a catalog ID in `parent_id` plus a `page_id`.
+
+Pages and Instagram accounts use imported data; check `sync_status` and `synced_at`. Other asset types use live Meta reads. Follow `next_cursor` for more results. Launch validation checks whether the selected assets can be used.
+
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `kind` | pages, instagram_accounts, pixels, applications, lead_forms, product_catalogs, product_sets, custom_audiences | Required | Supported discovery edges, never arbitrary Graph paths. |
-| `parent_id` | string or null | `null` | See input schema. |
-| `page_id` | string or null | `null` | See input schema. |
+| `parent_id` | string or null | `null` |  |
+| `page_id` | string or null | `null` |  |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `cursor` | string or null | `null` | See input schema. |
+| `cursor` | string or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -180,15 +182,15 @@ Find named Meta assets without copying IDs from another product. Pages, apps, pi
 
 ## launcher_targets_list
 
-List current account ad sets; inspect the chosen target before preview.
+List current ad sets for the account. Read the chosen target before previewing a launch.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `cursor` | string or null | `null` | See input schema. |
+| `cursor` | string or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -236,15 +238,15 @@ List current account ad sets; inspect the chosen target before preview.
 
 ## launcher_targets_get
 
-Inspect the exact account/parent/settings fingerprint for a chosen target.
+Read an ad set's account, parent campaign, current settings, and validation fingerprint.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `adset_id` | string | Required |  pattern: `^[0-9]{1,32}$`. |
-| `campaign_id` | string or null | `null` | See input schema. |
+| `campaign_id` | string or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -291,34 +293,34 @@ Inspect the exact account/parent/settings fingerprint for a chosen target.
 
 ## launcher_launches_preview
 
-Resolve exact approved inputs and operation counts; preview reserves nothing.
+Check approved content, planned Meta objects, and estimated usage. A preview does not reserve capacity.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request` | object | Required | Brandless public schema with legacy receipt parsing for exact retries. |
+| `request` | object | Required | Launch inputs, including the account, content selection, template, and timing. |
 
 ### request fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | `"Launch"` |  minLength: `1`. maxLength: `200`. |
 | `request_key` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `operation` | test, promote, refresh | Required | See input schema. |
-| `purpose` | test, scale | Required | See input schema. |
-| `template_version_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `operation` | test, promote, refresh | Required | Launch type: test, promote, or refresh. |
+| `purpose` | test, scale | Required | Purpose recorded for the launch. |
+| `template_version_id` | uuid | Required | Exact saved template version to use. |
 | `selection` | object | Required | Direct or pinned collection selection with explicit exclusions. |
-| `repeat_across_groups` | boolean | `false` | See input schema. |
+| `repeat_across_groups` | boolean | `false` |  |
 | `manual_groups` | array of object | `[]` |  maxItems: `100`. |
 | `requested_status` | PAUSED, ACTIVE | `"PAUSED"` | Requested provider status, distinct from actual delivery. |
-| `scheduled_at` | date-time or null | `null` | See input schema. |
-| `source_launch_item_ids` | array of uuid | `[]` | See input schema. |
-| `target` | object or null | `null` | See input schema. |
-| `retest_reason` | string or null | `null` | See input schema. |
-| `replacement` | object or null | `null` | See input schema. |
+| `scheduled_at` | date-time or null | `null` | Launch date and time, including the UTC offset. |
+| `source_launch_item_ids` | array of uuid | `[]` | Earlier launch items selected for promotion. |
+| `target` | object or null | `null` |  |
+| `retest_reason` | string or null | `null` | Reason for testing previously used content again. |
+| `replacement` | object or null | `null` | Failed-item replacement details from the replacement-candidates tool. |
 
 <Accordion title="Full input schema">
 
@@ -1002,36 +1004,38 @@ Resolve exact approved inputs and operation counts; preview reserves nothing.
 
 ## launcher_launches_submit
 
-Submit exact inputs using one stable request key; effects run asynchronously. Corrected failed items require replacement metadata, pinned approved versions, an exact existing target and a new request key.
+Submit a launch with one stable `request_key`, then track its result.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+To replace a failed item with corrected content, include the replacement details, approved creative version IDs, exact target, and a new request key.
+
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request` | object | Required | Brandless public schema with legacy receipt parsing for exact retries. |
+| `request` | object | Required | Launch inputs, including the account, content selection, template, and timing. |
 
 ### request fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | `"Launch"` |  minLength: `1`. maxLength: `200`. |
 | `request_key` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `operation` | test, promote, refresh | Required | See input schema. |
-| `purpose` | test, scale | Required | See input schema. |
-| `template_version_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `operation` | test, promote, refresh | Required | Launch type: test, promote, or refresh. |
+| `purpose` | test, scale | Required | Purpose recorded for the launch. |
+| `template_version_id` | uuid | Required | Exact saved template version to use. |
 | `selection` | object | Required | Direct or pinned collection selection with explicit exclusions. |
-| `repeat_across_groups` | boolean | `false` | See input schema. |
+| `repeat_across_groups` | boolean | `false` |  |
 | `manual_groups` | array of object | `[]` |  maxItems: `100`. |
 | `requested_status` | PAUSED, ACTIVE | `"PAUSED"` | Requested provider status, distinct from actual delivery. |
-| `scheduled_at` | date-time or null | `null` | See input schema. |
-| `source_launch_item_ids` | array of uuid | `[]` | See input schema. |
-| `target` | object or null | `null` | See input schema. |
-| `retest_reason` | string or null | `null` | See input schema. |
-| `replacement` | object or null | `null` | See input schema. |
+| `scheduled_at` | date-time or null | `null` | Launch date and time, including the UTC offset. |
+| `source_launch_item_ids` | array of uuid | `[]` | Earlier launch items selected for promotion. |
+| `target` | object or null | `null` |  |
+| `retest_reason` | string or null | `null` | Reason for testing previously used content again. |
+| `replacement` | object or null | `null` | Failed-item replacement details from the replacement-candidates tool. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_key` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -1715,15 +1719,15 @@ Submit exact inputs using one stable request key; effects run asynchronously. Co
 
 ## launcher_launches_list
 
-List newest launches first within the current workspace and account grants.  Pass next_cursor as after_id for the next page. Keep the account.
+List launches with the newest first. For the next page, pass the returned `next_cursor` as `after_id` and keep the same account.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -1771,14 +1775,14 @@ List newest launches first within the current workspace and account grants.  Pas
 
 ## launcher_launches_get
 
-Poll launch state; use linked Activity for individual provider outcomes.
+Read launch status and links to the operation results.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `launch_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `launch_id` | uuid | Required | Launch UUID from submission or `launcher_launches_list`. |
 
 <Accordion title="Full input schema">
 
@@ -1811,18 +1815,18 @@ Poll launch state; use linked Activity for individual provider outcomes.
 
 Hold or resume an unstarted run; a missed time requires Run now or a new time.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `launch_id` | uuid | Required | See input schema. |
-| `enabled` | boolean | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `launch_id` | uuid | Required | Launch UUID from submission or `launcher_launches_list`. |
+| `enabled` | boolean | Required |  |
 | `expected_version` | integer | Required |  minimum: `1`. |
-| `scheduled_at` | date-time or null | `null` | See input schema. |
-| `run_now` | boolean | `false` | See input schema. |
+| `scheduled_at` | date-time or null | `null` | Launch date and time, including the UTC offset. |
+| `run_now` | boolean | `false` | Run a held launch now rather than wait for a new time. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 
@@ -1882,17 +1886,17 @@ Hold or resume an unstarted run; a missed time requires Run now or a new time.
 
 ## launcher_launches_cancel
 
-Request cancellation; release only claims with confirmed no-write evidence.
+Request cancellation of a launch. Existing Meta objects remain, and a write already in progress may still finish. Read the result to confirm what stopped.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `launch_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `launch_id` | uuid | Required | Launch UUID from submission or `launcher_launches_list`. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 
@@ -1928,16 +1932,16 @@ Request cancellation; release only claims with confirmed no-write evidence.
 
 ## launcher_launches_replacement_candidates
 
-Inspect failed-item replacement choices. Keep successful or uncertain items unchanged; approve corrected content, read the exact target, then preview and submit with a new key and explicit replacement metadata.
+Find failed items eligible for replacement with corrected content. Approve the new version, check the target, then preview and submit with the returned replacement details and a new request key. Leave successful items and items with uncertain outcomes unchanged.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `launch_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `launch_id` | uuid | Required | Launch UUID from submission or `launcher_launches_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -1990,16 +1994,16 @@ Inspect failed-item replacement choices. Keep successful or uncertain items unch
 
 ## launcher_run_operations
 
-Read scoped results and attempts using Launcher read access.
+Read the result and attempt history of each launch operation.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `launch_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `launch_id` | uuid | Required | Launch UUID from submission or `launcher_launches_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -2052,18 +2056,18 @@ Read scoped results and attempts using Launcher read access.
 
 ## launcher_launches_retry
 
-Retry unchanged inputs after no-write proof. Use attempt 0 for every untouched operation after a failed preflight; uncertainty stays blocked.
+Retry eligible failed operations with their original inputs. Superlaunch blocks retries when it cannot confirm whether Meta already changed. For operations that failed before any attempt, use attempt `0` in `expected_attempts`.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `launch_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `launch_id` | uuid | Required | Launch UUID from submission or `launcher_launches_list`. |
 | `expected_version` | integer | Required |  minimum: `1`. |
-| `expected_attempts` | object | Required | See input schema. |
+| `expected_attempts` | object | Required | Current attempt number for each operation selected for retry. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 

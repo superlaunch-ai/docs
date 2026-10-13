@@ -5,40 +5,40 @@ description: "Use the unified log for tool calls, actions, and rule operations."
 
 Use the unified log for tool calls, actions, and rule operations. Exact filters select known fields; `query` searches text. Follow `next_cursor` until `complete` is true. Time filters form a half-open interval: include `started_after`, exclude `started_before`.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="activity-list" />
 
 ## activity_list
 
-Search the complete authorized tool, action, and rule-run log.  Use exact filters for known fields or ``query`` for case-insensitive text search across tool, action, member, target, request, and error metadata. Follow ``next_cursor`` until ``complete`` is true.
+Search tool calls, actions, and rule runs. Use exact filters such as `tool_name` and `status`, or use `query` for text search. Follow `next_cursor` until `complete` is true.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | Bounded page request for the unified activity log. |
+| `payload` | object | Required | Filters and pagination for the activity log. |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `query` | string or null | `null` | See input schema. |
-| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | See input schema. |
-| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` | See input schema. |
-| `team_member_user_id` | uuid or null | `null` | See input schema. |
-| `initiator_type` | string or null | `null` | See input schema. |
-| `ad_account_id` | uuid or null | `null` | See input schema. |
-| `mcp_connection_id` | uuid or null | `null` | See input schema. |
-| `rule_id` | uuid or null | `null` | See input schema. |
-| `rule_run_id` | uuid or null | `null` | See input schema. |
-| `launch_id` | uuid or null | `null` | See input schema. |
-| `tool_name` | string or null | `null` | See input schema. |
-| `action_name` | string or null | `null` | See input schema. |
-| `target_type` | string or null | `null` | See input schema. |
-| `target_id` | string or null | `null` | See input schema. |
-| `started_after` | date-time or null | `null` | See input schema. |
-| `started_before` | date-time or null | `null` | See input schema. |
+| `query` | string or null | `null` |  |
+| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | Kind of operation to include. |
+| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` |  |
+| `team_member_user_id` | uuid or null | `null` | Filter by the member who initiated the operation. |
+| `initiator_type` | string or null | `null` |  |
+| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
+| `mcp_connection_id` | uuid or null | `null` | Filter by a specific MCP connection. |
+| `rule_id` | uuid or null | `null` | Rule UUID from `rules_list`. |
+| `rule_run_id` | uuid or null | `null` | Filter by a specific rule run. |
+| `launch_id` | uuid or null | `null` | Launch UUID from submission or `launcher_launches_list`. |
+| `tool_name` | string or null | `null` | Exact MCP tool name to filter by. |
+| `action_name` | string or null | `null` | Exact action name to filter by. |
+| `target_type` | string or null | `null` |  |
+| `target_id` | string or null | `null` |  |
+| `started_after` | date-time or null | `null` | Include operations starting at or after this timestamp. |
+| `started_before` | date-time or null | `null` | Exclude operations starting at or after this timestamp. |
 | `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
 | `cursor` | integer | `0` |  minimum: `0`. maximum: `4294967295`. |
 
@@ -309,11 +309,11 @@ Search the complete authorized tool, action, and rule-run log.  Use exact filter
 
 Read one complete authorized activity record by ID.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `activity_id` | uuid | Required | See input schema. |
+| `activity_id` | uuid | Required | Activity UUID from the tool result or `activity_list`. |
 
 <Accordion title="Full input schema">
 
@@ -341,7 +341,7 @@ Read one complete authorized activity record by ID.
 
 Count the complete authorized result set for activity filters.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -351,22 +351,22 @@ Count the complete authorized result set for activity filters.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `query` | string or null | `null` | See input schema. |
-| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | See input schema. |
-| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` | See input schema. |
-| `team_member_user_id` | uuid or null | `null` | See input schema. |
-| `initiator_type` | string or null | `null` | See input schema. |
-| `ad_account_id` | uuid or null | `null` | See input schema. |
-| `mcp_connection_id` | uuid or null | `null` | See input schema. |
-| `rule_id` | uuid or null | `null` | See input schema. |
-| `rule_run_id` | uuid or null | `null` | See input schema. |
-| `launch_id` | uuid or null | `null` | See input schema. |
-| `tool_name` | string or null | `null` | See input schema. |
-| `action_name` | string or null | `null` | See input schema. |
-| `target_type` | string or null | `null` | See input schema. |
-| `target_id` | string or null | `null` | See input schema. |
-| `started_after` | date-time or null | `null` | See input schema. |
-| `started_before` | date-time or null | `null` | See input schema. |
+| `query` | string or null | `null` |  |
+| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | Kind of operation to include. |
+| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` |  |
+| `team_member_user_id` | uuid or null | `null` | Filter by the member who initiated the operation. |
+| `initiator_type` | string or null | `null` |  |
+| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
+| `mcp_connection_id` | uuid or null | `null` | Filter by a specific MCP connection. |
+| `rule_id` | uuid or null | `null` | Rule UUID from `rules_list`. |
+| `rule_run_id` | uuid or null | `null` | Filter by a specific rule run. |
+| `launch_id` | uuid or null | `null` | Launch UUID from submission or `launcher_launches_list`. |
+| `tool_name` | string or null | `null` | Exact MCP tool name to filter by. |
+| `action_name` | string or null | `null` | Exact action name to filter by. |
+| `target_type` | string or null | `null` |  |
+| `target_id` | string or null | `null` |  |
+| `started_after` | date-time or null | `null` | Include operations starting at or after this timestamp. |
+| `started_before` | date-time or null | `null` | Exclude operations starting at or after this timestamp. |
 
 <Accordion title="Full input schema">
 

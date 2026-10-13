@@ -1,19 +1,19 @@
 ---
 title: "Insights tools"
-description: "Call `insights_capabilities` before querying."
+description: "Query reports and rank advertising performance."
 ---
 
 Call `insights_capabilities` before querying. Choose the reporting period, entity level, metrics, conversion event, and attribution window. Follow query cursors before reporting complete results.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="insights-capabilities" />
 
 ## insights_capabilities
 
-List insight grains, compatible metrics, dimensions, and paging semantics.
+List supported metrics, reporting levels, breakdowns, and pagination settings.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 **Arguments:** none.
 
@@ -33,29 +33,35 @@ List insight grains, compatible metrics, dimensions, and paging semantics.
 
 ## insights_query
 
-Query one insights page, then follow next_cursor when needed.  Call ``insights_capabilities`` first for valid combinations. The default page contains 25 rows and the MCP maximum is 100 rows to keep tool results within agent context limits. Prefer the default instead of requesting the maximum unless a larger page is necessary. Daily account, campaign, and adset queries automatically roll up aggregation-safe metrics from ad rows; reach and frequency remain exact native metrics at the requested level. Filter structured metrics with ``action_types`` and ``attribution_windows`` instead of returning every raw Meta action tuple. Both filters are REQUIRED for actions, action_values, and other structured metrics. For purchase analysis, for example, supply action_types=["omni_purchase"], attribution_windows=["value"]. Choose the action and attribution window that match the question; they are not inferred. Use sorting and ``min_spend`` before paginating for top-N analysis; use ``entity_ids`` for targeted follow-up queries.
+Read one page of reporting data. Call `insights_capabilities` to check supported combinations.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+Pages default to 25 rows, with a maximum of 100. Follow `next_cursor` with the same filters to read more. Use sorting and `min_spend` to narrow results, or `entity_ids` to inspect specific objects.
+
+For structured metrics such as `actions` and `action_values`, supply both `action_types` and `attribution_windows`. For example, use `action_types: ["omni_purchase"]` and `attribution_windows: ["7d_click"]` for purchases attributed within seven days of a click. Choose these values to match the report you need.
+
+Daily account, campaign, and ad-set totals can aggregate compatible metrics from ad rows. Reach and frequency use the requested reporting level.
+
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
-| `date_from` | string | Required | See input schema. |
-| `date_to` | string | Required | See input schema. |
-| `metrics` | array of spend, impressions, clicks, reach, frequency, inline_link_clicks, inline_post_engagement, unique_clicks, unique_inline_link_clicks, quality_ranking, engagement_rate_ranking, conversion_rate_ranking, actions, action_values, conversions, conversion_values, outbound_clicks, unique_outbound_clicks, video_play_actions, video_continuous_2_sec_watched_actions, video_15_sec_watched_actions, video_30_sec_watched_actions, video_p25_watched_actions, video_p50_watched_actions, video_p75_watched_actions, video_p95_watched_actions, video_p100_watched_actions, video_thruplay_watched_actions, video_avg_time_watched_actions, video_time_watched_actions, ctr, cpc, cpm | Required |  minItems: `1`. maxItems: `20`. |
-| `entity_level` | account, campaign, adset, ad | `"ad"` | See input schema. |
-| `entity_ids` | array of string or null | `null` | See input schema. |
-| `report_spec` | base_daily, demographic_daily, country_daily | `"base_daily"` | See input schema. |
-| `grain` | daily, period | `"daily"` | See input schema. |
-| `action_types` | array of string or null | `null` | See input schema. |
-| `attribution_windows` | array of value, 1d_click, 7d_click, 1d_view or null | `null` | See input schema. |
-| `min_spend` | number or null | `null` | See input schema. |
-| `sort_by` | entity_id, date, spend, impressions, clicks, ctr, purchases, roas | `"entity_id"` | See input schema. |
-| `sort_direction` | asc, desc | `"asc"` | See input schema. |
-| `sort_action_type` | string | `"omni_purchase"` | See input schema. |
-| `sort_attribution` | value, 1d_click, 7d_click, 1d_view | `"value"` | See input schema. |
+| `date_from` | string | Required | First reporting date in `YYYY-MM-DD` format. |
+| `date_to` | string | Required | Last reporting date in `YYYY-MM-DD` format. |
+| `metrics` | array of strings | Required |minItems: `1`. maxItems: `20`. Allowed values are in the full input schema. |
+| `entity_level` | account, campaign, adset, ad | `"ad"` | Reporting level: account, campaign, ad set, or ad. |
+| `entity_ids` | array of string or null | `null` |  |
+| `report_spec` | base_daily, demographic_daily, country_daily | `"base_daily"` | Report format from `insights_capabilities`. |
+| `grain` | daily, period | `"daily"` | Time grouping from `insights_capabilities`. |
+| `action_types` | array of string or null | `null` | Conversion events to include in structured metrics. |
+| `attribution_windows` | array of value, 1d_click, 7d_click, 1d_view or null | `null` | Attribution windows to include in structured metrics. |
+| `min_spend` | number or null | `null` | Minimum spend in account-currency major units. |
+| `sort_by` | entity_id, date, spend, impressions, clicks, ctr, purchases, roas | `"entity_id"` |  |
+| `sort_direction` | asc, desc | `"asc"` |  |
+| `sort_action_type` | string | `"omni_purchase"` |  |
+| `sort_attribution` | value, 1d_click, 7d_click, 1d_view | `"value"` |  |
 | `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
-| `cursor` | string or null | `null` | See input schema. |
+| `cursor` | string or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -349,26 +355,28 @@ Query one insights page, then follow next_cursor when needed.  Call ``insights_c
 
 ## insights_rank
 
-Rank compact period performance without returning raw insight pages.  Use one entity level per call and choose an explicit conversion action and attribution window for conversion metrics. ``highest`` and ``lowest`` are numeric extremes, not automatic business judgments. ``global`` returns one ranking across the requested accounts; ``per_account`` returns one ranking for each account. Add minimum evidence filters for meaningful results. The result never includes raw structured Meta metric arrays or a pagination cursor.
+Rank performance over a date range. Choose one reporting level, then use `global` for a combined ranking across accounts or `per_account` for separate rankings.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+Conversion metrics require an explicit event and attribution window. Set minimum spend or conversion filters to exclude low-data results. `highest` and `lowest` refer to numeric values; lower CPA can be better. This tool returns compact rankings without pagination.
+
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
-| `date_from` | string | Required | See input schema. |
-| `date_to` | string | Required | See input schema. |
-| `entity_level` | campaign, adset, ad | Required | See input schema. |
-| `rank_by` | spend, impressions, clicks, ctr, cpc, cpm, conversions, conversion_value, cpa, roas | Required | See input schema. |
+| `date_from` | string | Required | First reporting date in `YYYY-MM-DD` format. |
+| `date_to` | string | Required | Last reporting date in `YYYY-MM-DD` format. |
+| `entity_level` | campaign, adset, ad | Required | Reporting level: account, campaign, ad set, or ad. |
+| `rank_by` | spend, impressions, clicks, ctr, cpc, cpm, conversions, conversion_value, cpa, roas | Required | Metric to rank by. |
 | `action_type` | string | `"omni_purchase"` |  minLength: `1`. maxLength: `200`. |
-| `attribution_window` | value, 1d_click, 7d_click, 1d_view | `"value"` | See input schema. |
-| `direction` | highest, lowest, both | `"both"` | See input schema. |
-| `rank_scope` | global, per_account | `"global"` | See input schema. |
-| `statuses` | array of string or null | `null` | See input schema. |
-| `min_spend` | number or null | `null` | See input schema. |
-| `min_impressions` | integer or null | `null` | See input schema. |
-| `min_clicks` | integer or null | `null` | See input schema. |
-| `min_conversions` | number or string or null | `null` | See input schema. |
+| `attribution_window` | value, 1d_click, 7d_click, 1d_view | `"value"` |  |
+| `direction` | highest, lowest, both | `"both"` | Return highest values, lowest values, or both. |
+| `rank_scope` | global, per_account | `"global"` | Combined ranking (`global`) or one ranking per account (`per_account`). |
+| `statuses` | array of string or null | `null` |  |
+| `min_spend` | number or null | `null` | Minimum spend in account-currency major units. |
+| `min_impressions` | integer or null | `null` |  |
+| `min_clicks` | integer or null | `null` |  |
+| `min_conversions` | number or string or null | `null` |  |
 | `limit` | integer | `5` |  minimum: `1`. maximum: `20`. |
 
 <Accordion title="Full input schema">

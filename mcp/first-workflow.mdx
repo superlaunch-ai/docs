@@ -3,51 +3,30 @@ title: "Your first MCP workflow"
 description: "Verify access and ask your agent for a read-only performance check."
 ---
 
-Connect your client first. This exercise reads account data and performance without changing provider objects.
+[Connect your client](/mcp/connect), then ask your assistant to check campaign performance. This exercise reads reports without changing ads.
 
-## 1. Confirm accounts
+## 1. Choose an account
 
-Ask:
+> Use Superlaunch to list the ad accounts I can access. Include their names, currencies, and time zones.
 
-> Use Superlaunch to list the ad accounts I can access. Include each account's ID, currency, and time zone.
+Choose an account from the result. If two accounts have the same name, ask for their IDs to identify the right one.
 
-The agent should call `ad_accounts_list`. Choose the account you intend to inspect. If the name is ambiguous, choose by its returned ID.
+## 2. Ask for a report
 
-## 2. Confirm reporting capabilities
+> For this account, show daily campaign spend, impressions, and clicks for the last seven complete days. Check which metrics Superlaunch supports first. State the dates, currency, and time zone, and tell me if any results are missing.
 
-Ask:
+The assistant uses `insights_capabilities` to check supported reports, then `insights_query` to read the data. If the result spans several pages, it needs to read each page before presenting a complete report.
 
-> Check the supported insight metrics and reporting levels before you build the report.
+## 3. Check the answer
 
-The agent should call `insights_capabilities`. This avoids requesting an unsupported metric, breakdown, or grain.
+Confirm that the report uses the account and dates you selected. Ask the assistant to explain any missing data or warnings before drawing conclusions.
 
-## 3. Request a bounded report
+You can follow up with:
 
-> For the selected account, show daily spend, impressions, and clicks for October 1–7, 2026. Use campaign level. State the account currency and time zone, and tell me if the result is incomplete.
+> Which campaigns had the highest spend? Show their clicks and impressions alongside spend.
 
-An illustrative `insights_query` argument object is:
+For conversion analysis, specify the event and attribution window. See [Analyze performance](/guides/insights).
 
-```json
-{
-  "ad_account_ids": ["00000000-0000-4000-8000-000000000001"],
-  "date_from": "2026-10-01",
-  "date_to": "2026-10-07",
-  "metrics": ["spend", "impressions", "clicks"],
-  "entity_level": "campaign",
-  "report_spec": "base_daily",
-  "grain": "daily",
-  "limit": 25
-}
-```
+## Next steps
 
-Replace the example UUID with an ID returned by `ad_accounts_list`. This is the tool's argument object, not an HTTP request body.
-
-## 4. Check the result
-
-The agent should inspect `complete`, `next_cursor`, and the returned periods. When a cursor exists, it should request the next page with the same filters before claiming a complete report.
-
-Ask it to identify what the data supports and which questions need more evidence. A read-only report does not change ad delivery.
-
-## Continue
-
-Use [MCP workflows](/mcp/workflows) for launches, rules, direct actions, and memory. Keep the [tool reference](/mcp/tools) available when building repeatable prompts.
+Try a [rule, launch, or memory workflow](/mcp/workflows). Developers can use the [JSON argument examples](/mcp/examples) and [tool reference](/mcp/tools).

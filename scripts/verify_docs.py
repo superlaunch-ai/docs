@@ -21,7 +21,7 @@ documented = set()
 for page in pages:
     path = root / (page + ".mdx")
     text = path.read_text()
-    assert text.startswith("---\n") and "description:" in text.split("---", 2)[1], path
+    assert text.startswith("---\n") and all(key in text.split("---", 2)[1] for key in ("title:", "description:")), path
     visible = re.sub(r"```.*?```", "", text, flags=re.S)
     assert not re.search(r"\b(?:delve|leverage|game-changing|seamless|unlock|in conclusion)\b", visible, re.I), f"Filler in {page}"
     assert "\u2014" not in visible, f"Em dash in {page}"
@@ -43,6 +43,16 @@ for page in pages:
             expected = next(t["inputSchema"] for t in catalog if t["name"] == name)
             assert schema == expected, f"Schema mismatch: {name}"
 assert documented == names, f"Tool coverage differs: {names ^ documented}"
+
+# Check the examples readers copy, not only the maintenance artifact.
+examples = json.loads((root / "maintenance/examples.json").read_text())
+blocks = re.findall(r"\*\*Tool:\*\* `([^`]+)`.*?```json\n(.*?)\n```", (root / "mcp/examples.mdx").read_text(), re.S)
+assert len(blocks) == len(examples)
+for (name, arguments), example in zip(blocks, examples):
+    assert name == example["tool"] and json.loads(arguments) == example["args"], f"Example drift: {name}"
+failed_activity = next(e for e in examples if e["title"] == "Find failed tool activity")
+assert failed_activity["args"]["payload"]["status"] == "failed"
+
 assert config["name"] == "Superlaunch"
 assert config["colors"]["primary"] == "#E8A33D"
 assert config["background"]["color"]["dark"] == "#0B0E11"
