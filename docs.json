@@ -50,6 +50,19 @@
         ]
       },
       {
+        "group": "MCP",
+        "pages": [
+          "mcp/overview",
+          "mcp/connect",
+          "mcp/authentication",
+          "mcp/first-workflow",
+          "mcp/workflows",
+          "mcp/troubleshooting",
+          "mcp/tools",
+          "mcp/examples"
+        ]
+      },
+      {
         "group": "MCP reference",
         "pages": [
           "mcp/reference/accounts-brands",
@@ -62,19 +75,6 @@
           "mcp/reference/launcher-launches",
           "mcp/reference/launcher-schedules",
           "mcp/reference/launcher-drive"
-        ]
-      },
-      {
-        "group": "MCP",
-        "pages": [
-          "mcp/overview",
-          "mcp/connect",
-          "mcp/authentication",
-          "mcp/first-workflow",
-          "mcp/workflows",
-          "mcp/troubleshooting",
-          "mcp/tools",
-          "mcp/examples"
         ]
       },
       {
