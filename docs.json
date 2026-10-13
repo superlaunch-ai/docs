@@ -58,7 +58,8 @@
           "mcp/first-workflow",
           "mcp/workflows",
           "mcp/troubleshooting",
-          "mcp/tools"
+          "mcp/tools",
+          "mcp/examples"
         ]
       },
       {
