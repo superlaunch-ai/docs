@@ -83,12 +83,13 @@
   {
     "tool": "activity_list",
     "title": "Find failed tool activity",
-    "note": "Follow next_cursor with the same filters to read the complete set.",
+    "note": "Filter by exact tool name and failed status. Follow next_cursor with the same filters.",
     "args": {
       "payload": {
-        "query": "campaigns_create",
         "limit": 25,
-        "cursor": 0
+        "cursor": 0,
+        "tool_name": "campaigns_create",
+        "status": "failed"
       }
     }
   },

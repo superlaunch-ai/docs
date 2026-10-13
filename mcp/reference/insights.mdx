@@ -1,4 +1,5 @@
 ---
+title: "Insights tools"
 description: "Query reports and rank advertising performance."
 ---
 
@@ -47,7 +48,7 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
 | `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
 | `date_from` | string | Required | First reporting date in `YYYY-MM-DD` format. |
 | `date_to` | string | Required | Last reporting date in `YYYY-MM-DD` format. |
-| `metrics` | array of strings | Required | minItems: `1`. maxItems: `20`. Allowed values are in the full input schema. |
+| `metrics` | array of strings | Required |minItems: `1`. maxItems: `20`. Allowed values are in the full input schema. |
 | `entity_level` | account, campaign, adset, ad | `"ad"` | Reporting level: account, campaign, ad set, or ad. |
 | `entity_ids` | array of string or null | `null` |  |
 | `report_spec` | base_daily, demographic_daily, country_daily | `"base_daily"` | Report format from `insights_capabilities`. |

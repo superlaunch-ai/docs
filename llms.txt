@@ -5,8 +5,8 @@
 ## Start here
 
 - [Superlaunch documentation](https://docs.superlaunch.pro/index.md): Connect your accounts, work with AI agents, and manage campaigns in Superlaunch.
-- [Set up Superlaunch](https://docs.superlaunch.pro/quickstart.md): Connect your first ad account and confirm that your agent can read it.
-- [How Superlaunch works](https://docs.superlaunch.pro/concepts/how-it-works.md): Understand workspaces, provider accounts, AI agents, and campaign operations.
+- [Set up Superlaunch](https://docs.superlaunch.pro/quickstart.md): Connect your first Meta ad account and check a report.
+- [How Superlaunch works](https://docs.superlaunch.pro/concepts/how-it-works.md): Analyze ad performance, reuse creative work, and automate campaign tasks with your team or an AI agent.
 - [IDs, versions, and retries](https://docs.superlaunch.pro/concepts/ids-and-versions.md): Use the right identifiers and avoid duplicate operations.
 
 ## Workspace
@@ -20,7 +20,7 @@
 - [Create and run rules](https://docs.superlaunch.pro/guides/rules.md): Define targets, conditions, actions, schedules, and dry-run checks.
 - [Review activity and results](https://docs.superlaunch.pro/guides/activity.md): Trace tool calls, provider actions, and rule runs to their outcomes.
 - [Brand profiles and kits](https://docs.superlaunch.pro/guides/brands.md): Give your team and agent the brand guidance they need.
-- [Save and manage memory](https://docs.superlaunch.pro/guides/memory.md): Retain approved facts with private, team, brand, or ad-account scope.
+- [Save and manage memory](https://docs.superlaunch.pro/guides/memory.md): Save facts for later conversations and choose who can use them.
 
 ## Launcher
 
@@ -47,14 +47,14 @@
 ## MCP reference
 
 - [Accounts, assets, and brands](https://docs.superlaunch.pro/mcp/reference/accounts-brands.md): Resolve Superlaunch account and brand IDs before reading or changing objects.
-- [Insights tools](https://docs.superlaunch.pro/mcp/reference/insights.md): Call `insights_capabilities` before querying.
-- [Rule tools](https://docs.superlaunch.pro/mcp/reference/rules.md): Read `rules_schema` for the current rule vocabulary.
-- [Direct Meta actions](https://docs.superlaunch.pro/mcp/reference/actions.md): Call `actions_capabilities` to check whether provider effects are enabled.
+- [Insights tools](https://docs.superlaunch.pro/mcp/reference/insights.md): Query reports and rank advertising performance.
+- [Rule tools](https://docs.superlaunch.pro/mcp/reference/rules.md): Create rules, edit their conditions, and inspect runs.
+- [Direct Meta actions](https://docs.superlaunch.pro/mcp/reference/actions.md): Upload media, create Meta objects, duplicate setups, and change delivery status.
 - [Activity tools](https://docs.superlaunch.pro/mcp/reference/activity.md): Use the unified log for tool calls, actions, and rule operations.
 - [Memory tools](https://docs.superlaunch.pro/mcp/reference/memory.md): Save facts only after an explicit request or focused approval.
-- [Launcher library tools](https://docs.superlaunch.pro/mcp/reference/launcher-library.md): Library objects belong to the authorized workspace.
+- [Launcher library tools](https://docs.superlaunch.pro/mcp/reference/launcher-library.md): Manage media, creative versions, approvals, collections, and templates.
 - [Launcher launch tools](https://docs.superlaunch.pro/mcp/reference/launcher-launches.md): Discover exact provider assets and targets before preparing a launch.
-- [Launcher schedules and limits](https://docs.superlaunch.pro/mcp/reference/launcher-schedules.md): Schedules keep pinned recurring inputs.
+- [Launcher schedules and limits](https://docs.superlaunch.pro/mcp/reference/launcher-schedules.md): Create recurring launches and set account campaign and budget limits.
 - [Launcher Drive tools](https://docs.superlaunch.pro/mcp/reference/launcher-drive.md): Authorize Google Drive and select files or folders in Superlaunch first.
 
 ## Support

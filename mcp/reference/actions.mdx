@@ -1,3 +1,8 @@
+---
+title: "Direct Meta actions"
+description: "Upload media, create Meta objects, duplicate setups, and change delivery status."
+---
+
 Call `actions_capabilities` to check whether live Meta changes are enabled. Creation, duplication, and status requests default to `dry_run: true`. Campaigns, ad sets, and ads created through these tools start paused. Direct budget amounts use integer account-currency minor units.
 
 The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
@@ -166,7 +171,7 @@ Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`. 
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `files` | array of object | Required | minItems: `1`. maxItems: `10`. |
+| `files` | array of object | Required |  minItems: `1`. maxItems: `10`. |
 | `media_id` | uuid or null | `null` | Upload identifier used by direct Meta creative creation. |
 | `request_id` | uuid or null | `null` | UUID for this operation; use a new UUID for changed inputs. |
 | `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
