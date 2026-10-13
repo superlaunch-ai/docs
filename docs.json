@@ -42,16 +42,32 @@
           "launcher/overview",
           "launcher/media",
           "launcher/creatives",
-          "launcher/collections"
+          "launcher/collections",
+          "launcher/templates",
+          "launcher/launch",
+          "launcher/schedules",
+          "launcher/recovery"
         ]
       },
       {
         "group": "MCP",
-        "pages": []
+        "pages": [
+          "mcp/overview",
+          "mcp/connect",
+          "mcp/authentication",
+          "mcp/first-workflow",
+          "mcp/workflows",
+          "mcp/troubleshooting"
+        ]
       },
       {
         "group": "Support",
-        "pages": []
+        "pages": [
+          "support/billing",
+          "support/troubleshooting",
+          "reference/glossary",
+          "reference/ai-access"
+        ]
       },
       {
         "group": "MCP reference",

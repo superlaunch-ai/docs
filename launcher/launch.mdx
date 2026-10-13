@@ -1,0 +1,36 @@
+---
+title: "Prepare and submit a launch"
+description: "Select an operation, approved content, target, timing, and delivery status."
+---
+
+Before you submit, confirm the workspace, ad account, approved creative versions, and campaign settings. Launch execution can create provider objects and incur workspace usage.
+
+## Choose an operation
+
+The setup supports operations such as testing new content, retesting, and promoting an existing result. Use the options available for your account. Operations that target an existing ad set need an exact target from a fresh provider read.
+
+Through MCP, call `launcher_discover`, resolve accounts, and use `launcher_targets_list` followed by `launcher_targets_get` when an existing target is required.
+
+## Prepare the inputs
+
+1. Open **Launcher** and choose the ad account.
+2. Open launch setup and enter a name.
+3. Select the operation and template version.
+4. Choose creatives or resolve a collection.
+5. Review grouping, budget, and targeting.
+6. Choose immediate, future, or recurring timing where supported.
+7. Choose **Create paused** or **Activate after creation**.
+
+Activation can start delivery and spend. Confirm that choice before submission.
+
+## Preview
+
+Select **Preview (optional)** to check the estimated number of writes, usage units, names, and budget exposure. Preview does not reserve capacity or guarantee provider acceptance.
+
+Correct missing inputs and review the selection. Submission checks permissions, approval, provider state, billing, and limits again.
+
+## Submit and track
+
+Submit the launch once. Your agent should use one stable `request_key` for the intended operation and retain the returned launch ID.
+
+Read `launcher_launches_get` and `launcher_run_operations` until you understand the final outcome. A batch can contain both successful and failed operations. See [Recover a launch](/launcher/recovery).

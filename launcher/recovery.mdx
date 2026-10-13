@@ -1,0 +1,30 @@
+---
+title: "Inspect and recover launches"
+description: "Understand partial results and choose retries or replacement work."
+---
+
+A submitted launch can succeed, fail, or finish with only some operations complete. Inspect operation results before deciding how to recover it.
+
+## Inspect the result
+
+Open the launch in **Launcher**. Review operation status, provider object IDs, error codes, and suggested recovery steps.
+
+Through MCP, read `launcher_launches_get`, then `launcher_run_operations`. Use the result's available operations and recovery guidance instead of guessing from a status label.
+
+## Retry unchanged work
+
+Use `launcher_launches_retry` only for operations that the current result identifies as eligible. Retain the original inputs for that work and use the request fields required by the retry tool.
+
+Successful provider writes already exist. Avoid resubmitting the entire batch to address one failed item.
+
+## Replace corrected content
+
+When you need to correct a failed item's content, obtain replacement candidates with `launcher_launches_replacement_candidates`. Prepare a new request with the required replacement metadata, approved pinned creative versions, exact existing target, and a new request key.
+
+Preview the corrected selection and inspect the fresh target before submission. Changed content is a new operation.
+
+## Cancel or hold a launch
+
+Use `launcher_launches_cancel` to request cancellation. Use `launcher_launches_change_status` to hold or resume an unstarted launch; it does not set the delivery status of existing provider ads. A missed launch time requires Run now or a new time.
+
+A cancellation request does not erase provider objects or guarantee that a write already underway stops. Read the resulting state and account activity.

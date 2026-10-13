@@ -1,0 +1,24 @@
+---
+title: "Documentation for AI assistants"
+description: "Read the public documentation index, full text, and page Markdown."
+---
+
+Use these public files to give an AI assistant the Superlaunch documentation.
+
+| Resource | URL | Contents |
+| --- | --- | --- |
+| Documentation index | [/llms.txt](/llms.txt) | Page titles, descriptions, and links |
+| Full documentation | [/llms-full.txt](/llms-full.txt) | Combined documentation content |
+| Page Markdown | Add `.md` to a page URL, for example [/mcp/overview.md](/mcp/overview.md) | Text for one page |
+
+Mintlify generates the index and full-text exports from the published documentation. Use the index to choose pages for a question; use the full-text file when you need the complete site.
+
+## Example prompt
+
+> Read https://docs.superlaunch.pro/llms.txt and the linked MCP setup guide. Explain how to connect Superlaunch in my client, then wait for me to finish authorization before reading my accounts.
+
+## Public docs and private workspace data
+
+These files describe the product and tool contracts. They contain no authorization to your workspace.
+
+For live advertising data or operations, connect the [Superlaunch product MCP server](/mcp/connect) and complete OAuth authorization. Keep account, campaign, and memory results within the access approved for the conversation.

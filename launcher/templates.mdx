@@ -1,0 +1,33 @@
+---
+title: "Create launch templates"
+description: "Save versioned campaign settings, budgets, destinations, and naming."
+---
+
+A template holds settings you can reuse across launches. Saving an edit creates a new template version; earlier launches keep the settings they used.
+
+## Create a template
+
+Open **Launcher → Templates** and select **Create template**. Set:
+
+- Campaign objective and budget ownership.
+- Daily or lifetime budget, currency, and amount.
+- Destination, optimization goal, billing event, and promotion details.
+- Targeting and delivery settings.
+- Allowed creative formats and language mode.
+- Grouping and object naming.
+
+Use the available selectors for provider objects such as Pages and promotion assets. Resolve exact IDs instead of entering an object name as an ID.
+
+## Budget and delivery
+
+Confirm that the budget currency matches the account. The web interface accepts displayed currency amounts; MCP fields ending in `_minor` use integer minor units. For USD, `1000` means $10.00.
+
+Review bid strategy, bid amount, or ROAS constraints where the chosen objective requires them. A ROAS value is a ratio, not a currency amount.
+
+Set the delivery time zone before entering start and end times. A launch schedule controls when Superlaunch starts work; template delivery settings control the provider's delivery times.
+
+## Reuse or revise
+
+Save the template and choose the version during [launch setup](/launcher/launch). Through MCP, use `launcher_templates_get` to inspect its versions and `launcher_template_versions_create` to save new settings.
+
+Archive a template to remove it from active use. Keep earlier version IDs when reviewing an existing launch or schedule.

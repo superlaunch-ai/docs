@@ -1,0 +1,40 @@
+---
+title: "MCP troubleshooting"
+description: "Resolve connection, permission, input, and result-completeness problems."
+---
+
+Use the symptom below to choose the next check.
+
+| Symptom | Check |
+| --- | --- |
+| Server asks you to sign in | Complete OAuth in the browser; the URL alone is not authorization |
+| No tools in the conversation | Enable the connector or plugin in that conversation, then refresh tool discovery |
+| Read tools appear but writes do not | Check approved `mcp:write` scope and your client's action restrictions |
+| Account not found | Confirm workspace, account ID, provider connection, and member permissions |
+| Permission denied | Review functional and object-level access with the workspace owner |
+| Version conflict | Read the current object and review changes before retrying |
+| Changed inputs rejected for a request key | Use a new key for a changed intended operation |
+| Only part of a report returned | Follow `next_cursor` with unchanged filters |
+| Launch accepted but no objects yet | Read launch and operation status; execution is asynchronous |
+
+## Authorization loop
+
+Check the server URL, automatic OAuth client registration, browser sign-in, and workspace selection. Disconnect the stale connection in **Connections → AI agents**, then authorize again.
+
+If your client asks for a client ID or secret, check that you selected automatic registration. Use the [connection guide](/mcp/connect) for the client-specific setting.
+
+## Tool input error
+
+Use the tool's current input schema. A tool with a `payload` parameter needs its fields inside `payload`; other tools take top-level arguments. UUIDs and provider IDs are not interchangeable.
+
+For insight queries, check the metric, report specification, grain, conversion event, and attribution window with `insights_capabilities`.
+
+For Launcher, use discovery and fresh reads for exact media, creative version, template version, and target IDs. Follow the returned recovery hints.
+
+## Timeout after a write
+
+Look up the action, activity, rule run, or launch before submitting again. A timeout can happen after acceptance. Retry only when the tool's semantics and recorded state support it.
+
+## Get help
+
+Include the client, approximate time, tool name, activity or run ID, and error code when contacting [support](https://superlaunch.pro/contact). Exclude passwords, tokens, signed upload URLs, and private campaign data.

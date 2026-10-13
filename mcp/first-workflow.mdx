@@ -1,0 +1,53 @@
+---
+title: "Your first MCP workflow"
+description: "Verify access and ask your agent for a read-only performance check."
+---
+
+Connect your client first. This exercise reads account data and performance without changing provider objects.
+
+## 1. Confirm accounts
+
+Ask:
+
+> Use Superlaunch to list the ad accounts I can access. Include each account's ID, currency, and time zone.
+
+The agent should call `ad_accounts_list`. Choose the account you intend to inspect. If the name is ambiguous, choose by its returned ID.
+
+## 2. Confirm reporting capabilities
+
+Ask:
+
+> Check the supported insight metrics and reporting levels before you build the report.
+
+The agent should call `insights_capabilities`. This avoids requesting an unsupported metric, breakdown, or grain.
+
+## 3. Request a bounded report
+
+> For the selected account, show daily spend, impressions, and clicks for October 1–7, 2026. Use campaign level. State the account currency and time zone, and tell me if the result is incomplete.
+
+An illustrative `insights_query` argument object is:
+
+```json
+{
+  "ad_account_ids": ["00000000-0000-4000-8000-000000000001"],
+  "date_from": "2026-10-01",
+  "date_to": "2026-10-07",
+  "metrics": ["spend", "impressions", "clicks"],
+  "entity_level": "campaign",
+  "report_spec": "base_daily",
+  "grain": "daily",
+  "limit": 25
+}
+```
+
+Replace the example UUID with an ID returned by `ad_accounts_list`. This is the tool's argument object, not an HTTP request body.
+
+## 4. Check the result
+
+The agent should inspect `complete`, `next_cursor`, and the returned periods. When a cursor exists, it should request the next page with the same filters before claiming a complete report.
+
+Ask it to identify what the data supports and which questions need more evidence. A read-only report does not change ad delivery.
+
+## Continue
+
+Use [MCP workflows](/mcp/workflows) for launches, rules, direct actions, and memory. Keep the [tool reference](/mcp/tools) available when building repeatable prompts.
