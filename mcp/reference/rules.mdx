@@ -1,19 +1,14 @@
----
-title: "Rule tools"
-description: "Read `rules_schema` for the current rule vocabulary."
----
-
 Read `rules_schema` for the current rule vocabulary. Read the current rule version before an update. `rules_update` replaces the definition. `rules_run` defaults to dry-run mode.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="rules-schema" />
 
 ## rules_schema
 
-Return the rule-builder vocabulary and write requirements.
+List the metrics, conditions, actions, and fields supported by the rule builder.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 **Arguments:** none.
 
@@ -33,13 +28,13 @@ Return the rule-builder vocabulary and write requirements.
 
 ## rules_list
 
-List rules whose complete target set is readable.
+List rules for which you can read all target accounts.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `limit` | integer | `25` | See input schema. |
+| `limit` | integer | `25` |  |
 
 <Accordion title="Full input schema">
 
@@ -62,13 +57,13 @@ List rules whose complete target set is readable.
 
 ## rules_get
 
-Read the complete current rule definition for a lossless replacement.
+Read a rule and its current version before editing it.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
 
 <Accordion title="Full input schema">
 
@@ -94,32 +89,32 @@ Read the complete current rule definition for a lossless replacement.
 
 ## rules_create
 
-Create one rule after target and functional authorization.
+Create a rule for accounts where you have the required permissions.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | Complete canonical rule create request. |
+| `payload` | object | Required | Complete rule definition. |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `name` | string | Required |  minLength: `1`. maxLength: `300`. |
 | `provider` | string | `"meta"` |  minLength: `1`. maxLength: `64`. |
-| `status` | draft, active, paused | `"draft"` | See input schema. |
+| `status` | draft, active, paused | `"draft"` |  |
 | `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
 | `level` | campaign, adset, ad | `"ad"` | Advertising hierarchy levels that rules may target. |
 | `target_filter` | object | Required | Nested target predicates. |
 | `tasks` | array of object | Required |  minItems: `1`. maxItems: `20`. |
 | `schedule` | object | Required | Validated cron schedule and IANA timezone. |
-| `execution_limit` | object or null | `null` | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
-| `metadata` | object | Optional | See input schema. |
+| `execution_limit` | object or null | `null` |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
+| `metadata` | object | Optional |  |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -739,32 +734,32 @@ Create one rule after target and functional authorization.
 
 Replace one rule; first read it and preserve every unchanged field.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
-| `payload` | object | Required | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| `payload` | object | Required |  |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `name` | string | Required |  minLength: `1`. maxLength: `300`. |
 | `provider` | string | `"meta"` |  minLength: `1`. maxLength: `64`. |
-| `status` | draft, active, paused | `"draft"` | See input schema. |
+| `status` | draft, active, paused | `"draft"` |  |
 | `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
 | `level` | campaign, adset, ad | `"ad"` | Advertising hierarchy levels that rules may target. |
 | `target_filter` | object | Required | Nested target predicates. |
 | `tasks` | array of object | Required |  minItems: `1`. maxItems: `20`. |
 | `schedule` | object | Required | Validated cron schedule and IANA timezone. |
-| `execution_limit` | object or null | `null` | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
-| `metadata` | object | Optional | See input schema. |
+| `execution_limit` | object or null | `null` |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
+| `metadata` | object | Optional |  |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1391,18 +1386,18 @@ Replace one rule; first read it and preserve every unchanged field.
 
 ## rules_change_status
 
-Change rule status after current target authorization.
+Set a rule to draft, active, or paused using its current version.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
-| `expected_version` | integer | Required | See input schema. |
-| `status` | string | Required | See input schema. |
-| `request_id` | uuid | Required | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| `expected_version` | integer | Required | Current version from the latest read; prevents overwriting another edit. |
+| `status` | string | Required |  |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1443,15 +1438,15 @@ Change rule status after current target authorization.
 
 Archive one authorized rule.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
-| `expected_version` | integer | Required | See input schema. |
-| `request_id` | uuid | Required | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| `expected_version` | integer | Required | Current version from the latest read; prevents overwriting another edit. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1486,14 +1481,14 @@ Archive one authorized rule.
 
 ## rules_changes
 
-List immutable changes for an authorized rule.
+Read the saved change history for a rule.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
-| `limit` | integer | `25` | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| `limit` | integer | `25` |  |
 
 <Accordion title="Full input schema">
 
@@ -1523,18 +1518,18 @@ List immutable changes for an authorized rule.
 
 ## rules_run
 
-Accept one idempotent durable rule run.
+Submit a rule run and return its ID for tracking. The run continues after the tool call returns.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
-| `version` | integer | Required | See input schema. |
-| `request_id` | uuid | Required | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| `version` | integer | Required |  |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -1575,11 +1570,11 @@ Accept one idempotent durable rule run.
 
 List authorized rule runs.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `limit` | integer | `25` | See input schema. |
+| `limit` | integer | `25` |  |
 
 <Accordion title="Full input schema">
 
@@ -1604,11 +1599,11 @@ List authorized rule runs.
 
 Read one authorized rule run.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `run_id` | uuid | Required | See input schema. |
+| `run_id` | uuid | Required |  |
 
 <Accordion title="Full input schema">
 
@@ -1636,11 +1631,11 @@ Read one authorized rule run.
 
 List authorized rule activity records.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `limit` | integer | `25` | See input schema. |
+| `limit` | integer | `25` |  |
 
 <Accordion title="Full input schema">
 
@@ -1665,11 +1660,11 @@ List authorized rule activity records.
 
 Read one authorized rule activity record.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `activity_id` | uuid | Required | See input schema. |
+| `activity_id` | uuid | Required | Activity UUID from the tool result or `activity_list`. |
 
 <Accordion title="Full input schema">
 
@@ -1695,13 +1690,13 @@ Read one authorized rule activity record.
 
 ## rule_activity_summary
 
-Return a activity summary for one authorized rule.
+Summarize activity for one rule.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `rule_id` | uuid | Required | See input schema. |
+| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
 
 <Accordion title="Full input schema">
 

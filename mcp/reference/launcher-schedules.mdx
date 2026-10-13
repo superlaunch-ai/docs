@@ -1,40 +1,33 @@
----
-title: "Launcher schedules and limits"
-description: "Schedules keep pinned recurring inputs."
----
+Schedules use saved template and selection settings. Read the current version before editing. Existing runs keep their original settings. Account limits cap Launcher campaign counts and configured budgets; they do not cap all spending in Meta.
 
-Schedules keep pinned recurring inputs. Read the current lock version before editing. Existing occurrences keep their recorded inputs. Account limits cap campaign counts and budget exposure; omission of an expected version applies only to initial limit configuration.
-
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
-
-Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="launcher-schedules-create" />
 
 ## launcher_schedules_create
 
-Save pinned recurring inputs with SKIP overlap and current automation authority.
+Create a recurring launch with saved template and selection settings. Overlapping runs are skipped.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `data` | object | Required | Workspace content and an explicit account define future runs. |
+| `data` | object | Required | Schedule name, launch inputs, timing, and limits. |
 
 ### data fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `request` | object | Required | Brandless public schema with legacy receipt parsing for exact retries. |
+| `request` | object | Required | Launch inputs, including the account, content selection, template, and timing. |
 | `cron_expression` | string | Required |  minLength: `9`. maxLength: `100`. |
-| `timezone` | string | Required | See input schema. |
+| `timezone` | string | Required |  |
 | `batch_limit` | integer | Required |  minimum: `1`. maximum: `1000`. |
 | `batch_budget_limit_minor` | integer | Required |  exclusiveMinimum: `0`. |
-| `enabled` | boolean | `true` | See input schema. |
+| `enabled` | boolean | `true` |  |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -767,18 +760,18 @@ Save pinned recurring inputs with SKIP overlap and current automation authority.
 
 ## launcher_schedules_change_status
 
-Pause or resume future admissions; preserve already created occurrence snapshots.
+Pause or resume future scheduled runs. Runs already created keep their saved settings.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `schedule_id` | uuid | Required | See input schema. |
-| `enabled` | boolean | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `schedule_id` | uuid | Required | Schedule UUID from `launcher_schedules_list`. |
+| `enabled` | boolean | Required |  |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 
@@ -818,15 +811,15 @@ Pause or resume future admissions; preserve already created occurrence snapshots
 
 ## launcher_schedules_list
 
-List pinned recurring schedules in the currently authorized account.
+List recurring launches for an account.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -876,12 +869,12 @@ List pinned recurring schedules in the currently authorized account.
 
 Read a schedule definition and exact version references.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `schedule_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `schedule_id` | uuid | Required | Schedule UUID from `launcher_schedules_list`. |
 
 <Accordion title="Full input schema">
 
@@ -912,30 +905,30 @@ Read a schedule definition and exact version references.
 
 ## launcher_schedules_update
 
-Save future settings; claimed occurrences keep their snapshot.
+Update settings for future runs. Runs already claimed for execution keep their original settings.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schedule_id` | uuid | Required | See input schema. |
-| `data` | object | Required | Workspace content and an explicit account define future runs. |
+| `schedule_id` | uuid | Required | Schedule UUID from `launcher_schedules_list`. |
+| `data` | object | Required | Schedule name, launch inputs, timing, and limits. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
 ### data fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `request` | object | Required | Brandless public schema with legacy receipt parsing for exact retries. |
+| `request` | object | Required | Launch inputs, including the account, content selection, template, and timing. |
 | `cron_expression` | string | Required |  minLength: `9`. maxLength: `100`. |
-| `timezone` | string | Required | See input schema. |
+| `timezone` | string | Required |  |
 | `batch_limit` | integer | Required |  minimum: `1`. maximum: `1000`. |
 | `batch_budget_limit_minor` | integer | Required |  exclusiveMinimum: `0`. |
-| `enabled` | boolean | `true` | See input schema. |
+| `enabled` | boolean | `true` |  |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1678,13 +1671,13 @@ Save future settings; claimed occurrences keep their snapshot.
 
 ## launcher_account_limits_get
 
-Read configured account-wide campaign and budget admission ceilings.
+Read the account's Launcher campaign-count and configured-budget limits.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 
 <Accordion title="Full input schema">
 
@@ -1710,27 +1703,27 @@ Read configured account-wide campaign and budget admission ceilings.
 
 ## launcher_account_limits_update
 
-Set account ceilings; omit expected version only on initial configuration.
+Set the account's Launcher limits. Omit the expected version only when configuring limits for the first time.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `data` | object | Required | Explicit currency exposure ceilings separate from subscription usage. |
-| `expected_version` | integer or null | `null` | See input schema. |
+| `expected_version` | integer or null | `null` | Current version from the latest read; prevents overwriting another edit. |
 
 ### data fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `currency` | string | Required |  pattern: `^[A-Z]{3}$`. |
 | `max_open_campaigns` | integer | Required |  minimum: `0`. maximum: `1000000`. |
 | `max_daily_budget_minor` | integer | Required |  minimum: `0`. maximum: `9223372036854775807`. |
 | `max_lifetime_commitment_minor` | integer | Required |  minimum: `0`. maximum: `9223372036854775807`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 

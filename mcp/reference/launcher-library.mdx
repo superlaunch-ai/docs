@@ -1,21 +1,14 @@
----
-title: "Launcher library tools"
-description: "Library objects belong to the authorized workspace."
----
-
 Library objects belong to the authorized workspace. Save content edits as new versions, then approve the exact version. Media IDs, creative family IDs, creative version IDs, and template version IDs refer to different objects.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
-
-Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="launcher-discover" />
 
 ## launcher_discover
 
-Discover the Launcher journey, exact IDs, limits, access and browser upload instructions.
+Check available Launcher tools, permissions, limits, and upload instructions.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 **Arguments:** none.
 
@@ -35,15 +28,15 @@ Discover the Launcher journey, exact IDs, limits, access and browser upload inst
 
 ## launcher_creatives_list
 
-List a active creative-family page in the authorized workspace.
+List or search active creatives in the workspace library.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
-| `query` | string or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
+| `query` | string or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -100,16 +93,16 @@ List a active creative-family page in the authorized workspace.
 
 ## launcher_creatives_usage
 
-Read usage, held claims and source-input lineage for one creative and authorized account. Created claims indicate family use; inspect run operations for confirmed provider object IDs.
+Find where a creative has been selected or used in an account. To confirm which Meta objects were created, inspect the related run operations.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `creative_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -162,13 +155,13 @@ Read usage, held claims and source-input lineage for one creative and authorized
 
 ## launcher_creatives_get
 
-Read a creative and exact version summaries; content never changes in place.
+Read a creative and its saved version summaries.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
 
 <Accordion title="Full input schema">
 
@@ -194,14 +187,14 @@ Read a creative and exact version summaries; content never changes in place.
 
 ## launcher_creative_versions_get
 
-Read one exact version with editable copy and media bindings.  Content is immutable. Save edits as a new draft version.
+Read the copy and media for one saved version. To change content, save a new version.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
-| `version_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
+| `version_id` | uuid | Required | Saved creative version UUID. |
 
 <Accordion title="Full input schema">
 
@@ -232,9 +225,9 @@ Read one exact version with editable copy and media bindings.  Content is immuta
 
 ## launcher_creatives_create
 
-Create a creative family with an draft content version; approve the whole version separately.
+Create a library creative with its first draft version. Approve the version before selecting it for a launch.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -245,26 +238,26 @@ Create a creative family with an draft content version; approve the whole versio
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `concept` | string or null | `null` | See input schema. |
+| `concept` | string or null | `null` | Creative concept used to organize the library. |
 | `tags` | array of string | `[]` |  maxItems: `100`. |
-| `source_group` | string or null | `null` | See input schema. |
+| `source_group` | string or null | `null` |  |
 
 ### content fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
-| `format` | single_image, single_video, carousel, collection, flexible, existing_post, catalog | Required | See input schema. |
-| `language_mode` | single, multilingual | `"single"` | See input schema. |
-| `default_locale` | string | Required | See input schema. |
-| `cta` | string or null | `null` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
+| `format` | single_image, single_video, carousel, collection, flexible, existing_post, catalog | Required | Creative content format; expand the schema for allowed values. |
+| `language_mode` | single, multilingual | `"single"` | How the creative uses language variants. |
+| `default_locale` | string | Required | Default language for the creative content. |
+| `cta` | string or null | `null` | Call-to-action setting for the ad. |
 | `source_spec` | object | Optional | Content origin references; credentials and ad codes are excluded. |
 | `variants` | array of object | Required |  minItems: `1`. maxItems: `50`. |
 | `media` | array of object | `[]` |  maxItems: `100`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -741,13 +734,13 @@ Create a creative family with an draft content version; approve the whole versio
 
 ## launcher_creatives_update
 
-Edit family metadata with the current lock version; content requires a new version.
+Edit a creative's name, concept, or tags using its current lock version. Content changes require a new version.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
 | `family` | object | Required | Editable family metadata separate from immutable content. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
@@ -755,13 +748,13 @@ Edit family metadata with the current lock version; content requires a new versi
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `concept` | string or null | `null` | See input schema. |
+| `concept` | string or null | `null` | Creative concept used to organize the library. |
 | `tags` | array of string | `[]` |  maxItems: `100`. |
-| `source_group` | string or null | `null` | See input schema. |
+| `source_group` | string or null | `null` |  |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -851,16 +844,16 @@ Edit family metadata with the current lock version; content requires a new versi
 
 ## launcher_creatives_archive
 
-Archive a family while preserving immutable content and existing launch history.
+Archive a creative while retaining its content versions and launch history.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 
@@ -891,13 +884,13 @@ Archive a family while preserving immutable content and existing launch history.
 
 ## launcher_creative_versions_create
 
-Save corrected content as a new immutable draft version; preserve prior successful launches.
+Save new content as a draft version. Earlier versions and launches keep their original content.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
 | `content` | object | Required | Content edits always create a draft and never accept approval inputs. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
@@ -905,16 +898,16 @@ Save corrected content as a new immutable draft version; preserve prior successf
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
-| `format` | single_image, single_video, carousel, collection, flexible, existing_post, catalog | Required | See input schema. |
-| `language_mode` | single, multilingual | `"single"` | See input schema. |
-| `default_locale` | string | Required | See input schema. |
-| `cta` | string or null | `null` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
+| `format` | single_image, single_video, carousel, collection, flexible, existing_post, catalog | Required | Creative content format; expand the schema for allowed values. |
+| `language_mode` | single, multilingual | `"single"` | How the creative uses language variants. |
+| `default_locale` | string | Required | Default language for the creative content. |
+| `cta` | string or null | `null` | Call-to-action setting for the ad. |
 | `source_spec` | object | Optional | Content origin references; credentials and ad codes are excluded. |
 | `variants` | array of object | Required |  minItems: `1`. maxItems: `50`. |
 | `media` | array of object | `[]` |  maxItems: `100`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1345,16 +1338,16 @@ Save corrected content as a new immutable draft version; preserve prior successf
 
 ## launcher_creative_versions_approve
 
-Approve the exact complete locale bundle using the current approval grant.
+Approve one complete creative version, including its language variants. Requires approval permission.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
-| `version_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
+| `version_id` | uuid | Required | Saved creative version UUID. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** check the current state before repeating the operation.
 
 <Accordion title="Full input schema">
 
@@ -1385,17 +1378,17 @@ Approve the exact complete locale bundle using the current approval grant.
 
 ## launcher_creative_versions_revoke
 
-Revoke the complete approved bundle with a reason; history remains immutable.
+Revoke approval for a complete creative version and record the reason. Earlier launch history remains available.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `creative_id` | uuid | Required | See input schema. |
-| `version_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | Library creative UUID from `launcher_creatives_list`. |
+| `version_id` | uuid | Required | Saved creative version UUID. |
 | `reason` | string | Required |  minLength: `1`. maxLength: `1000`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** check the current state before repeating the operation.
 
 <Accordion title="Full input schema">
 
@@ -1432,14 +1425,14 @@ Revoke the complete approved bundle with a reason; history remains immutable.
 
 ## launcher_collections_list
 
-List fixed and smart collection definitions in the authorized workspace.
+List fixed and smart collections in the workspace.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -1480,23 +1473,23 @@ List fixed and smart collection definitions in the authorized workspace.
 
 ## launcher_collections_preview
 
-Preview unsaved smart filters across the workspace without creating anything.  Repeat the same filters and exclusions with next_cursor to continue. Results show matching creative families; launch preview checks eligible versions. Reads do not use billable Meta writes.
+Preview which creatives match an unsaved smart filter. Follow `next_cursor` with the same filters and exclusions for more results. Launch preview checks whether the selected versions are approved.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `filter_spec` | object | Required | Versioned server filter definition. |
 | `excluded_ids` | array of uuid | `[]` |  maxItems: `1000`. |
 | `limit` | integer | `24` |  minimum: `1`. maximum: `100`. |
-| `cursor` | string or null | `null` | See input schema. |
-| `include_count` | boolean | `true` | See input schema. |
+| `cursor` | string or null | `null` |  |
+| `include_count` | boolean | `true` |  |
 
 ### filter_spec fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `conditions` | array of object | `[]` |  maxItems: `30`. |
 
 <Accordion title="Full input schema">
@@ -1627,13 +1620,13 @@ Preview unsaved smart filters across the workspace without creating anything.  R
 
 ## launcher_collections_get
 
-Read a collection definition and its revision before pinning a selection.
+Read a collection and its current revision.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `collection_id` | uuid | Required | See input schema. |
+| `collection_id` | uuid | Required | Collection UUID from `launcher_collections_list`. |
 
 <Accordion title="Full input schema">
 
@@ -1659,25 +1652,25 @@ Read a collection definition and its revision before pinning a selection.
 
 ## launcher_collections_create
 
-Create fixed family includes or a smart filter with explicit family exclusions.
+Create a fixed selection of creatives or a smart collection with filters and exclusions.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `data` | object | Required | Fixed includes or smart exclusions with typed definition. |
+| `data` | object | Required | Collection name, kind, selected creatives, or smart filters. |
 
 ### data fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `kind` | fixed, smart | Required | See input schema. |
-| `filter_spec` | object or null | `null` | See input schema. |
+| `kind` | fixed, smart | Required |  |
+| `filter_spec` | object or null | `null` | Smart collection conditions. |
 | `member_ids` | array of uuid | `[]` |  maxItems: `100`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1819,27 +1812,27 @@ Create fixed family includes or a smart filter with explicit family exclusions.
 
 ## launcher_collections_update
 
-replace the saved definition and members using its current lock version.
+Replace a collection definition and its members using the current lock version.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `collection_id` | uuid | Required | See input schema. |
-| `data` | object | Required | Fixed includes or smart exclusions with typed definition. |
+| `collection_id` | uuid | Required | Collection UUID from `launcher_collections_list`. |
+| `data` | object | Required | Collection name, kind, selected creatives, or smart filters. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
 ### data fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `kind` | fixed, smart | Required | See input schema. |
-| `filter_spec` | object or null | `null` | See input schema. |
+| `kind` | fixed, smart | Required |  |
+| `filter_spec` | object or null | `null` | Smart collection conditions. |
 | `member_ids` | array of uuid | `[]` |  maxItems: `100`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -1992,16 +1985,16 @@ replace the saved definition and members using its current lock version.
 
 ## launcher_collections_archive
 
-Archive a collection; existing saved occurrence snapshots remain retained.
+Archive a collection. Existing launches keep their saved selections.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `collection_id` | uuid | Required | See input schema. |
+| `collection_id` | uuid | Required | Collection UUID from `launcher_collections_list`. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 
@@ -2032,13 +2025,13 @@ Archive a collection; existing saved occurrence snapshots remain retained.
 
 ## launcher_collections_resolve
 
-Resolve a consistent collection selection with AND conditions and OR values; reserves nothing.
+Select creatives from a collection for launch preparation. A creative must match all filter conditions and can match any value within each condition. Resolution does not reserve the selection.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `collection_id` | uuid | Required | See input schema. |
+| `collection_id` | uuid | Required | Collection UUID from `launcher_collections_list`. |
 
 <Accordion title="Full input schema">
 
@@ -2066,12 +2059,12 @@ Resolve a consistent collection selection with AND conditions and OR values; res
 
 List active templates within the authorized workspace.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -2112,13 +2105,13 @@ List active templates within the authorized workspace.
 
 ## launcher_templates_get
 
-Read typed saved template versions; saved configuration is not proof of provider eligibility.
+Read a template and its saved settings versions. Launch validation checks whether those settings remain valid in Meta.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `template_id` | uuid | Required | See input schema. |
+| `template_id` | uuid | Required | Template UUID from `launcher_templates_list`. |
 
 <Accordion title="Full input schema">
 
@@ -2144,9 +2137,9 @@ Read typed saved template versions; saved configuration is not proof of provider
 
 ## launcher_templates_create
 
-Save a typed template and its first exact configuration version without a provider effect.
+Save a template and its first settings version. This does not create objects in Meta.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -2156,11 +2149,11 @@ Save a typed template and its first exact configuration version without a provid
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `config` | object | Required | Typed initial template subset; capability evidence is external. |
+| `config` | object | Required | Saved campaign, ad-set, budget, delivery, and naming settings. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -3208,13 +3201,13 @@ Save a typed template and its first exact configuration version without a provid
 
 ## launcher_template_versions_create
 
-Save a new immutable template configuration version; scheduled references keep their exact version.
+Save new template settings as a separate version. Existing schedules keep their selected version.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `template_id` | uuid | Required | See input schema. |
+| `template_id` | uuid | Required | Template UUID from `launcher_templates_list`. |
 | `data` | object | Required | Named reusable exact template version input. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
@@ -3222,11 +3215,11 @@ Save a new immutable template configuration version; scheduled references keep t
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `schema_version` | 1 | `1` | See input schema. |
+| `schema_version` | 1 | `1` | Input format version. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. |
-| `config` | object | Required | Typed initial template subset; capability evidence is external. |
+| `config` | object | Required | Saved campaign, ad-set, budget, delivery, and naming settings. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 
@@ -4285,16 +4278,16 @@ Save a new immutable template configuration version; scheduled references keep t
 
 ## launcher_templates_archive
 
-Archive a template identity while retaining previously pinned configuration versions.
+Archive a template while retaining versions used by earlier launches and schedules.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `template_id` | uuid | Required | See input schema. |
+| `template_id` | uuid | Required | Template UUID from `launcher_templates_list`. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** read the current state after a timeout. If the change has already applied, do not submit it again with an old version.
 
 <Accordion title="Full input schema">
 
@@ -4325,19 +4318,19 @@ Archive a template identity while retaining previously pinned configuration vers
 
 ## launcher_media_list
 
-List imported asset IDs and metadata; storage locations stay private.
+List saved media and its IDs.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
 | `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
-| `search` | string or null | `null` | See input schema. |
-| `media_type` | image, video or null | `null` | See input schema. |
-| `source_kind` | upload, google_drive or null | `null` | See input schema. |
-| `sort` | newest, oldest, name | `"newest"` | See input schema. |
+| `search` | string or null | `null` |  |
+| `media_type` | image, video or null | `null` |  |
+| `source_kind` | upload, google_drive or null | `null` |  |
+| `sort` | newest, oldest, name | `"newest"` |  |
 | `offset` | integer | `0` |  minimum: `0`. maximum: `100000`. |
-| `after_id` | uuid or null | `null` | See input schema. |
+| `after_id` | uuid or null | `null` | Pagination cursor from the preceding result. |
 
 <Accordion title="Full input schema">
 
@@ -4447,13 +4440,13 @@ List imported asset IDs and metadata; storage locations stay private.
 
 ## launcher_media_get
 
-Read imported media metadata without private URLs or object keys.
+Read saved media details. Private storage URLs are excluded.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `media_asset_id` | uuid | Required | See input schema. |
+| `media_asset_id` | uuid | Required | Workspace media UUID from an upload or `launcher_media_list`. |
 
 <Accordion title="Full input schema">
 
@@ -4479,15 +4472,15 @@ Read imported media metadata without private URLs or object keys.
 
 ## launcher_media_delete
 
-Archive unused media and queue storage cleanup. Retained creative or execution references block deletion.
+Archive unused media and queue file deletion. Media referenced by saved creatives or launches cannot be deleted.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `media_asset_id` | uuid | Required | See input schema. |
+| `media_asset_id` | uuid | Required | Workspace media UUID from an upload or `launcher_media_list`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** check the current state before repeating the operation.
 
 <Accordion title="Full input schema">
 
@@ -4513,15 +4506,15 @@ Archive unused media and queue storage cleanup. Retained creative or execution r
 
 ## launcher_media_retry_thumbnail
 
-Queue a thumbnail attempt for media in the currently authorized workspace.
+Request another thumbnail-generation attempt for a saved media item.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `media_asset_id` | uuid | Required | See input schema. |
+| `media_asset_id` | uuid | Required | Workspace media UUID from an upload or `launcher_media_list`. |
 
-**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
 
 <Accordion title="Full input schema">
 

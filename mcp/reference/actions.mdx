@@ -1,19 +1,14 @@
----
-title: "Direct Meta actions"
-description: "Call `actions_capabilities` to check whether provider effects are enabled."
----
+Call `actions_capabilities` to check whether live Meta changes are enabled. Creation, duplication, and status requests default to `dry_run: true`. Campaigns, ad sets, and ads created through these tools start paused. Direct budget amounts use integer account-currency minor units.
 
-Call `actions_capabilities` to check whether provider effects are enabled. Creation, duplication, and status requests default to `dry_run: true`. Campaigns, ad sets, and ads created through these tools start paused. Direct budget amounts use integer account-currency minor units.
-
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="actions-capabilities" />
 
 ## actions_capabilities
 
-List configured direct Meta creation, duplication, and status actions.
+Check which Meta actions and live changes are enabled.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 **Arguments:** none.
 
@@ -33,26 +28,28 @@ List configured direct Meta creation, duplication, and status actions.
 
 ## media_uploads_create
 
-Upload media to the current workspace library without requiring an account.  Open a picker for up to ten files (64 MiB total by default), or supply metadata for one signed PUT grant. A successful PUT confirms library persistence. Use media_asset_id with Launcher library tools; media_id retains compatibility with creatives_create. Uploads do not contact Meta.
+Open a media picker or prepare a signed upload to the workspace library. The picker accepts up to ten files, with a default total limit of 64 MiB. To get a signed upload URL for one file, supply its metadata.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+A successful upload saves the file in the library. Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`. Uploading a file does not create a Meta creative.
+
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | Open the media picker or create one bounded signed upload grant. |
+| `payload` | object | Required | Request ID and optional file metadata for a signed upload. |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid or null | `null` | See input schema. |
-| `filename` | string or null | `null` | See input schema. |
-| `mime_type` | image/jpeg, image/png, image/webp, video/mp4, video/quicktime or null | `null` | See input schema. |
-| `byte_size` | integer or null | `null` | See input schema. |
-| `checksum_sha256` | string or null | `null` | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
+| `filename` | string or null | `null` | Original file name, including its extension. |
+| `mime_type` | image/jpeg, image/png, image/webp, video/mp4, video/quicktime or null | `null` | File content type, such as `image/jpeg`. |
+| `byte_size` | integer or null | `null` | File size in bytes. |
+| `checksum_sha256` | string or null | `null` | SHA-256 checksum of the file bytes. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -161,18 +158,20 @@ Upload media to the current workspace library without requiring an account.  Ope
 
 ## media_uploads_complete
 
-Upload up to ten files into the current workspace media library.  The total interactive limit is 64 MiB by default, shared across all files.  Use returned media_asset_id with Launcher library tools. The legacy media_id remains compatible with creatives_create. Retry the same request_id and files to retain exact per-file receipts, including after a partial batch failure.
+Upload one to ten selected files and return a result for each file. The default combined limit is 64 MiB.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`. After a partial failure, retry with the same `request_id` and files to retain the results for files that already succeeded.
+
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `files` | array of object | Required |  minItems: `1`. maxItems: `10`. |
-| `media_id` | uuid or null | `null` | See input schema. |
-| `request_id` | uuid or null | `null` | See input schema. |
-| `ad_account_id` | uuid or null | `null` | See input schema. |
+| `files` | array of object | Required | minItems: `1`. maxItems: `10`. |
+| `media_id` | uuid or null | `null` | Upload identifier used by direct Meta creative creation. |
+| `request_id` | uuid or null | `null` | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -287,7 +286,7 @@ Upload up to ten files into the current workspace media library.  The total inte
 
 Create a Meta creative from one completed signed media upload.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -297,15 +296,15 @@ Create a Meta creative from one completed signed media upload.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `media_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `media_id` | uuid | Required | Upload identifier used by direct Meta creative creation. |
 | `name` | string | Required |  minLength: `1`. maxLength: `255`. |
-| `object_story_spec` | object | Required | See input schema. |
-| `url_tags` | string or null | `null` | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `object_story_spec` | object | Required |  |
+| `url_tags` | string or null | `null` |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -386,9 +385,9 @@ Create a Meta creative from one completed signed media upload.
 
 ## campaigns_create
 
-Validate by default or explicitly create one paused Meta campaign.
+Validate campaign inputs or create a paused Meta campaign. The default is `dry_run: true`.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -398,24 +397,24 @@ Validate by default or explicitly create one paused Meta campaign.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `name` | string | Required |  minLength: `1`. maxLength: `255`. |
 | `objective` | string | Required |  minLength: `1`. maxLength: `100`. |
-| `status` | "PAUSED" | `"PAUSED"` | See input schema. |
+| `status` | "PAUSED" | `"PAUSED"` |  |
 | `special_ad_categories` | array of string | Optional |  maxItems: `10`. |
-| `special_ad_category_country` | array of string or null | `null` | See input schema. |
+| `special_ad_category_country` | array of string or null | `null` |  |
 | `daily_budget` | integer or null | `null` | Daily budget in the ad account currency's minor units (for USD, 10000 means $100.00). |
-| `is_adset_budget_sharing_enabled` | boolean or null | `null` | See input schema. |
+| `is_adset_budget_sharing_enabled` | boolean or null | `null` |  |
 | `lifetime_budget` | integer or null | `null` | Lifetime budget in the ad account currency's minor units (for USD, 10000 means $100.00). |
-| `bid_strategy` | string or null | `null` | See input schema. |
-| `buying_type` | string or null | `null` | See input schema. |
-| `promoted_object` | object or null | `null` | See input schema. |
-| `start_time` | string or null | `null` | See input schema. |
-| `stop_time` | string or null | `null` | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `bid_strategy` | string or null | `null` |  |
+| `buying_type` | string or null | `null` |  |
+| `promoted_object` | object or null | `null` |  |
+| `start_time` | string or null | `null` |  |
+| `stop_time` | string or null | `null` |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -608,9 +607,9 @@ Validate by default or explicitly create one paused Meta campaign.
 
 ## adsets_create
 
-Validate by default or explicitly create one paused Meta ad set.
+Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: true`.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -620,28 +619,28 @@ Validate by default or explicitly create one paused Meta ad set.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `campaign_id` | string | Required |  minLength: `1`. maxLength: `300`. |
 | `name` | string | Required |  minLength: `1`. maxLength: `255`. |
 | `optimization_goal` | string | Required |  minLength: `1`. maxLength: `100`. |
 | `billing_event` | string | Required |  minLength: `1`. maxLength: `100`. |
-| `targeting` | object | Required | See input schema. |
-| `status` | "PAUSED" | `"PAUSED"` | See input schema. |
+| `targeting` | object | Required |  |
+| `status` | "PAUSED" | `"PAUSED"` |  |
 | `daily_budget` | integer or null | `null` | Daily budget in the ad account currency's minor units (for USD, 2100 means $21.00). |
 | `lifetime_budget` | integer or null | `null` | Lifetime budget in the ad account currency's minor units (for USD, 2100 means $21.00). |
 | `bid_amount` | integer or null | `null` | Bid amount in the ad account currency's minor units. |
-| `bid_strategy` | string or null | `null` | See input schema. |
-| `promoted_object` | object or null | `null` | See input schema. |
-| `destination_type` | string or null | `null` | See input schema. |
-| `attribution_spec` | array of object or null | `null` | See input schema. |
-| `start_time` | string or null | `null` | See input schema. |
-| `end_time` | string or null | `null` | See input schema. |
-| `dsa_beneficiary` | string or null | `null` | See input schema. |
-| `dsa_payor` | string or null | `null` | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `bid_strategy` | string or null | `null` |  |
+| `promoted_object` | object or null | `null` |  |
+| `destination_type` | string or null | `null` |  |
+| `attribution_spec` | array of object or null | `null` |  |
+| `start_time` | string or null | `null` |  |
+| `end_time` | string or null | `null` |  |
+| `dsa_beneficiary` | string or null | `null` |  |
+| `dsa_payor` | string or null | `null` |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -871,9 +870,9 @@ Validate by default or explicitly create one paused Meta ad set.
 
 ## ads_create
 
-Validate by default or explicitly create one paused Meta ad.
+Validate ad inputs or create a paused Meta ad. The default is `dry_run: true`.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -883,17 +882,17 @@ Validate by default or explicitly create one paused Meta ad.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `adset_id` | string | Required |  minLength: `1`. maxLength: `300`. |
 | `name` | string | Required |  minLength: `1`. maxLength: `255`. |
 | `creative_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `status` | "PAUSED" | `"PAUSED"` | See input schema. |
-| `conversion_domain` | string or null | `null` | See input schema. |
-| `tracking_specs` | array of object or null | `null` | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `status` | "PAUSED" | `"PAUSED"` |  |
+| `conversion_domain` | string or null | `null` |  |
+| `tracking_specs` | array of object or null | `null` |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -998,9 +997,9 @@ Validate by default or explicitly create one paused Meta ad.
 
 ## actions_execute
 
-Execute set_status for one campaign, ad set, or ad.
+Change the status of a campaign, ad set, or ad with `set_status`.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -1010,14 +1009,14 @@ Execute set_status for one campaign, ad set, or ad.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `target_type` | campaign, adset, ad | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `target_type` | campaign, adset, ad | Required |  |
 | `target_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `status` | ACTIVE, PAUSED | Required | See input schema. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `status` | ACTIVE, PAUSED | Required |  |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -1092,7 +1091,7 @@ Execute set_status for one campaign, ad set, or ad.
 
 Preview or copy a campaign with its children in the same account, paused.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -1102,12 +1101,12 @@ Preview or copy a campaign with its children in the same account, paused.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -1165,7 +1164,7 @@ Preview or copy a campaign with its children in the same account, paused.
 
 Preview or copy an ad set with its ads in the same campaign, paused.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -1175,12 +1174,12 @@ Preview or copy an ad set with its ads in the same campaign, paused.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -1238,7 +1237,7 @@ Preview or copy an ad set with its ads in the same campaign, paused.
 
 Preview or copy an ad in the same ad set, paused.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -1248,12 +1247,12 @@ Preview or copy an ad in the same ad set, paused.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 | `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `dry_run` | boolean | `true` | See input schema. |
+| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -1309,13 +1308,13 @@ Preview or copy an ad in the same ad set, paused.
 
 ## actions_get
 
-Read one permission-filtered action result by Activity ID.
+Read an action result using its activity ID.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `activity_id` | uuid | Required | See input schema. |
+| `activity_id` | uuid | Required | Activity UUID from the tool result or `activity_list`. |
 
 <Accordion title="Full input schema">
 

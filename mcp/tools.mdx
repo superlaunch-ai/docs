@@ -1,15 +1,10 @@
----
-title: "MCP tool index"
-description: "Find all 97 documented MCP tools by task, with access requirements and parameter references."
----
-
-Find a tool by name or task. This reference covers the 97 tools registered in the source catalog checked on October 13, 2026. Your client may expose a subset based on OAuth scopes, client settings, and feature availability.
+Find a tool by name or task. This reference lists all 97 Superlaunch MCP tools. The tools available in your client depend on approved access, client settings, and enabled features.
 
 ## Calling tools
 
 Use an MCP client with [OAuth authorization](/mcp/authentication). The JSON examples are argument objects for named tools. They are not standalone HTTP bodies. A parameter named `payload`, `request`, `data`, `family`, or `content` must keep that nesting.
 
-Read tools require `mcp:read`. Write tools also require `mcp:write` and the relevant workspace, account, and functional permissions. A read-only annotation describes the tool's intended effects; it does not bypass access checks.
+Read tools require `mcp:read`. Write tools also require `mcp:write` and the relevant workspace, account, and functional permissions.
 
 [Argument examples](/mcp/examples) show valid input shapes for common tasks. See [IDs and retries](/concepts/ids-and-versions) before issuing writes.
 
@@ -20,133 +15,133 @@ Read tools require `mcp:read`. Write tools also require `mcp:write` and the rele
 | [`ad_accounts_list`](/mcp/reference/accounts-brands#ad-accounts-list) | Read | List ad accounts the current user may read. |
 | [`ad_accounts_get`](/mcp/reference/accounts-brands#ad-accounts-get) | Read | Read one authorized ad account. |
 | [`brands_list`](/mcp/reference/accounts-brands#brands-list) | Read | List brands the current user may read. |
-| [`brands_create`](/mcp/reference/accounts-brands#brands-create) | Write | Create a brand in the current workspace and grant its creator write access. |
-| [`brands_update`](/mcp/reference/accounts-brands#brands-update) | Write | Update mutable fields on one writable brand. |
+| [`brands_create`](/mcp/reference/accounts-brands#brands-create) | Write | Create a brand profile and grant its creator write access. |
+| [`brands_update`](/mcp/reference/accounts-brands#brands-update) | Write | Update selected profile or brand-kit fields. |
 | [`brands_get`](/mcp/reference/accounts-brands#brands-get) | Read | Read one authorized brand with its active structured brand kit. |
-| [`assets_list`](/mcp/reference/accounts-brands#assets-list) | Read | List one filtered normalized asset page under an authorized account. |
-| [`assets_get`](/mcp/reference/accounts-brands#assets-get) | Read | Read one normalized asset under an authorized account. |
+| [`assets_list`](/mcp/reference/accounts-brands#assets-list) | Read | List a page of campaigns, ad sets, ads, or creatives for an account. |
+| [`assets_get`](/mcp/reference/accounts-brands#assets-get) | Read | Read one campaign, ad set, ad, or creative from the imported account data. |
 ## Insights tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`insights_capabilities`](/mcp/reference/insights#insights-capabilities) | Read | List insight grains, compatible metrics, dimensions, and paging semantics. |
-| [`insights_query`](/mcp/reference/insights#insights-query) | Read | Query one insights page, then follow next_cursor when needed. |
-| [`insights_rank`](/mcp/reference/insights#insights-rank) | Read | Rank compact period performance without returning raw insight pages. |
+| [`insights_capabilities`](/mcp/reference/insights#insights-capabilities) | Read | List supported metrics, reporting levels, breakdowns, and pagination settings. |
+| [`insights_query`](/mcp/reference/insights#insights-query) | Read | Read one page of reporting data. |
+| [`insights_rank`](/mcp/reference/insights#insights-rank) | Read | Rank performance over a date range. |
 ## Rule tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`rules_schema`](/mcp/reference/rules#rules-schema) | Read | Return the rule-builder vocabulary and write requirements. |
-| [`rules_list`](/mcp/reference/rules#rules-list) | Read | List rules whose complete target set is readable. |
-| [`rules_get`](/mcp/reference/rules#rules-get) | Read | Read the complete current rule definition for a lossless replacement. |
-| [`rules_create`](/mcp/reference/rules#rules-create) | Write | Create one rule after target and functional authorization. |
+| [`rules_schema`](/mcp/reference/rules#rules-schema) | Read | List the metrics, conditions, actions, and fields supported by the rule builder. |
+| [`rules_list`](/mcp/reference/rules#rules-list) | Read | List rules for which you can read all target accounts. |
+| [`rules_get`](/mcp/reference/rules#rules-get) | Read | Read a rule and its current version before editing it. |
+| [`rules_create`](/mcp/reference/rules#rules-create) | Write | Create a rule for accounts where you have the required permissions. |
 | [`rules_update`](/mcp/reference/rules#rules-update) | Write | Replace one rule; first read it and preserve every unchanged field. |
-| [`rules_change_status`](/mcp/reference/rules#rules-change-status) | Write | Change rule status after current target authorization. |
+| [`rules_change_status`](/mcp/reference/rules#rules-change-status) | Write | Set a rule to draft, active, or paused using its current version. |
 | [`rules_delete`](/mcp/reference/rules#rules-delete) | Write | Archive one authorized rule. |
-| [`rules_changes`](/mcp/reference/rules#rules-changes) | Read | List immutable changes for an authorized rule. |
-| [`rules_run`](/mcp/reference/rules#rules-run) | Write | Accept one idempotent durable rule run. |
+| [`rules_changes`](/mcp/reference/rules#rules-changes) | Read | Read the saved change history for a rule. |
+| [`rules_run`](/mcp/reference/rules#rules-run) | Write | Submit a rule run and return its ID for tracking. |
 | [`rule_runs_list`](/mcp/reference/rules#rule-runs-list) | Read | List authorized rule runs. |
 | [`rule_runs_get`](/mcp/reference/rules#rule-runs-get) | Read | Read one authorized rule run. |
 | [`rule_activity_list`](/mcp/reference/rules#rule-activity-list) | Read | List authorized rule activity records. |
 | [`rule_activity_get`](/mcp/reference/rules#rule-activity-get) | Read | Read one authorized rule activity record. |
-| [`rule_activity_summary`](/mcp/reference/rules#rule-activity-summary) | Read | Return a activity summary for one authorized rule. |
+| [`rule_activity_summary`](/mcp/reference/rules#rule-activity-summary) | Read | Summarize activity for one rule. |
 ## Direct Meta actions
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`actions_capabilities`](/mcp/reference/actions#actions-capabilities) | Read | List configured direct Meta creation, duplication, and status actions. |
-| [`media_uploads_create`](/mcp/reference/actions#media-uploads-create) | Write | Upload media to the current workspace library without requiring an account. |
-| [`media_uploads_complete`](/mcp/reference/actions#media-uploads-complete) | Write | Upload up to ten files into the current workspace media library. |
+| [`actions_capabilities`](/mcp/reference/actions#actions-capabilities) | Read | Check which Meta actions and live changes are enabled. |
+| [`media_uploads_create`](/mcp/reference/actions#media-uploads-create) | Write | Open a media picker or prepare a signed upload to the workspace library. |
+| [`media_uploads_complete`](/mcp/reference/actions#media-uploads-complete) | Write | Upload one to ten selected files and return a result for each file. |
 | [`creatives_create`](/mcp/reference/actions#creatives-create) | Write | Create a Meta creative from one completed signed media upload. |
-| [`campaigns_create`](/mcp/reference/actions#campaigns-create) | Write | Validate by default or explicitly create one paused Meta campaign. |
-| [`adsets_create`](/mcp/reference/actions#adsets-create) | Write | Validate by default or explicitly create one paused Meta ad set. |
-| [`ads_create`](/mcp/reference/actions#ads-create) | Write | Validate by default or explicitly create one paused Meta ad. |
-| [`actions_execute`](/mcp/reference/actions#actions-execute) | Write | Execute set_status for one campaign, ad set, or ad. |
+| [`campaigns_create`](/mcp/reference/actions#campaigns-create) | Write | Validate campaign inputs or create a paused Meta campaign. |
+| [`adsets_create`](/mcp/reference/actions#adsets-create) | Write | Validate ad-set inputs or create a paused Meta ad set. |
+| [`ads_create`](/mcp/reference/actions#ads-create) | Write | Validate ad inputs or create a paused Meta ad. |
+| [`actions_execute`](/mcp/reference/actions#actions-execute) | Write | Change the status of a campaign, ad set, or ad with `set_status`. |
 | [`campaigns_duplicate`](/mcp/reference/actions#campaigns-duplicate) | Write | Preview or copy a campaign with its children in the same account, paused. |
 | [`adsets_duplicate`](/mcp/reference/actions#adsets-duplicate) | Write | Preview or copy an ad set with its ads in the same campaign, paused. |
 | [`ads_duplicate`](/mcp/reference/actions#ads-duplicate) | Write | Preview or copy an ad in the same ad set, paused. |
-| [`actions_get`](/mcp/reference/actions#actions-get) | Read | Read one permission-filtered action result by Activity ID. |
+| [`actions_get`](/mcp/reference/actions#actions-get) | Read | Read an action result using its activity ID. |
 ## Activity tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`activity_list`](/mcp/reference/activity#activity-list) | Read | Search the complete authorized tool, action, and rule-run log. |
+| [`activity_list`](/mcp/reference/activity#activity-list) | Read | Search tool calls, actions, and rule runs. |
 | [`activity_get`](/mcp/reference/activity#activity-get) | Read | Read one complete authorized activity record by ID. |
 | [`activity_summary`](/mcp/reference/activity#activity-summary) | Read | Count the complete authorized result set for activity filters. |
 ## Memory tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`memory_remember`](/mcp/reference/memory#memory-remember) | Write | Persist one fact after an explicit user request: remember/save/note that. |
-| [`memory_recall`](/mcp/reference/memory#memory-recall) | Read | Recall semantically relevant user-authored context. |
+| [`memory_remember`](/mcp/reference/memory#memory-remember) | Write | Save a fact after the user asks you to remember it or approves a specific suggestion to save it. |
+| [`memory_recall`](/mcp/reference/memory#memory-recall) | Read | Find saved facts relevant to a query. |
 | [`memory_get`](/mcp/reference/memory#memory-get) | Read | Read one exact authorized memory by ID. |
 | [`memory_list`](/mcp/reference/memory#memory-list) | Read | List one memory page with an optional scope filter. |
-| [`memory_update`](/mcp/reference/memory#memory-update) | Write | Idempotently replace one memory using its current version. |
-| [`memory_set_enabled`](/mcp/reference/memory#memory-set-enabled) | Write | Idempotently enable or disable one memory for future retrieval. |
-| [`memory_forget`](/mcp/reference/memory#memory-forget) | Write | Idempotently and permanently forget one memory after user approval. |
+| [`memory_update`](/mcp/reference/memory#memory-update) | Write | Replace a saved fact using its current version. |
+| [`memory_set_enabled`](/mcp/reference/memory#memory-set-enabled) | Write | Enable or disable a saved fact for future retrieval. |
+| [`memory_forget`](/mcp/reference/memory#memory-forget) | Write | Permanently delete a saved fact after user approval. |
 ## Launcher library tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`launcher_discover`](/mcp/reference/launcher-library#launcher-discover) | Read | Discover the Launcher journey, exact IDs, limits, access and browser upload instructions. |
-| [`launcher_creatives_list`](/mcp/reference/launcher-library#launcher-creatives-list) | Read | List a active creative-family page in the authorized workspace. |
-| [`launcher_creatives_usage`](/mcp/reference/launcher-library#launcher-creatives-usage) | Read | Read usage, held claims and source-input lineage for one creative and authorized account. |
-| [`launcher_creatives_get`](/mcp/reference/launcher-library#launcher-creatives-get) | Read | Read a creative and exact version summaries; content never changes in place. |
-| [`launcher_creative_versions_get`](/mcp/reference/launcher-library#launcher-creative-versions-get) | Read | Read one exact version with editable copy and media bindings. |
-| [`launcher_creatives_create`](/mcp/reference/launcher-library#launcher-creatives-create) | Write | Create a creative family with an draft content version; approve the whole version separately. |
-| [`launcher_creatives_update`](/mcp/reference/launcher-library#launcher-creatives-update) | Write | Edit family metadata with the current lock version; content requires a new version. |
-| [`launcher_creatives_archive`](/mcp/reference/launcher-library#launcher-creatives-archive) | Write | Archive a family while preserving immutable content and existing launch history. |
-| [`launcher_creative_versions_create`](/mcp/reference/launcher-library#launcher-creative-versions-create) | Write | Save corrected content as a new immutable draft version; preserve prior successful launches. |
-| [`launcher_creative_versions_approve`](/mcp/reference/launcher-library#launcher-creative-versions-approve) | Write | Approve the exact complete locale bundle using the current approval grant. |
-| [`launcher_creative_versions_revoke`](/mcp/reference/launcher-library#launcher-creative-versions-revoke) | Write | Revoke the complete approved bundle with a reason; history remains immutable. |
-| [`launcher_collections_list`](/mcp/reference/launcher-library#launcher-collections-list) | Read | List fixed and smart collection definitions in the authorized workspace. |
-| [`launcher_collections_preview`](/mcp/reference/launcher-library#launcher-collections-preview) | Read | Preview unsaved smart filters across the workspace without creating anything. |
-| [`launcher_collections_get`](/mcp/reference/launcher-library#launcher-collections-get) | Read | Read a collection definition and its revision before pinning a selection. |
-| [`launcher_collections_create`](/mcp/reference/launcher-library#launcher-collections-create) | Write | Create fixed family includes or a smart filter with explicit family exclusions. |
-| [`launcher_collections_update`](/mcp/reference/launcher-library#launcher-collections-update) | Write | replace the saved definition and members using its current lock version. |
-| [`launcher_collections_archive`](/mcp/reference/launcher-library#launcher-collections-archive) | Write | Archive a collection; existing saved occurrence snapshots remain retained. |
-| [`launcher_collections_resolve`](/mcp/reference/launcher-library#launcher-collections-resolve) | Read | Resolve a consistent collection selection with AND conditions and OR values; reserves nothing. |
+| [`launcher_discover`](/mcp/reference/launcher-library#launcher-discover) | Read | Check available Launcher tools, permissions, limits, and upload instructions. |
+| [`launcher_creatives_list`](/mcp/reference/launcher-library#launcher-creatives-list) | Read | List or search active creatives in the workspace library. |
+| [`launcher_creatives_usage`](/mcp/reference/launcher-library#launcher-creatives-usage) | Read | Find where a creative has been selected or used in an account. |
+| [`launcher_creatives_get`](/mcp/reference/launcher-library#launcher-creatives-get) | Read | Read a creative and its saved version summaries. |
+| [`launcher_creative_versions_get`](/mcp/reference/launcher-library#launcher-creative-versions-get) | Read | Read the copy and media for one saved version. |
+| [`launcher_creatives_create`](/mcp/reference/launcher-library#launcher-creatives-create) | Write | Create a library creative with its first draft version. |
+| [`launcher_creatives_update`](/mcp/reference/launcher-library#launcher-creatives-update) | Write | Edit a creative's name, concept, or tags using its current lock version. |
+| [`launcher_creatives_archive`](/mcp/reference/launcher-library#launcher-creatives-archive) | Write | Archive a creative while retaining its content versions and launch history. |
+| [`launcher_creative_versions_create`](/mcp/reference/launcher-library#launcher-creative-versions-create) | Write | Save new content as a draft version. |
+| [`launcher_creative_versions_approve`](/mcp/reference/launcher-library#launcher-creative-versions-approve) | Write | Approve one complete creative version, including its language variants. |
+| [`launcher_creative_versions_revoke`](/mcp/reference/launcher-library#launcher-creative-versions-revoke) | Write | Revoke approval for a complete creative version and record the reason. |
+| [`launcher_collections_list`](/mcp/reference/launcher-library#launcher-collections-list) | Read | List fixed and smart collections in the workspace. |
+| [`launcher_collections_preview`](/mcp/reference/launcher-library#launcher-collections-preview) | Read | Preview which creatives match an unsaved smart filter. |
+| [`launcher_collections_get`](/mcp/reference/launcher-library#launcher-collections-get) | Read | Read a collection and its current revision. |
+| [`launcher_collections_create`](/mcp/reference/launcher-library#launcher-collections-create) | Write | Create a fixed selection of creatives or a smart collection with filters and exclusions. |
+| [`launcher_collections_update`](/mcp/reference/launcher-library#launcher-collections-update) | Write | Replace a collection definition and its members using the current lock version. |
+| [`launcher_collections_archive`](/mcp/reference/launcher-library#launcher-collections-archive) | Write | Archive a collection. |
+| [`launcher_collections_resolve`](/mcp/reference/launcher-library#launcher-collections-resolve) | Read | Select creatives from a collection for launch preparation. |
 | [`launcher_templates_list`](/mcp/reference/launcher-library#launcher-templates-list) | Read | List active templates within the authorized workspace. |
-| [`launcher_templates_get`](/mcp/reference/launcher-library#launcher-templates-get) | Read | Read typed saved template versions; saved configuration is not proof of provider eligibility. |
-| [`launcher_templates_create`](/mcp/reference/launcher-library#launcher-templates-create) | Write | Save a typed template and its first exact configuration version without a provider effect. |
-| [`launcher_template_versions_create`](/mcp/reference/launcher-library#launcher-template-versions-create) | Write | Save a new immutable template configuration version; scheduled references keep their exact version. |
-| [`launcher_templates_archive`](/mcp/reference/launcher-library#launcher-templates-archive) | Write | Archive a template identity while retaining previously pinned configuration versions. |
-| [`launcher_media_list`](/mcp/reference/launcher-library#launcher-media-list) | Read | List imported asset IDs and metadata; storage locations stay private. |
-| [`launcher_media_get`](/mcp/reference/launcher-library#launcher-media-get) | Read | Read imported media metadata without private URLs or object keys. |
-| [`launcher_media_delete`](/mcp/reference/launcher-library#launcher-media-delete) | Write | Archive unused media and queue storage cleanup. |
-| [`launcher_media_retry_thumbnail`](/mcp/reference/launcher-library#launcher-media-retry-thumbnail) | Write | Queue a thumbnail attempt for media in the currently authorized workspace. |
+| [`launcher_templates_get`](/mcp/reference/launcher-library#launcher-templates-get) | Read | Read a template and its saved settings versions. |
+| [`launcher_templates_create`](/mcp/reference/launcher-library#launcher-templates-create) | Write | Save a template and its first settings version. |
+| [`launcher_template_versions_create`](/mcp/reference/launcher-library#launcher-template-versions-create) | Write | Save new template settings as a separate version. |
+| [`launcher_templates_archive`](/mcp/reference/launcher-library#launcher-templates-archive) | Write | Archive a template while retaining versions used by earlier launches and schedules. |
+| [`launcher_media_list`](/mcp/reference/launcher-library#launcher-media-list) | Read | List saved media and its IDs. |
+| [`launcher_media_get`](/mcp/reference/launcher-library#launcher-media-get) | Read | Read saved media details. |
+| [`launcher_media_delete`](/mcp/reference/launcher-library#launcher-media-delete) | Write | Archive unused media and queue file deletion. |
+| [`launcher_media_retry_thumbnail`](/mcp/reference/launcher-library#launcher-media-retry-thumbnail) | Write | Request another thumbnail-generation attempt for a saved media item. |
 ## Launcher launch tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`launcher_promotion_sources_list`](/mcp/reference/launcher-launches#launcher-promotion-sources-list) | Read | Choose confirmed test ads to promote using their exact source item IDs. |
-| [`launcher_assets_list`](/mcp/reference/launcher-launches#launcher-assets-list) | Read | Find named Meta assets without copying IDs from another product. |
-| [`launcher_targets_list`](/mcp/reference/launcher-launches#launcher-targets-list) | Read | List current account ad sets; inspect the chosen target before preview. |
-| [`launcher_targets_get`](/mcp/reference/launcher-launches#launcher-targets-get) | Read | Inspect the exact account/parent/settings fingerprint for a chosen target. |
-| [`launcher_launches_preview`](/mcp/reference/launcher-launches#launcher-launches-preview) | Read | Resolve exact approved inputs and operation counts; preview reserves nothing. |
-| [`launcher_launches_submit`](/mcp/reference/launcher-launches#launcher-launches-submit) | Write | Submit exact inputs using one stable request key; effects run asynchronously. |
-| [`launcher_launches_list`](/mcp/reference/launcher-launches#launcher-launches-list) | Read | List newest launches first within the current workspace and account grants. |
-| [`launcher_launches_get`](/mcp/reference/launcher-launches#launcher-launches-get) | Read | Poll launch state; use linked Activity for individual provider outcomes. |
+| [`launcher_promotion_sources_list`](/mcp/reference/launcher-launches#launcher-promotion-sources-list) | Read | Find ads created by earlier tests that are available for promotion. |
+| [`launcher_assets_list`](/mcp/reference/launcher-launches#launcher-assets-list) | Read | Find Meta Pages, Instagram accounts, pixels, audiences, and other assets by name. |
+| [`launcher_targets_list`](/mcp/reference/launcher-launches#launcher-targets-list) | Read | List current ad sets for the account. |
+| [`launcher_targets_get`](/mcp/reference/launcher-launches#launcher-targets-get) | Read | Read an ad set's account, parent campaign, current settings, and validation fingerprint. |
+| [`launcher_launches_preview`](/mcp/reference/launcher-launches#launcher-launches-preview) | Read | Check approved content, planned Meta objects, and estimated usage. |
+| [`launcher_launches_submit`](/mcp/reference/launcher-launches#launcher-launches-submit) | Write | Submit a launch with one stable `request_key`, then track its result. |
+| [`launcher_launches_list`](/mcp/reference/launcher-launches#launcher-launches-list) | Read | List launches with the newest first. |
+| [`launcher_launches_get`](/mcp/reference/launcher-launches#launcher-launches-get) | Read | Read launch status and links to the operation results. |
 | [`launcher_launches_change_status`](/mcp/reference/launcher-launches#launcher-launches-change-status) | Write | Hold or resume an unstarted run; a missed time requires Run now or a new time. |
-| [`launcher_launches_cancel`](/mcp/reference/launcher-launches#launcher-launches-cancel) | Write | Request cancellation; release only claims with confirmed no-write evidence. |
-| [`launcher_launches_replacement_candidates`](/mcp/reference/launcher-launches#launcher-launches-replacement-candidates) | Read | Inspect failed-item replacement choices. |
-| [`launcher_run_operations`](/mcp/reference/launcher-launches#launcher-run-operations) | Read | Read scoped results and attempts using Launcher read access. |
-| [`launcher_launches_retry`](/mcp/reference/launcher-launches#launcher-launches-retry) | Write | Retry unchanged inputs after no-write proof. |
+| [`launcher_launches_cancel`](/mcp/reference/launcher-launches#launcher-launches-cancel) | Write | Request cancellation of a launch. |
+| [`launcher_launches_replacement_candidates`](/mcp/reference/launcher-launches#launcher-launches-replacement-candidates) | Read | Find failed items eligible for replacement with corrected content. |
+| [`launcher_run_operations`](/mcp/reference/launcher-launches#launcher-run-operations) | Read | Read the result and attempt history of each launch operation. |
+| [`launcher_launches_retry`](/mcp/reference/launcher-launches#launcher-launches-retry) | Write | Retry eligible failed operations with their original inputs. |
 ## Launcher schedules and limits
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
-| [`launcher_schedules_create`](/mcp/reference/launcher-schedules#launcher-schedules-create) | Write | Save pinned recurring inputs with SKIP overlap and current automation authority. |
-| [`launcher_schedules_change_status`](/mcp/reference/launcher-schedules#launcher-schedules-change-status) | Write | Pause or resume future admissions; preserve already created occurrence snapshots. |
-| [`launcher_schedules_list`](/mcp/reference/launcher-schedules#launcher-schedules-list) | Read | List pinned recurring schedules in the currently authorized account. |
+| [`launcher_schedules_create`](/mcp/reference/launcher-schedules#launcher-schedules-create) | Write | Create a recurring launch with saved template and selection settings. |
+| [`launcher_schedules_change_status`](/mcp/reference/launcher-schedules#launcher-schedules-change-status) | Write | Pause or resume future scheduled runs. |
+| [`launcher_schedules_list`](/mcp/reference/launcher-schedules#launcher-schedules-list) | Read | List recurring launches for an account. |
 | [`launcher_schedules_get`](/mcp/reference/launcher-schedules#launcher-schedules-get) | Read | Read a schedule definition and exact version references. |
-| [`launcher_schedules_update`](/mcp/reference/launcher-schedules#launcher-schedules-update) | Write | Save future settings; claimed occurrences keep their snapshot. |
-| [`launcher_account_limits_get`](/mcp/reference/launcher-schedules#launcher-account-limits-get) | Read | Read configured account-wide campaign and budget admission ceilings. |
-| [`launcher_account_limits_update`](/mcp/reference/launcher-schedules#launcher-account-limits-update) | Write | Set account ceilings; omit expected version only on initial configuration. |
+| [`launcher_schedules_update`](/mcp/reference/launcher-schedules#launcher-schedules-update) | Write | Update settings for future runs. |
+| [`launcher_account_limits_get`](/mcp/reference/launcher-schedules#launcher-account-limits-get) | Read | Read the account's Launcher campaign-count and configured-budget limits. |
+| [`launcher_account_limits_update`](/mcp/reference/launcher-schedules#launcher-account-limits-update) | Write | Set the account's Launcher limits. |
 ## Launcher Drive tools
 
 | Tool | Access | Purpose |
 | --- | --- | --- |
 | [`launcher_drive_folders_list`](/mcp/reference/launcher-drive#launcher-drive-folders-list) | Read | List saved workspace folders. |
-| [`launcher_drive_folders_save`](/mcp/reference/launcher-drive#launcher-drive-folders-save) | Write | Save a folder selected in Superlaunch's Google Picker with drive.file. |
-| [`launcher_drive_folder_files_list`](/mcp/reference/launcher-drive#launcher-drive-folder-files-list) | Read | List up to 100 selected media files and folders with drive.file. |
+| [`launcher_drive_folders_save`](/mcp/reference/launcher-drive#launcher-drive-folders-save) | Write | Save a folder selected in Superlaunch's Google Picker. |
+| [`launcher_drive_folder_files_list`](/mcp/reference/launcher-drive#launcher-drive-folder-files-list) | Read | List up to 100 files and folders that you selected through Google Picker. |

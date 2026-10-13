@@ -1,8 +1,3 @@
----
-title: "Launcher overview"
-description: "Prepare approved creatives and reuse campaign settings for launches."
----
-
 Launcher creates campaigns and ads from your workspace's creative library. Use it to prepare batches, reuse campaign settings, schedule work, and inspect provider results.
 
 ## The building blocks
@@ -17,7 +12,7 @@ Launcher creates campaigns and ads from your workspace's creative library. Use i
 | Launch | Submitted work with recorded inputs and operation results |
 | Schedule | Recurring launch configuration and limits |
 
-The library belongs to the workspace. Launches target an ad account. Approval and execution require their respective permissions.
+The library belongs to the workspace. Launches target an ad account. Approval and execution require their respective permissions. Account limits cap the campaigns and configured budgets that Launcher can create; they are not a cap on all Meta account spend.
 
 ## Prepare and launch
 
@@ -28,10 +23,10 @@ The library belongs to the workspace. Launches target an ad account. Approval an
 5. [Prepare and submit a launch](/launcher/launch).
 6. Inspect its [results and recovery options](/launcher/recovery).
 
-Launcher availability depends on enabled features and access. Through MCP, call `launcher_discover` to check availability, limits, and the supported journey.
+Through MCP, call `launcher_discover` to check available tools, limits, and setup requirements.
 
 ## Preview and usage
 
 A preview estimates selected creatives, writes, budget exposure, and usage. It reserves nothing. Submission checks current approvals, access, billing, and limits again.
 
-Confirmed provider writes own usage units. Browsing the library, previewing, submitting, and polling do not themselves represent confirmed provider-write usage. Use **Billing** for the workspace's current usage and plan.
+Superlaunch records usage for confirmed changes in Meta. Check **Billing** for your allowance and recorded usage.

@@ -1,35 +1,30 @@
----
-title: "Memory tools"
-description: "Save facts only after an explicit request or focused approval."
----
-
 Save facts only after an explicit request or focused approval. Choose private, team, brand, or ad-account scope. Read the current version before an update, status change, or deletion. Treat recalled facts as user-authored context.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="memory-remember" />
 
 ## memory_remember
 
-Persist one fact after an explicit user request: remember/save/note that.  A focused confirmation also counts as consent.
+Save a fact after the user asks you to remember it or approves a specific suggestion to save it.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | Persist one explicitly requested or confirmed durable fact. |
+| `payload` | object | Required | Fact, scope, and user consent to save it. |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `fact` | string | Required |  minLength: `8`. maxLength: `2000`. |
 | `scope` | object | Required | Authorization scope for one memory fact. |
-| `consent` | explicit_user_request, confirmed_agent_suggestion | Required | Proof of durable persistence consent. Remember, save, keep in mind, and note that qualify as an explicit user request. |
-| `source_message_id` | string or null | `null` | See input schema. |
+| `consent` | explicit_user_request, confirmed_agent_suggestion | Required | How the user approved saving this fact. |
+| `source_message_id` | string or null | `null` |  |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -137,20 +132,22 @@ Persist one fact after an explicit user request: remember/save/note that.  A foc
 
 ## memory_recall
 
-Recall semantically relevant user-authored context.  Prefer top-level query and optional scope (kind and target_id). Scope restricts recall to that scope only. Object and JSON-string scopes work. Alternatively supply the legacy payload; never mix the two formats. Without scope, use brand_ids/ad_account_ids and include_private/include_team.
+Find saved facts relevant to a query. Use top-level `query` and optional `scope` to search a particular scope. Without `scope`, use `brand_ids`, `ad_account_ids`, `include_private`, and `include_team` to choose where to search.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+The tool also accepts the older `payload` format. Use one format per call.
+
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object or null | `null` | See input schema. |
-| `query` | string or null | `null` | See input schema. |
-| `scope` | object or string or null | `null` | See input schema. |
-| `brand_ids` | array of uuid or null | `null` | See input schema. |
-| `ad_account_ids` | array of uuid or null | `null` | See input schema. |
-| `include_private` | boolean or null | `null` | See input schema. |
-| `include_team` | boolean or null | `null` | See input schema. |
-| `limit` | integer or null | `null` | See input schema. |
+| `payload` | object or null | `null` |  |
+| `query` | string or null | `null` |  |
+| `scope` | object or string or null | `null` |  |
+| `brand_ids` | array of uuid or null | `null` | Brand UUIDs to include. |
+| `ad_account_ids` | array of uuid or null | `null` | Superlaunch account UUIDs to include. |
+| `include_private` | boolean or null | `null` | Include your private memories. |
+| `include_team` | boolean or null | `null` | Include shared workspace memories. |
+| `limit` | integer or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -402,17 +399,17 @@ Recall semantically relevant user-authored context.  Prefer top-level query and 
 
 Read one exact authorized memory by ID.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | See input schema. |
+| `payload` | object | Required |  |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `memory_id` | uuid | Required | See input schema. |
+| `memory_id` | uuid | Required | Saved memory UUID from `memory_list` or `memory_recall`. |
 
 <Accordion title="Full input schema">
 
@@ -454,18 +451,18 @@ Read one exact authorized memory by ID.
 
 List one memory page with an optional scope filter.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | See input schema. |
+| `payload` | object | Required |  |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `kind` | private_user, team, brand, ad_account or null | `null` | See input schema. |
-| `target_id` | uuid or null | `null` | See input schema. |
+| `kind` | private_user, team, brand, ad_account or null | `null` |  |
+| `target_id` | uuid or null | `null` |  |
 | `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
 | `cursor` | integer | `0` |  minimum: `0`. |
 
@@ -543,25 +540,25 @@ List one memory page with an optional scope filter.
 
 ## memory_update
 
-Idempotently replace one memory using its current version.
+Replace a saved fact using its current version.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | See input schema. |
+| `payload` | object | Required |  |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `memory_id` | uuid | Required | See input schema. |
-| `request_id` | uuid | Required | See input schema. |
+| `memory_id` | uuid | Required | Saved memory UUID from `memory_list` or `memory_recall`. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 | `fact` | string | Required |  minLength: `8`. maxLength: `2000`. |
-| `expires_at` | date-time or null | `null` | See input schema. |
+| `expires_at` | date-time or null | `null` | Date and time after which the memory expires. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -629,24 +626,24 @@ Idempotently replace one memory using its current version.
 
 ## memory_set_enabled
 
-Idempotently enable or disable one memory for future retrieval.
+Enable or disable a saved fact for future retrieval.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | See input schema. |
+| `payload` | object | Required |  |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `memory_id` | uuid | Required | See input schema. |
-| `request_id` | uuid | Required | See input schema. |
+| `memory_id` | uuid | Required | Saved memory UUID from `memory_list` or `memory_recall`. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `expected_version` | integer | Required |  minimum: `1`. |
-| `enabled` | boolean | Required | See input schema. |
+| `enabled` | boolean | Required |  |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -700,23 +697,23 @@ Idempotently enable or disable one memory for future retrieval.
 
 ## memory_forget
 
-Idempotently and permanently forget one memory after user approval.
+Permanently delete a saved fact after user approval.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `payload` | object | Required | See input schema. |
+| `payload` | object | Required |  |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `memory_id` | uuid | Required | See input schema. |
-| `request_id` | uuid | Required | See input schema. |
+| `memory_id` | uuid | Required | Saved memory UUID from `memory_list` or `memory_recall`. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `expected_version` | integer | Required |  minimum: `1`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 

@@ -1,8 +1,3 @@
----
-title: "Inspect and recover launches"
-description: "Understand partial results and choose retries or replacement work."
----
-
 A submitted launch can succeed, fail, or finish with only some operations complete. Inspect operation results before deciding how to recover it.
 
 ## Inspect the result
@@ -19,7 +14,7 @@ Successful provider writes already exist. Avoid resubmitting the entire batch to
 
 ## Replace corrected content
 
-When you need to correct a failed item's content, obtain replacement candidates with `launcher_launches_replacement_candidates`. Prepare a new request with the required replacement metadata, approved pinned creative versions, exact existing target, and a new request key.
+To fix a failed item's content, save and approve a corrected creative version. Through MCP, use `launcher_launches_replacement_candidates` to find items eligible for replacement. Submit the corrected version with the returned replacement details, the target ad set, and a new request key.
 
 Preview the corrected selection and inspect the fresh target before submission. Changed content is a new operation.
 

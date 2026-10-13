@@ -1,11 +1,6 @@
----
-title: "Accounts, assets, and brands"
-description: "Resolve Superlaunch account and brand IDs before reading or changing objects."
----
-
 Resolve Superlaunch account and brand IDs before reading or changing objects. Asset IDs identify provider objects; account IDs identify Superlaunch records.
 
-The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
 
 <span id="ad-accounts-list" />
 
@@ -13,11 +8,11 @@ The parameter tables show the top-level arguments and common nested objects. Exp
 
 List ad accounts the current user may read.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `limit` | integer | `25` | See input schema. |
+| `limit` | integer | `25` |  |
 
 <Accordion title="Full input schema">
 
@@ -42,11 +37,11 @@ List ad accounts the current user may read.
 
 Read one authorized ad account.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 
 <Accordion title="Full input schema">
 
@@ -74,11 +69,11 @@ Read one authorized ad account.
 
 List brands the current user may read.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `limit` | integer | `25` | See input schema. |
+| `limit` | integer | `25` |  |
 
 <Accordion title="Full input schema">
 
@@ -101,9 +96,9 @@ List brands the current user may read.
 
 ## brands_create
 
-Create a brand in the current workspace and grant its creator write access.  Supply a fresh request_id UUID. Reuse it with the same payload to safely retry; changed payloads conflict. Optional profile fields are website, industry, description, markets, and languages. No ad accounts are linked.
+Create a brand profile and grant its creator write access. Optional fields include website, industry, description, markets, and languages. Assign ad accounts separately.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
@@ -113,15 +108,15 @@ Create a brand in the current workspace and grant its creator write access.  Sup
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
 | `name` | string | Required |  minLength: `1`. maxLength: `200`. pattern: `\S`. |
-| `website` | string or null | `null` | See input schema. |
-| `industry` | string or null | `null` | See input schema. |
-| `description` | string or null | `null` | See input schema. |
+| `website` | string or null | `null` |  |
+| `industry` | string or null | `null` |  |
+| `description` | string or null | `null` |  |
 | `markets` | array of string | Optional |  maxItems: `50`. |
 | `languages` | array of string | Optional |  maxItems: `50`. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -228,29 +223,29 @@ Create a brand in the current workspace and grant its creator write access.  Sup
 
 ## brands_update
 
-Update mutable fields on one writable brand.  Supply a fresh request_id UUID and at least one field. Reuse the request_id with the same brand and payload to safely retry; changed payloads conflict. Empty markets or languages clear those lists. Use kit to partially update messaging, voice, colors, or typography; a changed kit creates an immutable version. kit.positioning is required when no active kit exists.
+Update selected profile or brand-kit fields. Omitted fields keep their values; empty lists clear markets or languages. A kit change saves a new version. Supply `kit.positioning` when creating the first kit.
 
-**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+**Access:** `mcp:read` and `mcp:write`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `brand_id` | uuid | Required | See input schema. |
+| `brand_id` | uuid | Required | Brand UUID from `brands_list`. |
 | `payload` | object | Required | Partially update a brand; reuse request_id only for identical retries. |
 
 ### payload fields
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `request_id` | uuid | Required | See input schema. |
-| `name` | string or null | `null` | See input schema. |
-| `website` | string or null | `null` | See input schema. |
-| `industry` | string or null | `null` | See input schema. |
-| `description` | string or null | `null` | See input schema. |
-| `markets` | array of string or null | `null` | See input schema. |
-| `languages` | array of string or null | `null` | See input schema. |
-| `kit` | object or null | `null` | See input schema. |
+| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| `name` | string or null | `null` |  |
+| `website` | string or null | `null` |  |
+| `industry` | string or null | `null` |  |
+| `description` | string or null | `null` |  |
+| `markets` | array of string or null | `null` |  |
+| `languages` | array of string or null | `null` |  |
+| `kit` | object or null | `null` | Brand messaging, voice, colors, and typography. |
 
-**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
 
 <Accordion title="Full input schema">
 
@@ -584,11 +579,11 @@ Update mutable fields on one writable brand.  Supply a fresh request_id UUID and
 
 Read one authorized brand with its active structured brand kit.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `brand_id` | uuid | Required | See input schema. |
+| `brand_id` | uuid | Required | Brand UUID from `brands_list`. |
 
 <Accordion title="Full input schema">
 
@@ -614,16 +609,16 @@ Read one authorized brand with its active structured brand kit.
 
 ## assets_list
 
-List one filtered normalized asset page under an authorized account.
+List a page of campaigns, ad sets, ads, or creatives for an account.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | See input schema. |
-| `level` | campaign, adset, ad, creative | Required | See input schema. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| `level` | campaign, adset, ad, creative | Required | Asset level: campaign, ad set, ad, or creative. |
 | `limit` | integer | `25` |  minimum: `1`. maximum: `200`. |
-| `cursor` | string or null | `null` | See input schema. |
+| `cursor` | string or null | `null` |  |
 
 <Accordion title="Full input schema">
 
@@ -692,14 +687,14 @@ List one filtered normalized asset page under an authorized account.
 
 ## assets_get
 
-Read one normalized asset under an authorized account.
+Read one campaign, ad set, ad, or creative from the imported account data.
 
-**Access:** `mcp:read`. Object and function permissions also apply.
+**Access:** `mcp:read`.
 
 | Parameter | Type | Required / default | Details |
 | --- | --- | --- | --- |
-| `asset_id` | string | Required | See input schema. |
-| `ad_account_id` | uuid | Required | See input schema. |
+| `asset_id` | string | Required | Provider object ID returned by `assets_list`. |
+| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
 
 <Accordion title="Full input schema">
 

@@ -1,34 +1,28 @@
----
-title: "Upload and import media"
-description: "Add images and videos to the shared library or import selected Drive files."
----
-
-Use the Launcher library and imports area to add media before you create a creative version.
+Add images and videos under **Launcher → Creatives → Import media**, then use them in a [creative](/launcher/creatives).
 
 ## Upload a file
 
-1. Open **Launcher** and choose the workspace.
-2. Open the media library or **Import media**.
-3. Select the upload control and choose your image or video.
-4. Wait for the upload and processing status.
-5. Open the media item and check its preview before using it in a creative.
+1. Select **Upload files** and choose an image or video.
+2. Select **Upload selected file**.
+3. Keep the page open until the upload finishes.
+4. Check the media item's status and preview before using it.
 
-The upload interface shows the supported file types and size limits. A thumbnail failure does not by itself mean the original file failed to upload. Check the media status and use the thumbnail retry option where available.
+The upload control shows the file types and size limits. If a thumbnail fails, check the media status and retry the thumbnail before uploading the file again.
 
 ## Import from Google Drive
 
-1. Open **Import media** and connect Google Drive.
-2. Complete the browser authorization and file or folder selection.
-3. Browse available files and choose the files to import.
-4. Review the selection and start the import.
-5. Inspect the import results before creating content from the imported media.
+1. Select **Import from Google Drive**.
+2. Connect your Google account if prompted.
+3. Select the files you want to make available to Superlaunch.
+4. Review the selection and select **Import selected files**.
+5. Check the results for files that need another attempt.
 
-Saving a Drive folder or selecting a file does not itself import all its contents. The folder browser can distinguish new, changed, and previously imported files. Review those states when importing a new revision.
+Superlaunch can read files you select through Google Picker. Selecting a folder does not give access to all its files or start an import. Select each new batch of files before refreshing the folder browser.
 
-## Use with an agent
+## Upload through an AI client
 
-Call `launcher_discover` for the browser intake handoff. Complete private file upload or Drive authorization in the browser, then provide the stable media IDs to your agent.
+Clients that support the Superlaunch upload picker can accept up to ten files per batch, with a default combined limit of 64 MiB. Ask your assistant to upload your images or videos to the workspace library.
 
-Use `launcher_media_list` and `launcher_media_get` to discover saved media. The MCP Drive folder tools list and save folder selections; they do not perform the browser's private file intake.
+If your client cannot show the picker, use the browser steps above. The assistant can find saved files with `launcher_media_list` and read their details with `launcher_media_get`.
 
-For direct Meta creative creation, see the separate [signed upload workflow](/mcp/workflows).
+Developers can also use the [signed upload workflow](/mcp/workflows) and [media tool reference](/mcp/reference/actions).

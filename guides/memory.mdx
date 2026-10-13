@@ -1,8 +1,3 @@
----
-title: "Save and manage memory"
-description: "Retain approved facts with private, team, brand, or ad-account scope."
----
-
 Memory stores facts you want to reuse in later conversations. Save a fact when you ask your agent to remember it or approve a focused suggestion to save it.
 
 ## Choose a scope
@@ -20,9 +15,9 @@ Brand and ad-account scopes require the corresponding Superlaunch UUID. Private 
 
 > Remember for this brand that campaign copy must use British English and avoid discount claims unless I provide an approved offer.
 
-The agent should resolve the brand and call `memory_remember` with your fact, scope, request UUID, and consent value. It should report whether the result is active, pending indexing, duplicated, rejected, or needs confirmation.
+The agent should confirm whether it saved the fact. If the fact is still processing, it may take time to appear in search.
 
-A stored fact awaiting indexing might not appear in semantic recall yet.
+Developers: `memory_remember` requires the fact, scope, a request UUID, and consent. See [Memory tools](/mcp/reference/memory) for the possible results.
 
 ## Review and correct
 
@@ -32,4 +27,4 @@ Read the current version before using `memory_update`, `memory_set_enabled`, or 
 
 ## Interpret recalled facts
 
-Recalled memory contains user-authored context. The agent should use it as context and evaluate it against your current request. A stored fact can be incomplete or outdated; it should not override your current instruction or grant new permission.
+Review recalled facts if your plans or brand guidance have changed. Update outdated facts so that later conversations use the right information. Your current instructions take precedence over saved memory.

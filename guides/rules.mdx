@@ -1,13 +1,8 @@
----
-title: "Create and run rules"
-description: "Define targets, conditions, actions, schedules, and dry-run checks."
----
-
-Rules apply repeatable decisions to advertising objects. A rule defines its accounts, target level, target filter, tasks, and schedule.
+Use a rule to check campaign performance and apply an action on a schedule. For example, pause ads that spend above your limit without a purchase.
 
 ## Create a rule
 
-1. Open **Rules** and start a new rule.
+1. Open **Rules** and select **New rule**.
 2. Select the ad accounts and target level.
 3. Add a target filter, or choose an empty filter to cover the selected level.
 4. Add a task with at least one condition and action.
@@ -15,13 +10,13 @@ Rules apply repeatable decisions to advertising objects. A rule defines its acco
 6. Set a schedule and time zone.
 7. Save as a draft with dry-run mode enabled.
 
-A task's `active_only` setting controls whether it considers only active objects. Check that setting when your target set includes paused ads.
+Use **Active items only** to limit a task to active objects. Turn it off if you need the rule to consider paused objects too.
 
 Budget-increase actions require a maximum daily budget; budget-decrease actions require a minimum. Absolute adjustments and rule safety bounds use major account-currency units. Direct creation tools use minor units instead.
 
 ## Check a dry run
 
-Run the current rule version with `dry_run: true`. Review its targets, decisions, and action outcomes before enabling provider effects.
+Run the current rule version with `dry_run: true`. Review which objects match and which actions the rule would take before allowing live changes.
 
 > Draft a rule for this account that pauses active ads when spend exceeds 50 today and purchases are zero. Use dry-run mode, show the target filter and schedule, and wait for me to review before activation.
 
@@ -31,7 +26,7 @@ Your agent should call `rules_schema` for the current metrics and action vocabul
 
 Read the rule's current version before changing it. `rules_update` replaces the definition, so preserve fields you intend to keep.
 
-A rule's status and dry-run setting are separate. Review both before setting it to **active**. A manual `rules_run` defaults to dry-run mode even if you omit that argument.
+To allow scheduled live changes, set the rule to **Active** and turn off **Dry run**. Review both settings before saving. A manual MCP `rules_run` defaults to dry-run mode.
 
 ## Review results
 
