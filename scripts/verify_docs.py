@@ -21,7 +21,7 @@ documented = set()
 for page in pages:
     path = root / (page + ".mdx")
     text = path.read_text()
-    assert text.startswith("---\n") and "description:" in text.split("---", 2)[1], path
+    assert text.startswith("---\n") and all(key in text.split("---", 2)[1] for key in ("title:", "description:")), path
     visible = re.sub(r"```.*?```", "", text, flags=re.S)
     assert not re.search(r"\b(?:delve|leverage|game-changing|seamless|unlock|in conclusion)\b", visible, re.I), f"Filler in {page}"
     assert "\u2014" not in visible, f"Em dash in {page}"

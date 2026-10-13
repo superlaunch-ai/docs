@@ -103,8 +103,8 @@
     }
   },
   "logo": {
-    "light": "/logo/superlaunch.svg",
-    "dark": "/logo/superlaunch.svg",
+    "light": "/logo/superlaunch-wordmark.svg",
+    "dark": "/logo/superlaunch-wordmark.svg",
     "href": "https://docs.superlaunch.pro/"
   },
   "navbar": {
