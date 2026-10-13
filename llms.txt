@@ -6,7 +6,7 @@
 
 - [Superlaunch documentation](https://docs.superlaunch.pro/index.md): Connect your accounts, work with AI agents, and manage campaigns in Superlaunch.
 - [Set up Superlaunch](https://docs.superlaunch.pro/quickstart.md): Connect your first ad account and confirm that your agent can read it.
-- [How Superlaunch works](https://docs.superlaunch.pro/concepts/how-it-works.md): Understand workspaces, provider accounts, AI agents, and campaign operations.
+- [How Superlaunch works](https://docs.superlaunch.pro/concepts/how-it-works.md): Analyze ad performance, reuse creative work, and automate campaign tasks with your team or an AI agent.
 - [IDs, versions, and retries](https://docs.superlaunch.pro/concepts/ids-and-versions.md): Use the right identifiers and avoid duplicate operations.
 
 ## Workspace
