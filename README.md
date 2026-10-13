@@ -21,6 +21,7 @@ The initial catalog snapshot comes from MCP commit `b3b258df6a820042599e460e22f1
 
 ```sh
 python3 scripts/verify_docs.py
+python3 scripts/generate_llms.py --check
 npx mint validate
 npx mint dev
 ```
@@ -31,9 +32,9 @@ The copy follows Google's developer style guide and Diataxis. `AGENTS.md` record
 
 ## Text exports
 
-Mintlify generates these files from published pages:
+The short index comes from navigation and page metadata through `scripts/generate_llms.py`. CI rejects stale generated content. Mintlify generates the full-text export and page Markdown:
 - https://docs.superlaunch.pro/llms.txt
 - https://docs.superlaunch.pro/llms-full.txt
 - Page Markdown, such as https://docs.superlaunch.pro/mcp/overview.md
 
-Do not add hand-maintained copies. Check that exports contain the published guides and complete tool reference after deployment.
+Do not hand-edit exports. Regenerate the index after changing navigation or metadata. Check that exports contain the published guides and complete tool reference after deployment.

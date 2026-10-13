@@ -35,6 +35,6 @@ Preserve the existing arrow mark and lowercase wordmark. Use accent #E8A33D, pag
 
 Run `python3 scripts/verify_docs.py` and `npx mint validate` before merging. Update the stored tool catalog and reference together. Validate examples against tool input schemas.
 
-Mintlify deploys main. Verify live links, tool anchors, schema accordions, search, and desktop/mobile rendering. Mintlify generates /llms.txt, /llms-full.txt, and page Markdown; verify them after publishing instead of committing static copies.
+Mintlify deploys main. Verify live links, tool anchors, schema accordions, search, and desktop/mobile rendering. Run `python3 scripts/generate_llms.py` after editing navigation or page metadata. The generated short index has a CI freshness check. Mintlify generates /llms-full.txt and page Markdown; verify them after publishing. Do not hand-edit text exports.
 
 All manual commits use Bogdan Piven <bogdanpiven@gmail.com>.

@@ -1,0 +1,70 @@
+# Superlaunch
+
+> Set up Superlaunch, manage advertising workflows, and connect AI agents through MCP.
+
+## Start here
+
+- [Superlaunch documentation](https://docs.superlaunch.pro/index.md): Connect your accounts, work with AI agents, and manage campaigns in Superlaunch.
+- [Set up Superlaunch](https://docs.superlaunch.pro/quickstart.md): Connect your first ad account and confirm that your agent can read it.
+- [How Superlaunch works](https://docs.superlaunch.pro/concepts/how-it-works.md): Understand workspaces, provider accounts, AI agents, and campaign operations.
+- [IDs, versions, and retries](https://docs.superlaunch.pro/concepts/ids-and-versions.md): Use the right identifiers and avoid duplicate operations.
+
+## Workspace
+
+- [Connect ad platforms](https://docs.superlaunch.pro/workspace/connections.md): Authorize Meta, choose accounts, and recover a disconnected connection.
+- [Team and permissions](https://docs.superlaunch.pro/workspace/permissions.md): Manage workspace members and control access to accounts, rules, and launches.
+
+## Workflows
+
+- [Analyze performance](https://docs.superlaunch.pro/guides/insights.md): Choose comparable dates, metrics, attribution, and reporting levels.
+- [Create and run rules](https://docs.superlaunch.pro/guides/rules.md): Define targets, conditions, actions, schedules, and dry-run checks.
+- [Review activity and results](https://docs.superlaunch.pro/guides/activity.md): Trace tool calls, provider actions, and rule runs to their outcomes.
+- [Brand profiles and kits](https://docs.superlaunch.pro/guides/brands.md): Give your team and agent the brand guidance they need.
+- [Save and manage memory](https://docs.superlaunch.pro/guides/memory.md): Retain approved facts with private, team, brand, or ad-account scope.
+
+## Launcher
+
+- [Launcher overview](https://docs.superlaunch.pro/launcher/overview.md): Prepare approved creatives and reuse campaign settings for launches.
+- [Upload and import media](https://docs.superlaunch.pro/launcher/media.md): Add images and videos to the shared library or import selected Drive files.
+- [Create and approve creatives](https://docs.superlaunch.pro/launcher/creatives.md): Save content versions, check media, and approve the version you intend to launch.
+- [Organize collections](https://docs.superlaunch.pro/launcher/collections.md): Use fixed selections or smart filters to choose creatives for launches.
+- [Create launch templates](https://docs.superlaunch.pro/launcher/templates.md): Save versioned campaign settings, budgets, destinations, and naming.
+- [Prepare and submit a launch](https://docs.superlaunch.pro/launcher/launch.md): Select an operation, approved content, target, timing, and delivery status.
+- [Schedule recurring launches](https://docs.superlaunch.pro/launcher/schedules.md): Set recurring timing, selection behavior, and batch limits.
+- [Inspect and recover launches](https://docs.superlaunch.pro/launcher/recovery.md): Understand partial results and choose retries or replacement work.
+
+## MCP
+
+- [Superlaunch MCP](https://docs.superlaunch.pro/mcp/overview.md): Connect an AI client to your workspace's advertising data and operations.
+- [Connect an MCP client](https://docs.superlaunch.pro/mcp/connect.md): Set up Superlaunch in ChatGPT, Claude, Codex, or another OAuth client.
+- [Authentication and access](https://docs.superlaunch.pro/mcp/authentication.md): Understand OAuth scopes, workspace selection, and revocation.
+- [Your first MCP workflow](https://docs.superlaunch.pro/mcp/first-workflow.md): Verify access and ask your agent for a read-only performance check.
+- [MCP workflows](https://docs.superlaunch.pro/mcp/workflows.md): Use discovery, validation, writes, and result checks in the right order.
+- [MCP troubleshooting](https://docs.superlaunch.pro/mcp/troubleshooting.md): Resolve connection, permission, input, and result-completeness problems.
+- [MCP tool index](https://docs.superlaunch.pro/mcp/tools.md): Find all 97 documented MCP tools by task, with access requirements and parameter references.
+- [MCP argument examples](https://docs.superlaunch.pro/mcp/examples.md): Valid argument shapes for discovery, reporting, campaign validation, memory, and launch polling.
+
+## MCP reference
+
+- [Accounts, assets, and brands](https://docs.superlaunch.pro/mcp/reference/accounts-brands.md): Resolve Superlaunch account and brand IDs before reading or changing objects.
+- [Insights tools](https://docs.superlaunch.pro/mcp/reference/insights.md): Call `insights_capabilities` before querying.
+- [Rule tools](https://docs.superlaunch.pro/mcp/reference/rules.md): Read `rules_schema` for the current rule vocabulary.
+- [Direct Meta actions](https://docs.superlaunch.pro/mcp/reference/actions.md): Call `actions_capabilities` to check whether provider effects are enabled.
+- [Activity tools](https://docs.superlaunch.pro/mcp/reference/activity.md): Use the unified log for tool calls, actions, and rule operations.
+- [Memory tools](https://docs.superlaunch.pro/mcp/reference/memory.md): Save facts only after an explicit request or focused approval.
+- [Launcher library tools](https://docs.superlaunch.pro/mcp/reference/launcher-library.md): Library objects belong to the authorized workspace.
+- [Launcher launch tools](https://docs.superlaunch.pro/mcp/reference/launcher-launches.md): Discover exact provider assets and targets before preparing a launch.
+- [Launcher schedules and limits](https://docs.superlaunch.pro/mcp/reference/launcher-schedules.md): Schedules keep pinned recurring inputs.
+- [Launcher Drive tools](https://docs.superlaunch.pro/mcp/reference/launcher-drive.md): Authorize Google Drive and select files or folders in Superlaunch first.
+
+## Support
+
+- [Billing and usage](https://docs.superlaunch.pro/support/billing.md): Review the workspace subscription, usage, payments, and access state.
+- [Troubleshooting](https://docs.superlaunch.pro/support/troubleshooting.md): Resolve common workspace, reporting, rule, and launch problems.
+- [Glossary](https://docs.superlaunch.pro/reference/glossary.md): Definitions for the terms used in Superlaunch and its MCP tools.
+- [Documentation for AI assistants](https://docs.superlaunch.pro/reference/ai-access.md): Read the public documentation index, full text, and page Markdown.
+
+## Text and workspace access
+
+- [Full documentation](https://docs.superlaunch.pro/llms-full.txt): Combined text of the published documentation.
+- [Product MCP](https://mcp.superlaunch.pro/mcp): OAuth-protected access to authorized workspace data and operations.
