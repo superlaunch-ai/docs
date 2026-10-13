@@ -1,0 +1,1314 @@
+---
+title: "Direct Meta actions"
+description: "Call `actions_capabilities` to check whether provider effects are enabled."
+---
+
+Call `actions_capabilities` to check whether provider effects are enabled. Creation, duplication, and status requests default to `dry_run: true`. Campaigns, ad sets, and ads created through these tools start paused. Direct budget amounts use integer account-currency minor units.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+## actions_capabilities
+
+List configured direct Meta creation, duplication, and status actions.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+**Arguments:** none.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {},
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## media_uploads_create
+
+Upload media to the current workspace library without requiring an account.  Open a picker for up to ten files (64 MiB total by default), or supply metadata for one signed PUT grant. A successful PUT confirms library persistence. Use media_asset_id with Launcher library tools; media_id retains compatibility with creatives_create. Uploads do not contact Meta.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Open the media picker or create one bounded signed upload grant. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid or null | `null` | See input schema. |
+| `filename` | string or null | `null` | See input schema. |
+| `mime_type` | image/jpeg, image/png, image/webp, video/mp4, video/quicktime or null | `null` | See input schema. |
+| `byte_size` | integer or null | `null` | See input schema. |
+| `checksum_sha256` | string or null | `null` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MediaUploadCreate": {
+      "additionalProperties": false,
+      "description": "Open the media picker or create one bounded signed upload grant.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mime_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "video/mp4",
+                "video/quicktime"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "byte_size": {
+          "anyOf": [
+            {
+              "maximum": 1073741824,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "checksum_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "request_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/MediaUploadCreate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## media_uploads_complete
+
+Upload up to ten files into the current workspace media library.  The total interactive limit is 64 MiB by default, shared across all files.  Use returned media_asset_id with Launcher library tools. The legacy media_id remains compatible with creatives_create. Retry the same request_id and files to retain exact per-file receipts, including after a partial batch failure.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `files` | array of object | Required |  minItems: `1`. maxItems: `10`. |
+| `media_id` | uuid or null | `null` | See input schema. |
+| `request_id` | uuid or null | `null` | See input schema. |
+| `ad_account_id` | uuid or null | `null` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "MediaUploadFile": {
+      "additionalProperties": false,
+      "description": "One Prefab-selected file sent directly to the upload completion tool.",
+      "properties": {
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "size": {
+          "maximum": 1073741824,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "data": {
+          "maxLength": 357914456,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "size",
+        "type",
+        "data"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "files": {
+      "items": {
+        "$ref": "#/$defs/MediaUploadFile"
+      },
+      "maxItems": 10,
+      "minItems": 1,
+      "type": "array"
+    },
+    "media_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ad_account_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "files"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## creatives_create
+
+Create a Meta creative from one completed signed media upload.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Upload completed media to Meta and create one ad creative. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `media_id` | uuid | Required | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
+| `object_story_spec` | object | Required | See input schema. |
+| `url_tags` | string or null | `null` | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CreativeCreate": {
+      "additionalProperties": false,
+      "description": "Upload completed media to Meta and create one ad creative.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "media_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "object_story_spec": {
+          "$ref": "#/$defs/JsonObjectInput"
+        },
+        "url_tags": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "media_id",
+        "name",
+        "object_story_spec"
+      ],
+      "type": "object"
+    },
+    "JsonObjectInput": {
+      "additionalProperties": true,
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/CreativeCreate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## campaigns_create
+
+Validate by default or explicitly create one paused Meta campaign.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Create or validate one paused Meta campaign. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
+| `objective` | string | Required |  minLength: `1`. maxLength: `100`. |
+| `status` | "PAUSED" | `"PAUSED"` | See input schema. |
+| `special_ad_categories` | array of string | Optional |  maxItems: `10`. |
+| `special_ad_category_country` | array of string or null | `null` | See input schema. |
+| `daily_budget` | integer or null | `null` | Daily budget in the ad account currency's minor units (for USD, 10000 means $100.00). |
+| `is_adset_budget_sharing_enabled` | boolean or null | `null` | See input schema. |
+| `lifetime_budget` | integer or null | `null` | Lifetime budget in the ad account currency's minor units (for USD, 10000 means $100.00). |
+| `bid_strategy` | string or null | `null` | See input schema. |
+| `buying_type` | string or null | `null` | See input schema. |
+| `promoted_object` | object or null | `null` | See input schema. |
+| `start_time` | string or null | `null` | See input schema. |
+| `stop_time` | string or null | `null` | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CampaignCreate": {
+      "additionalProperties": false,
+      "description": "Create or validate one paused Meta campaign.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "objective": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "const": "PAUSED",
+          "default": "PAUSED",
+          "type": "string"
+        },
+        "special_ad_categories": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "special_ad_category_country": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 50,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "daily_budget": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Daily budget in the ad account currency's minor units (for USD, 10000 means $100.00)."
+        },
+        "is_adset_budget_sharing_enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lifetime_budget": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Lifetime budget in the ad account currency's minor units (for USD, 10000 means $100.00)."
+        },
+        "bid_strategy": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "buying_type": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "promoted_object": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonObjectInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "start_time": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "stop_time": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "name",
+        "objective"
+      ],
+      "type": "object"
+    },
+    "JsonObjectInput": {
+      "additionalProperties": true,
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/CampaignCreate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## adsets_create
+
+Validate by default or explicitly create one paused Meta ad set.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Create or validate one paused Meta ad set under an existing campaign. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `campaign_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
+| `optimization_goal` | string | Required |  minLength: `1`. maxLength: `100`. |
+| `billing_event` | string | Required |  minLength: `1`. maxLength: `100`. |
+| `targeting` | object | Required | See input schema. |
+| `status` | "PAUSED" | `"PAUSED"` | See input schema. |
+| `daily_budget` | integer or null | `null` | Daily budget in the ad account currency's minor units (for USD, 2100 means $21.00). |
+| `lifetime_budget` | integer or null | `null` | Lifetime budget in the ad account currency's minor units (for USD, 2100 means $21.00). |
+| `bid_amount` | integer or null | `null` | Bid amount in the ad account currency's minor units. |
+| `bid_strategy` | string or null | `null` | See input schema. |
+| `promoted_object` | object or null | `null` | See input schema. |
+| `destination_type` | string or null | `null` | See input schema. |
+| `attribution_spec` | array of object or null | `null` | See input schema. |
+| `start_time` | string or null | `null` | See input schema. |
+| `end_time` | string or null | `null` | See input schema. |
+| `dsa_beneficiary` | string or null | `null` | See input schema. |
+| `dsa_payor` | string or null | `null` | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "AdSetCreate": {
+      "additionalProperties": false,
+      "description": "Create or validate one paused Meta ad set under an existing campaign.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "campaign_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "optimization_goal": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "billing_event": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "targeting": {
+          "$ref": "#/$defs/JsonObjectInput"
+        },
+        "status": {
+          "const": "PAUSED",
+          "default": "PAUSED",
+          "type": "string"
+        },
+        "daily_budget": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Daily budget in the ad account currency's minor units (for USD, 2100 means $21.00)."
+        },
+        "lifetime_budget": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Lifetime budget in the ad account currency's minor units (for USD, 2100 means $21.00)."
+        },
+        "bid_amount": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bid amount in the ad account currency's minor units."
+        },
+        "bid_strategy": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "promoted_object": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonObjectInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "destination_type": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "attribution_spec": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/JsonObjectInput"
+              },
+              "maxItems": 20,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "start_time": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "end_time": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dsa_beneficiary": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dsa_payor": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "campaign_id",
+        "name",
+        "optimization_goal",
+        "billing_event",
+        "targeting"
+      ],
+      "type": "object"
+    },
+    "JsonObjectInput": {
+      "additionalProperties": true,
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/AdSetCreate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## ads_create
+
+Validate by default or explicitly create one paused Meta ad.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Create or validate one paused Meta ad using an existing creative. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `adset_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
+| `creative_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `status` | "PAUSED" | `"PAUSED"` | See input schema. |
+| `conversion_domain` | string or null | `null` | See input schema. |
+| `tracking_specs` | array of object or null | `null` | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "AdCreate": {
+      "additionalProperties": false,
+      "description": "Create or validate one paused Meta ad using an existing creative.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "adset_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "creative_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "const": "PAUSED",
+          "default": "PAUSED",
+          "type": "string"
+        },
+        "conversion_domain": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tracking_specs": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/JsonObjectInput"
+              },
+              "maxItems": 50,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "adset_id",
+        "name",
+        "creative_id"
+      ],
+      "type": "object"
+    },
+    "JsonObjectInput": {
+      "additionalProperties": true,
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/AdCreate"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## actions_execute
+
+Execute set_status for one campaign, ad set, or ad.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Set one existing campaign, ad set, or ad ACTIVE or PAUSED. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `target_type` | campaign, adset, ad | Required | See input schema. |
+| `target_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `status` | ACTIVE, PAUSED | Required | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "StatusActionExecute": {
+      "additionalProperties": false,
+      "description": "Set one existing campaign, ad set, or ad ACTIVE or PAUSED.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "target_type": {
+          "enum": [
+            "campaign",
+            "adset",
+            "ad"
+          ],
+          "type": "string"
+        },
+        "target_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ACTIVE",
+            "PAUSED"
+          ],
+          "type": "string"
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "target_type",
+        "target_id",
+        "status"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/StatusActionExecute"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## campaigns_duplicate
+
+Preview or copy a campaign with its children in the same account, paused.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Copy one source in its account; copied hierarchies always start paused. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "DuplicateAction": {
+      "additionalProperties": false,
+      "description": "Copy one source in its account; copied hierarchies always start paused.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "source_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/DuplicateAction"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## adsets_duplicate
+
+Preview or copy an ad set with its ads in the same campaign, paused.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Copy one source in its account; copied hierarchies always start paused. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "DuplicateAction": {
+      "additionalProperties": false,
+      "description": "Copy one source in its account; copied hierarchies always start paused.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "source_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/DuplicateAction"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## ads_duplicate
+
+Preview or copy an ad in the same ad set, paused.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Copy one source in its account; copied hierarchies always start paused. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "DuplicateAction": {
+      "additionalProperties": false,
+      "description": "Copy one source in its account; copied hierarchies always start paused.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "ad_account_id",
+        "source_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/DuplicateAction"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## actions_get
+
+Read one permission-filtered action result by Activity ID.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `activity_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "activity_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "activity_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

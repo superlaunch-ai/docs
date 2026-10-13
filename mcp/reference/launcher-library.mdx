@@ -1,0 +1,4490 @@
+---
+title: "Launcher library tools"
+description: "Library objects belong to the authorized workspace."
+---
+
+Library objects belong to the authorized workspace. Save content edits as new versions, then approve the exact version. Media IDs, creative family IDs, creative version IDs, and template version IDs refer to different objects.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
+
+## launcher_discover
+
+Discover the Launcher journey, exact IDs, limits, access and browser upload instructions.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+**Arguments:** none.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {},
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creatives_list
+
+List a active creative-family page in the authorized workspace.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
+| `after_id` | uuid or null | `null` | See input schema. |
+| `query` | string or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creatives_usage
+
+Read usage, held claims and source-input lineage for one creative and authorized account. Created claims indicate family use; inspect run operations for confirmed provider object IDs.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `creative_id` | uuid | Required | See input schema. |
+| `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
+| `after_id` | uuid or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "creative_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creatives_get
+
+Read a creative and exact version summaries; content never changes in place.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "creative_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creative_versions_get
+
+Read one exact version with editable copy and media bindings.  Content is immutable. Save edits as a new draft version.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+| `version_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "version_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "creative_id",
+    "version_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creatives_create
+
+Create a creative family with an draft content version; approve the whole version separately.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `family` | object | Required | Editable family metadata separate from immutable content. |
+| `content` | object | Required | Content edits always create a draft and never accept approval inputs. |
+
+### family fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `concept` | string or null | `null` | See input schema. |
+| `tags` | array of string | `[]` |  maxItems: `100`. |
+| `source_group` | string or null | `null` | See input schema. |
+
+### content fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `format` | single_image, single_video, carousel, collection, flexible, existing_post, catalog | Required | See input schema. |
+| `language_mode` | single, multilingual | `"single"` | See input schema. |
+| `default_locale` | string | Required | See input schema. |
+| `cta` | string or null | `null` | See input schema. |
+| `source_spec` | object | Optional | Content origin references; credentials and ad codes are excluded. |
+| `variants` | array of object | Required |  minItems: `1`. maxItems: `50`. |
+| `media` | array of object | `[]` |  maxItems: `100`. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CreativeContentWrite": {
+      "additionalProperties": false,
+      "description": "Content edits always create a draft and never accept approval inputs.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "format": {
+          "enum": [
+            "single_image",
+            "single_video",
+            "carousel",
+            "collection",
+            "flexible",
+            "existing_post",
+            "catalog"
+          ],
+          "type": "string"
+        },
+        "language_mode": {
+          "default": "single",
+          "enum": [
+            "single",
+            "multilingual"
+          ],
+          "type": "string"
+        },
+        "default_locale": {
+          "type": "string"
+        },
+        "cta": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_spec": {
+          "$ref": "#/$defs/CreativeSource"
+        },
+        "variants": {
+          "items": {
+            "$ref": "#/$defs/CreativeVariant"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "type": "array"
+        },
+        "media": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CreativeMediaBinding"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": [
+        "format",
+        "default_locale",
+        "variants"
+      ],
+      "type": "object"
+    },
+    "CreativeFamilyWrite": {
+      "additionalProperties": false,
+      "description": "Editable family metadata separate from immutable content.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "concept": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "source_group": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "CreativeIdentity": {
+      "additionalProperties": false,
+      "description": "Nonsecret provider identity requirements.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "page_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "instagram_actor_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "CreativeMediaBinding": {
+      "additionalProperties": false,
+      "description": "Exact immutable media assignment within one content version.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "media_asset_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "slot_key": {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        "placement_key": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "position": {
+          "default": 0,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "variant_key": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "asset_metadata": {
+          "$ref": "#/$defs/MediaMetadata"
+        }
+      },
+      "required": [
+        "media_asset_id",
+        "slot_key"
+      ],
+      "type": "object"
+    },
+    "CreativeSource": {
+      "additionalProperties": false,
+      "description": "Content origin references; credentials and ad codes are excluded.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "default": "new_story",
+          "enum": [
+            "new_story",
+            "existing_post",
+            "catalog",
+            "flexible"
+          ],
+          "type": "string"
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CreativeIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "post_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "catalog_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "product_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "instant_experience_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "partnership_identity_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "partnership_permission_ref": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "CreativeVariant": {
+      "additionalProperties": false,
+      "description": "A locale member identified independently of list order.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "variant_key": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "locale": {
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "type": "string"
+        },
+        "headline": {
+          "maxLength": 1000,
+          "type": "string"
+        },
+        "primary_text": {
+          "maxLength": 10000,
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 1000,
+          "type": "string"
+        },
+        "destination_url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "deep_link": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "variant_key",
+        "locale",
+        "headline",
+        "primary_text"
+      ],
+      "type": "object"
+    },
+    "MediaMetadata": {
+      "additionalProperties": false,
+      "description": "Bounded nonsecret placement hints, not raw provider payloads.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "width_px": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "height_px": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "aspect_ratio": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "family": {
+      "$ref": "#/$defs/CreativeFamilyWrite",
+      "type": "object"
+    },
+    "content": {
+      "$ref": "#/$defs/CreativeContentWrite"
+    }
+  },
+  "required": [
+    "family",
+    "content"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creatives_update
+
+Edit family metadata with the current lock version; content requires a new version.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+| `family` | object | Required | Editable family metadata separate from immutable content. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+### family fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `concept` | string or null | `null` | See input schema. |
+| `tags` | array of string | `[]` |  maxItems: `100`. |
+| `source_group` | string or null | `null` | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CreativeFamilyWrite": {
+      "additionalProperties": false,
+      "description": "Editable family metadata separate from immutable content.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "concept": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "source_group": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "family": {
+      "$ref": "#/$defs/CreativeFamilyWrite",
+      "type": "object"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "creative_id",
+    "family",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creatives_archive
+
+Archive a family while preserving immutable content and existing launch history.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "creative_id",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creative_versions_create
+
+Save corrected content as a new immutable draft version; preserve prior successful launches.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+| `content` | object | Required | Content edits always create a draft and never accept approval inputs. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+### content fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `format` | single_image, single_video, carousel, collection, flexible, existing_post, catalog | Required | See input schema. |
+| `language_mode` | single, multilingual | `"single"` | See input schema. |
+| `default_locale` | string | Required | See input schema. |
+| `cta` | string or null | `null` | See input schema. |
+| `source_spec` | object | Optional | Content origin references; credentials and ad codes are excluded. |
+| `variants` | array of object | Required |  minItems: `1`. maxItems: `50`. |
+| `media` | array of object | `[]` |  maxItems: `100`. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CreativeContentWrite": {
+      "additionalProperties": false,
+      "description": "Content edits always create a draft and never accept approval inputs.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "format": {
+          "enum": [
+            "single_image",
+            "single_video",
+            "carousel",
+            "collection",
+            "flexible",
+            "existing_post",
+            "catalog"
+          ],
+          "type": "string"
+        },
+        "language_mode": {
+          "default": "single",
+          "enum": [
+            "single",
+            "multilingual"
+          ],
+          "type": "string"
+        },
+        "default_locale": {
+          "type": "string"
+        },
+        "cta": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_spec": {
+          "$ref": "#/$defs/CreativeSource"
+        },
+        "variants": {
+          "items": {
+            "$ref": "#/$defs/CreativeVariant"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "type": "array"
+        },
+        "media": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CreativeMediaBinding"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": [
+        "format",
+        "default_locale",
+        "variants"
+      ],
+      "type": "object"
+    },
+    "CreativeIdentity": {
+      "additionalProperties": false,
+      "description": "Nonsecret provider identity requirements.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "page_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "instagram_actor_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "CreativeMediaBinding": {
+      "additionalProperties": false,
+      "description": "Exact immutable media assignment within one content version.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "media_asset_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "slot_key": {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        "placement_key": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "position": {
+          "default": 0,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "variant_key": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "asset_metadata": {
+          "$ref": "#/$defs/MediaMetadata"
+        }
+      },
+      "required": [
+        "media_asset_id",
+        "slot_key"
+      ],
+      "type": "object"
+    },
+    "CreativeSource": {
+      "additionalProperties": false,
+      "description": "Content origin references; credentials and ad codes are excluded.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "default": "new_story",
+          "enum": [
+            "new_story",
+            "existing_post",
+            "catalog",
+            "flexible"
+          ],
+          "type": "string"
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CreativeIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "post_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "catalog_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "product_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "instant_experience_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "partnership_identity_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "partnership_permission_ref": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "CreativeVariant": {
+      "additionalProperties": false,
+      "description": "A locale member identified independently of list order.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "variant_key": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "locale": {
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "type": "string"
+        },
+        "headline": {
+          "maxLength": 1000,
+          "type": "string"
+        },
+        "primary_text": {
+          "maxLength": 10000,
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 1000,
+          "type": "string"
+        },
+        "destination_url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "deep_link": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "variant_key",
+        "locale",
+        "headline",
+        "primary_text"
+      ],
+      "type": "object"
+    },
+    "MediaMetadata": {
+      "additionalProperties": false,
+      "description": "Bounded nonsecret placement hints, not raw provider payloads.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "width_px": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "height_px": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "aspect_ratio": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "content": {
+      "$ref": "#/$defs/CreativeContentWrite",
+      "type": "object"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "creative_id",
+    "content",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creative_versions_approve
+
+Approve the exact complete locale bundle using the current approval grant.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+| `version_id` | uuid | Required | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "version_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "creative_id",
+    "version_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_creative_versions_revoke
+
+Revoke the complete approved bundle with a reason; history remains immutable.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `creative_id` | uuid | Required | See input schema. |
+| `version_id` | uuid | Required | See input schema. |
+| `reason` | string | Required |  minLength: `1`. maxLength: `1000`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "creative_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "version_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "creative_id",
+    "version_id",
+    "reason"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_list
+
+List fixed and smart collection definitions in the authorized workspace.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
+| `after_id` | uuid or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_preview
+
+Preview unsaved smart filters across the workspace without creating anything.  Repeat the same filters and exclusions with next_cursor to continue. Results show matching creative families; launch preview checks eligible versions. Reads do not use billable Meta writes.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `filter_spec` | object | Required | Versioned server filter definition. |
+| `excluded_ids` | array of uuid | `[]` |  maxItems: `1000`. |
+| `limit` | integer | `24` |  minimum: `1`. maximum: `100`. |
+| `cursor` | string or null | `null` | See input schema. |
+| `include_count` | boolean | `true` | See input schema. |
+
+### filter_spec fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `conditions` | array of object | `[]` |  maxItems: `30`. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "FilterCondition": {
+      "additionalProperties": false,
+      "description": "Conditions combine with AND; their values combine with OR.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "concept",
+            "language",
+            "format",
+            "tags",
+            "source",
+            "imported_at"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "contains",
+            "in",
+            "gte",
+            "lte"
+          ],
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "values"
+      ],
+      "type": "object"
+    },
+    "FilterSpec": {
+      "additionalProperties": false,
+      "description": "Versioned server filter definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FilterCondition"
+          },
+          "maxItems": 30,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "filter_spec": {
+      "$ref": "#/$defs/FilterSpec",
+      "type": "object"
+    },
+    "excluded_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "maxItems": 1000,
+      "type": "array"
+    },
+    "limit": {
+      "default": 24,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "maxLength": 4096,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "include_count": {
+      "default": true,
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "filter_spec"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_get
+
+Read a collection definition and its revision before pinning a selection.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `collection_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "collection_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "collection_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_create
+
+Create fixed family includes or a smart filter with explicit family exclusions.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `data` | object | Required | Fixed includes or smart exclusions with typed definition. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. |
+| `kind` | fixed, smart | Required | See input schema. |
+| `filter_spec` | object or null | `null` | See input schema. |
+| `member_ids` | array of uuid | `[]` |  maxItems: `100`. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CollectionWrite": {
+      "additionalProperties": false,
+      "description": "Fixed includes or smart exclusions with typed definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "fixed",
+            "smart"
+          ],
+          "type": "string"
+        },
+        "filter_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FilterSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "member_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "FilterCondition": {
+      "additionalProperties": false,
+      "description": "Conditions combine with AND; their values combine with OR.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "concept",
+            "language",
+            "format",
+            "tags",
+            "source",
+            "imported_at"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "contains",
+            "in",
+            "gte",
+            "lte"
+          ],
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "values"
+      ],
+      "type": "object"
+    },
+    "FilterSpec": {
+      "additionalProperties": false,
+      "description": "Versioned server filter definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FilterCondition"
+          },
+          "maxItems": 30,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "$ref": "#/$defs/CollectionWrite"
+    }
+  },
+  "required": [
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_update
+
+replace the saved definition and members using its current lock version.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `collection_id` | uuid | Required | See input schema. |
+| `data` | object | Required | Fixed includes or smart exclusions with typed definition. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. |
+| `kind` | fixed, smart | Required | See input schema. |
+| `filter_spec` | object or null | `null` | See input schema. |
+| `member_ids` | array of uuid | `[]` |  maxItems: `100`. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "CollectionWrite": {
+      "additionalProperties": false,
+      "description": "Fixed includes or smart exclusions with typed definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "fixed",
+            "smart"
+          ],
+          "type": "string"
+        },
+        "filter_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FilterSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "member_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "FilterCondition": {
+      "additionalProperties": false,
+      "description": "Conditions combine with AND; their values combine with OR.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "concept",
+            "language",
+            "format",
+            "tags",
+            "source",
+            "imported_at"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "contains",
+            "in",
+            "gte",
+            "lte"
+          ],
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "values"
+      ],
+      "type": "object"
+    },
+    "FilterSpec": {
+      "additionalProperties": false,
+      "description": "Versioned server filter definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FilterCondition"
+          },
+          "maxItems": 30,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "collection_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "data": {
+      "$ref": "#/$defs/CollectionWrite",
+      "type": "object"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "collection_id",
+    "data",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_archive
+
+Archive a collection; existing saved occurrence snapshots remain retained.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `collection_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "collection_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "collection_id",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_collections_resolve
+
+Resolve a consistent collection selection with AND conditions and OR values; reserves nothing.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `collection_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "collection_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "collection_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_templates_list
+
+List active templates within the authorized workspace.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
+| `after_id` | uuid or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_templates_get
+
+Read typed saved template versions; saved configuration is not proof of provider eligibility.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `template_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "template_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "template_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_templates_create
+
+Save a typed template and its first exact configuration version without a provider effect.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `data` | object | Required | Named reusable exact template version input. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. |
+| `config` | object | Required | Typed initial template subset; capability evidence is external. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "AdSetConfig": {
+      "additionalProperties": false,
+      "description": "Account-scoped capability validation owns enum compatibility.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "destination": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "optimization_goal": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "billing_event": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "promoted_object": {
+          "$ref": "#/$defs/PromotedObject"
+        },
+        "targeting": {
+          "$ref": "#/$defs/TargetingConfig"
+        },
+        "placements": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "bid": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BidConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "delivery": {
+          "$ref": "#/$defs/DeliveryPolicy"
+        },
+        "is_skadnetwork_attribution": {
+          "default": false,
+          "type": "boolean"
+        },
+        "attribution": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AttributionWindow"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "frequency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrequencyControl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dayparts": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/DaypartWindow"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "beneficiary": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "payor": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "destination",
+        "optimization_goal",
+        "billing_event",
+        "promoted_object",
+        "targeting",
+        "delivery"
+      ],
+      "type": "object"
+    },
+    "AttributionWindow": {
+      "additionalProperties": false,
+      "description": "Explicit provider attribution event and bounded integer window.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "event_type": {
+          "enum": [
+            "CLICK_THROUGH",
+            "VIEW_THROUGH",
+            "ENGAGED_VIDEO_VIEW"
+          ],
+          "type": "string"
+        },
+        "window_days": {
+          "maximum": 28,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "event_type",
+        "window_days"
+      ],
+      "type": "object"
+    },
+    "BidConfig": {
+      "additionalProperties": false,
+      "description": "Bid values preserve minor units or decimal ROAS text.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "strategy": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "amount_minor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "min_roas": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "strategy"
+      ],
+      "type": "object"
+    },
+    "BudgetConfig": {
+      "additionalProperties": false,
+      "description": "One budget owner and period using integer currency minor units.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "owner": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "period": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "amount_minor": {
+          "exclusiveMinimum": 0,
+          "maximum": 9223372036854775807,
+          "type": "integer"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner",
+        "period",
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "CampaignConfig": {
+      "additionalProperties": false,
+      "description": "Requested campaign declarations without claiming provider support.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "objective": {
+          "enum": [
+            "OUTCOME_AWARENESS",
+            "OUTCOME_TRAFFIC",
+            "OUTCOME_ENGAGEMENT",
+            "OUTCOME_LEADS",
+            "OUTCOME_APP_PROMOTION",
+            "OUTCOME_SALES"
+          ],
+          "type": "string"
+        },
+        "buying_type": {
+          "default": "AUCTION",
+          "enum": [
+            "AUCTION",
+            "RESERVED"
+          ],
+          "type": "string"
+        },
+        "special_categories": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "category_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "objective"
+      ],
+      "type": "object"
+    },
+    "CreativePolicy": {
+      "additionalProperties": false,
+      "description": "Whole-version language and partnership requirements.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "allowed_formats": {
+          "items": {
+            "enum": [
+              "single_image",
+              "single_video",
+              "carousel",
+              "collection",
+              "flexible",
+              "existing_post",
+              "catalog"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "language_mode": {
+          "default": "single",
+          "enum": [
+            "single",
+            "multilingual"
+          ],
+          "type": "string"
+        },
+        "missing_variant_policy": {
+          "const": "block",
+          "default": "block",
+          "type": "string"
+        },
+        "partnership_required": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "allowed_formats"
+      ],
+      "type": "object"
+    },
+    "DaypartWindow": {
+      "additionalProperties": false,
+      "description": "Ordered provider delivery interval without a general scheduler language.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "days": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "type": "array"
+        },
+        "start_minute": {
+          "exclusiveMaximum": 1440,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "end_minute": {
+          "exclusiveMinimum": 0,
+          "maximum": 1440,
+          "type": "integer"
+        },
+        "timezone_type": {
+          "default": "ADVERTISER",
+          "enum": [
+            "ADVERTISER",
+            "USER"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "days",
+        "start_minute",
+        "end_minute"
+      ],
+      "type": "object"
+    },
+    "DeliveryPolicy": {
+      "additionalProperties": false,
+      "description": "Deterministic schedule policy without automatic catch-up.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "dst_gap": {
+          "const": "skip",
+          "default": "skip",
+          "type": "string"
+        },
+        "dst_repeat": {
+          "const": "second",
+          "default": "second",
+          "type": "string"
+        },
+        "missed_run": {
+          "const": "skip",
+          "default": "skip",
+          "type": "string"
+        },
+        "start_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "end_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "start_offset_seconds": {
+          "anyOf": [
+            {
+              "maximum": 31536000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "duration_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 31536000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "timezone"
+      ],
+      "type": "object"
+    },
+    "FrequencyControl": {
+      "additionalProperties": false,
+      "description": "Awareness frequency request; account eligibility is checked externally.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "impressions": {
+          "exclusiveMinimum": 0,
+          "maximum": 1000,
+          "type": "integer"
+        },
+        "days": {
+          "exclusiveMinimum": 0,
+          "maximum": 90,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "impressions",
+        "days"
+      ],
+      "type": "object"
+    },
+    "NamingConfig": {
+      "additionalProperties": false,
+      "description": "Patterns are expanded and collision-checked before admission.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "campaign": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "adset": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ad": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "object"
+    },
+    "PromotedObject": {
+      "additionalProperties": false,
+      "description": "Explicit destination references validated further by capabilities.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "website",
+            "app",
+            "web_app",
+            "form",
+            "messaging",
+            "calls",
+            "catalog",
+            "event",
+            "profile",
+            "omnichannel"
+          ],
+          "type": "string"
+        },
+        "dataset_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom_conversion_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "application_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "store_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "os": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "page_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "form_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "channel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "identity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "flow_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "availability": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "catalog_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "product_set_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "profile_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "location_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "ProviderLocation": {
+      "additionalProperties": false,
+      "description": "Exact location-search reference with optional city radius.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "region",
+            "city",
+            "zip"
+          ],
+          "type": "string"
+        },
+        "key": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "radius": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "distance_unit": {
+          "anyOf": [
+            {
+              "enum": [
+                "kilometer",
+                "mile"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "key"
+      ],
+      "type": "object"
+    },
+    "RequestedStatus": {
+      "description": "Requested provider status, distinct from actual delivery.",
+      "enum": [
+        "PAUSED",
+        "ACTIVE"
+      ],
+      "type": "string"
+    },
+    "StructureConfig": {
+      "additionalProperties": false,
+      "description": "Bounded structure modes rather than a general workflow builder.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "mode": {
+          "default": "all",
+          "enum": [
+            "all",
+            "concept",
+            "manual"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TargetingConfig": {
+      "additionalProperties": false,
+      "description": "Country and audience controls with independent exclusions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "included_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "excluded_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "genders": {
+          "default": [],
+          "items": {
+            "enum": [
+              1,
+              2
+            ],
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "user_os": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "user_device": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "advantage_audience": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "locales": {
+          "default": [],
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "age_min": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "age_max": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "audience_semantics": {
+          "default": "control",
+          "enum": [
+            "control",
+            "suggestion"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TemplateConfig": {
+      "additionalProperties": false,
+      "description": "Typed initial template subset; capability evidence is external.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "campaign": {
+          "$ref": "#/$defs/CampaignConfig"
+        },
+        "budget": {
+          "$ref": "#/$defs/BudgetConfig"
+        },
+        "adset": {
+          "$ref": "#/$defs/AdSetConfig"
+        },
+        "creative_policy": {
+          "$ref": "#/$defs/CreativePolicy"
+        },
+        "naming": {
+          "$ref": "#/$defs/NamingConfig"
+        },
+        "structure": {
+          "$ref": "#/$defs/StructureConfig"
+        },
+        "requested_status": {
+          "$ref": "#/$defs/RequestedStatus",
+          "default": "PAUSED"
+        }
+      },
+      "required": [
+        "campaign",
+        "budget",
+        "adset",
+        "creative_policy",
+        "naming"
+      ],
+      "type": "object"
+    },
+    "TemplateWrite": {
+      "additionalProperties": false,
+      "description": "Named reusable exact template version input.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/TemplateConfig"
+        }
+      },
+      "required": [
+        "name",
+        "config"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "$ref": "#/$defs/TemplateWrite"
+    }
+  },
+  "required": [
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_template_versions_create
+
+Save a new immutable template configuration version; scheduled references keep their exact version.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `template_id` | uuid | Required | See input schema. |
+| `data` | object | Required | Named reusable exact template version input. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. |
+| `config` | object | Required | Typed initial template subset; capability evidence is external. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "AdSetConfig": {
+      "additionalProperties": false,
+      "description": "Account-scoped capability validation owns enum compatibility.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "destination": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "optimization_goal": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "billing_event": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "promoted_object": {
+          "$ref": "#/$defs/PromotedObject"
+        },
+        "targeting": {
+          "$ref": "#/$defs/TargetingConfig"
+        },
+        "placements": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "bid": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BidConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "delivery": {
+          "$ref": "#/$defs/DeliveryPolicy"
+        },
+        "is_skadnetwork_attribution": {
+          "default": false,
+          "type": "boolean"
+        },
+        "attribution": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AttributionWindow"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "frequency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrequencyControl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dayparts": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/DaypartWindow"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "beneficiary": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "payor": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "destination",
+        "optimization_goal",
+        "billing_event",
+        "promoted_object",
+        "targeting",
+        "delivery"
+      ],
+      "type": "object"
+    },
+    "AttributionWindow": {
+      "additionalProperties": false,
+      "description": "Explicit provider attribution event and bounded integer window.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "event_type": {
+          "enum": [
+            "CLICK_THROUGH",
+            "VIEW_THROUGH",
+            "ENGAGED_VIDEO_VIEW"
+          ],
+          "type": "string"
+        },
+        "window_days": {
+          "maximum": 28,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "event_type",
+        "window_days"
+      ],
+      "type": "object"
+    },
+    "BidConfig": {
+      "additionalProperties": false,
+      "description": "Bid values preserve minor units or decimal ROAS text.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "strategy": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "amount_minor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "min_roas": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "strategy"
+      ],
+      "type": "object"
+    },
+    "BudgetConfig": {
+      "additionalProperties": false,
+      "description": "One budget owner and period using integer currency minor units.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "owner": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "period": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "amount_minor": {
+          "exclusiveMinimum": 0,
+          "maximum": 9223372036854775807,
+          "type": "integer"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner",
+        "period",
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "CampaignConfig": {
+      "additionalProperties": false,
+      "description": "Requested campaign declarations without claiming provider support.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "objective": {
+          "enum": [
+            "OUTCOME_AWARENESS",
+            "OUTCOME_TRAFFIC",
+            "OUTCOME_ENGAGEMENT",
+            "OUTCOME_LEADS",
+            "OUTCOME_APP_PROMOTION",
+            "OUTCOME_SALES"
+          ],
+          "type": "string"
+        },
+        "buying_type": {
+          "default": "AUCTION",
+          "enum": [
+            "AUCTION",
+            "RESERVED"
+          ],
+          "type": "string"
+        },
+        "special_categories": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "category_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "objective"
+      ],
+      "type": "object"
+    },
+    "CreativePolicy": {
+      "additionalProperties": false,
+      "description": "Whole-version language and partnership requirements.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "allowed_formats": {
+          "items": {
+            "enum": [
+              "single_image",
+              "single_video",
+              "carousel",
+              "collection",
+              "flexible",
+              "existing_post",
+              "catalog"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "language_mode": {
+          "default": "single",
+          "enum": [
+            "single",
+            "multilingual"
+          ],
+          "type": "string"
+        },
+        "missing_variant_policy": {
+          "const": "block",
+          "default": "block",
+          "type": "string"
+        },
+        "partnership_required": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "allowed_formats"
+      ],
+      "type": "object"
+    },
+    "DaypartWindow": {
+      "additionalProperties": false,
+      "description": "Ordered provider delivery interval without a general scheduler language.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "days": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "type": "array"
+        },
+        "start_minute": {
+          "exclusiveMaximum": 1440,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "end_minute": {
+          "exclusiveMinimum": 0,
+          "maximum": 1440,
+          "type": "integer"
+        },
+        "timezone_type": {
+          "default": "ADVERTISER",
+          "enum": [
+            "ADVERTISER",
+            "USER"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "days",
+        "start_minute",
+        "end_minute"
+      ],
+      "type": "object"
+    },
+    "DeliveryPolicy": {
+      "additionalProperties": false,
+      "description": "Deterministic schedule policy without automatic catch-up.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "dst_gap": {
+          "const": "skip",
+          "default": "skip",
+          "type": "string"
+        },
+        "dst_repeat": {
+          "const": "second",
+          "default": "second",
+          "type": "string"
+        },
+        "missed_run": {
+          "const": "skip",
+          "default": "skip",
+          "type": "string"
+        },
+        "start_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "end_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "start_offset_seconds": {
+          "anyOf": [
+            {
+              "maximum": 31536000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "duration_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 31536000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "timezone"
+      ],
+      "type": "object"
+    },
+    "FrequencyControl": {
+      "additionalProperties": false,
+      "description": "Awareness frequency request; account eligibility is checked externally.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "impressions": {
+          "exclusiveMinimum": 0,
+          "maximum": 1000,
+          "type": "integer"
+        },
+        "days": {
+          "exclusiveMinimum": 0,
+          "maximum": 90,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "impressions",
+        "days"
+      ],
+      "type": "object"
+    },
+    "NamingConfig": {
+      "additionalProperties": false,
+      "description": "Patterns are expanded and collision-checked before admission.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "campaign": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "adset": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ad": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "object"
+    },
+    "PromotedObject": {
+      "additionalProperties": false,
+      "description": "Explicit destination references validated further by capabilities.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "website",
+            "app",
+            "web_app",
+            "form",
+            "messaging",
+            "calls",
+            "catalog",
+            "event",
+            "profile",
+            "omnichannel"
+          ],
+          "type": "string"
+        },
+        "dataset_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom_conversion_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "application_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "store_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "os": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "page_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "form_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "channel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "identity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "flow_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "availability": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "catalog_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "product_set_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "profile_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "location_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "ProviderLocation": {
+      "additionalProperties": false,
+      "description": "Exact location-search reference with optional city radius.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "region",
+            "city",
+            "zip"
+          ],
+          "type": "string"
+        },
+        "key": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "radius": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "distance_unit": {
+          "anyOf": [
+            {
+              "enum": [
+                "kilometer",
+                "mile"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "key"
+      ],
+      "type": "object"
+    },
+    "RequestedStatus": {
+      "description": "Requested provider status, distinct from actual delivery.",
+      "enum": [
+        "PAUSED",
+        "ACTIVE"
+      ],
+      "type": "string"
+    },
+    "StructureConfig": {
+      "additionalProperties": false,
+      "description": "Bounded structure modes rather than a general workflow builder.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "mode": {
+          "default": "all",
+          "enum": [
+            "all",
+            "concept",
+            "manual"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TargetingConfig": {
+      "additionalProperties": false,
+      "description": "Country and audience controls with independent exclusions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "included_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "excluded_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "genders": {
+          "default": [],
+          "items": {
+            "enum": [
+              1,
+              2
+            ],
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "user_os": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "user_device": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "advantage_audience": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "locales": {
+          "default": [],
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "age_min": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "age_max": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "audience_semantics": {
+          "default": "control",
+          "enum": [
+            "control",
+            "suggestion"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TemplateConfig": {
+      "additionalProperties": false,
+      "description": "Typed initial template subset; capability evidence is external.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "campaign": {
+          "$ref": "#/$defs/CampaignConfig"
+        },
+        "budget": {
+          "$ref": "#/$defs/BudgetConfig"
+        },
+        "adset": {
+          "$ref": "#/$defs/AdSetConfig"
+        },
+        "creative_policy": {
+          "$ref": "#/$defs/CreativePolicy"
+        },
+        "naming": {
+          "$ref": "#/$defs/NamingConfig"
+        },
+        "structure": {
+          "$ref": "#/$defs/StructureConfig"
+        },
+        "requested_status": {
+          "$ref": "#/$defs/RequestedStatus",
+          "default": "PAUSED"
+        }
+      },
+      "required": [
+        "campaign",
+        "budget",
+        "adset",
+        "creative_policy",
+        "naming"
+      ],
+      "type": "object"
+    },
+    "TemplateWrite": {
+      "additionalProperties": false,
+      "description": "Named reusable exact template version input.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/TemplateConfig"
+        }
+      },
+      "required": [
+        "name",
+        "config"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "template_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "data": {
+      "$ref": "#/$defs/TemplateWrite",
+      "type": "object"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "template_id",
+    "data",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_templates_archive
+
+Archive a template identity while retaining previously pinned configuration versions.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `template_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "template_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "template_id",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_media_list
+
+List imported asset IDs and metadata; storage locations stay private.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
+| `search` | string or null | `null` | See input schema. |
+| `media_type` | image, video or null | `null` | See input schema. |
+| `source_kind` | upload, google_drive or null | `null` | See input schema. |
+| `sort` | newest, oldest, name | `"newest"` | See input schema. |
+| `offset` | integer | `0` |  minimum: `0`. maximum: `100000`. |
+| `after_id` | uuid or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "search": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "media_type": {
+      "anyOf": [
+        {
+          "enum": [
+            "image",
+            "video"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_kind": {
+      "anyOf": [
+        {
+          "enum": [
+            "upload",
+            "google_drive"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sort": {
+      "default": "newest",
+      "enum": [
+        "newest",
+        "oldest",
+        "name"
+      ],
+      "type": "string"
+    },
+    "offset": {
+      "default": 0,
+      "maximum": 100000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_media_get
+
+Read imported media metadata without private URLs or object keys.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `media_asset_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "media_asset_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "media_asset_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_media_delete
+
+Archive unused media and queue storage cleanup. Retained creative or execution references block deletion.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `media_asset_id` | uuid | Required | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "media_asset_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "media_asset_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_media_retry_thumbnail
+
+Queue a thumbnail attempt for media in the currently authorized workspace.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `media_asset_id` | uuid | Required | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "media_asset_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "media_asset_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

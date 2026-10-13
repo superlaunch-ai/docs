@@ -57,7 +57,8 @@
           "mcp/authentication",
           "mcp/first-workflow",
           "mcp/workflows",
-          "mcp/troubleshooting"
+          "mcp/troubleshooting",
+          "mcp/tools"
         ]
       },
       {
@@ -71,7 +72,18 @@
       },
       {
         "group": "MCP reference",
-        "pages": []
+        "pages": [
+          "mcp/reference/accounts-brands",
+          "mcp/reference/insights",
+          "mcp/reference/rules",
+          "mcp/reference/actions",
+          "mcp/reference/activity",
+          "mcp/reference/memory",
+          "mcp/reference/launcher-library",
+          "mcp/reference/launcher-launches",
+          "mcp/reference/launcher-schedules",
+          "mcp/reference/launcher-drive"
+        ]
       }
     ],
     "global": {

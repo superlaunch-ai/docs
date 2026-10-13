@@ -1,0 +1,1696 @@
+---
+title: "Rule tools"
+description: "Read `rules_schema` for the current rule vocabulary."
+---
+
+Read `rules_schema` for the current rule vocabulary. Read the current rule version before an update. `rules_update` replaces the definition. `rules_run` defaults to dry-run mode.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+## rules_schema
+
+Return the rule-builder vocabulary and write requirements.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+**Arguments:** none.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {},
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_list
+
+List rules whose complete target set is readable.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `25` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_get
+
+Read the complete current rule definition for a lossless replacement.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "rule_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_create
+
+Create one rule after target and functional authorization.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `payload` | object | Required | Complete canonical rule create request. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `provider` | string | `"meta"` |  minLength: `1`. maxLength: `64`. |
+| `status` | draft, active, paused | `"draft"` | See input schema. |
+| `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
+| `level` | campaign, adset, ad | `"ad"` | Advertising hierarchy levels that rules may target. |
+| `target_filter` | object | Required | Nested target predicates. |
+| `tasks` | array of object | Required |  minItems: `1`. maxItems: `20`. |
+| `schedule` | object | Required | Validated cron schedule and IANA timezone. |
+| `execution_limit` | object or null | `null` | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+| `metadata` | object | Optional | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "ConditionNode": {
+      "additionalProperties": false,
+      "description": "Condition or group node with explicit discriminating kind.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "condition",
+            "group"
+          ],
+          "type": "string"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MetricReferenceInput"
+            },
+            {
+              "$ref": "#/$defs/RuleMetricId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "timeframe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MetricTimeframeInput"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "operator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        },
+        "combinator": {
+          "anyOf": [
+            {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/ConditionNode"
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "DecreaseBudgetActionParameters": {
+      "additionalProperties": false,
+      "description": "Decrease parameters with an explicit account-currency floor.",
+      "properties": {
+        "mode": {
+          "enum": [
+            "percent",
+            "absolute"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "Percent when mode is percent; major account-currency units when absolute.",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "min_daily_budget": {
+          "description": "Minimum allowed budget in major account-currency units (for USD, 100 means $100).",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "mode",
+        "value",
+        "min_daily_budget"
+      ],
+      "type": "object"
+    },
+    "DecreaseBudgetRuleAction": {
+      "additionalProperties": false,
+      "description": "Budget decrease that cannot fall below its mandatory floor.",
+      "properties": {
+        "type": {
+          "const": "decrease_budget",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/DecreaseBudgetActionParameters"
+        }
+      },
+      "required": [
+        "type",
+        "params"
+      ],
+      "type": "object"
+    },
+    "IncreaseBudgetActionParameters": {
+      "additionalProperties": false,
+      "description": "Increase parameters with an explicit account-currency ceiling.",
+      "properties": {
+        "mode": {
+          "enum": [
+            "percent",
+            "absolute"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "Percent when mode is percent; major account-currency units when absolute.",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "max_daily_budget": {
+          "description": "Maximum allowed budget in major account-currency units (for USD, 100 means $100).",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "mode",
+        "value",
+        "max_daily_budget"
+      ],
+      "type": "object"
+    },
+    "IncreaseBudgetRuleAction": {
+      "additionalProperties": false,
+      "description": "Budget increase that cannot exceed its mandatory ceiling.",
+      "properties": {
+        "type": {
+          "const": "increase_budget",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/IncreaseBudgetActionParameters"
+        }
+      },
+      "required": [
+        "type",
+        "params"
+      ],
+      "type": "object"
+    },
+    "MetricReferenceInput": {
+      "additionalProperties": false,
+      "description": "Immutable provider metric selector.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/RuleMetricId"
+        },
+        "source_metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "action_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "attribution_window": {
+          "default": "value",
+          "enum": [
+            "value",
+            "1d_click",
+            "7d_click",
+            "1d_view"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "MetricTimeframeInput": {
+      "additionalProperties": false,
+      "description": "Today or bounded rolling-day window.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "today",
+            "rolling_days"
+          ],
+          "type": "string"
+        },
+        "days": {
+          "default": 1,
+          "maximum": 365,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "OtherRuleAction": {
+      "additionalProperties": false,
+      "description": "One non-relative-budget action validated again by Core.",
+      "properties": {
+        "type": {
+          "enum": [
+            "set_budget",
+            "set_status",
+            "add_tag",
+            "remove_tag",
+            "replace_tag",
+            "edit_name",
+            "duplicate"
+          ],
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "RuleAction": {
+      "discriminator": {
+        "mapping": {
+          "add_tag": "#/$defs/OtherRuleAction",
+          "decrease_budget": "#/$defs/DecreaseBudgetRuleAction",
+          "duplicate": "#/$defs/OtherRuleAction",
+          "edit_name": "#/$defs/OtherRuleAction",
+          "increase_budget": "#/$defs/IncreaseBudgetRuleAction",
+          "remove_tag": "#/$defs/OtherRuleAction",
+          "replace_tag": "#/$defs/OtherRuleAction",
+          "set_budget": "#/$defs/OtherRuleAction",
+          "set_status": "#/$defs/OtherRuleAction"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IncreaseBudgetRuleAction"
+        },
+        {
+          "$ref": "#/$defs/DecreaseBudgetRuleAction"
+        },
+        {
+          "$ref": "#/$defs/OtherRuleAction"
+        }
+      ]
+    },
+    "RuleCreate": {
+      "additionalProperties": false,
+      "description": "Complete canonical rule create request.",
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "provider": {
+          "default": "meta",
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "paused"
+          ],
+          "type": "string"
+        },
+        "ad_account_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "type": "array"
+        },
+        "level": {
+          "$ref": "#/$defs/RuleTargetLevel",
+          "default": "ad"
+        },
+        "target_filter": {
+          "$ref": "#/$defs/TargetFilterGroup"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/RuleTask"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "type": "array"
+        },
+        "schedule": {
+          "$ref": "#/$defs/RuleSchedule"
+        },
+        "execution_limit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuleExecutionLimit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "request_id",
+        "name",
+        "ad_account_ids",
+        "target_filter",
+        "tasks",
+        "schedule"
+      ],
+      "type": "object"
+    },
+    "RuleExecutionLimit": {
+      "additionalProperties": false,
+      "description": "Per-rule/per-asset execution capacity inside a rolling window.",
+      "properties": {
+        "max_executions": {
+          "maximum": 100000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "window_seconds": {
+          "maximum": 31536000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "scope": {
+          "const": "rule_asset",
+          "default": "rule_asset",
+          "type": "string"
+        }
+      },
+      "required": [
+        "max_executions",
+        "window_seconds"
+      ],
+      "type": "object"
+    },
+    "RuleMetricId": {
+      "enum": [
+        "spend",
+        "impressions",
+        "frequency",
+        "cpm",
+        "inline_link_clicks",
+        "meta.action:landing_page_view",
+        "ctr",
+        "cpc",
+        "leads",
+        "add_to_carts",
+        "meta.action:initiate_checkout",
+        "purchases",
+        "purchase_value",
+        "cpa",
+        "roas"
+      ],
+      "minLength": 1,
+      "type": "string"
+    },
+    "RuleSchedule": {
+      "additionalProperties": false,
+      "description": "Validated cron schedule and IANA timezone.",
+      "properties": {
+        "cron": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "timezone": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "cron",
+        "timezone"
+      ],
+      "type": "object"
+    },
+    "RuleTargetLevel": {
+      "description": "Advertising hierarchy levels that rules may target.",
+      "enum": [
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "string"
+    },
+    "RuleTask": {
+      "additionalProperties": false,
+      "description": "Ordered first-match rule task.",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "active_only": {
+          "default": true,
+          "type": "boolean"
+        },
+        "conditions": {
+          "$ref": "#/$defs/ConditionNode"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/RuleAction"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "conditions",
+        "actions"
+      ],
+      "type": "object"
+    },
+    "TargetFilterGroup": {
+      "additionalProperties": false,
+      "description": "Nested target predicates.",
+      "properties": {
+        "kind": {
+          "const": "group",
+          "default": "group",
+          "type": "string"
+        },
+        "combinator": {
+          "default": "and",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "filter": "#/$defs/TargetFilterPredicate",
+                "group": "#/$defs/TargetFilterGroup"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TargetFilterPredicate"
+              },
+              {
+                "$ref": "#/$defs/TargetFilterGroup"
+              }
+            ]
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "TargetFilterPredicate": {
+      "additionalProperties": false,
+      "description": "One provider-neutral target predicate.",
+      "properties": {
+        "kind": {
+          "const": "filter",
+          "type": "string"
+        },
+        "attribute": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "operator": {
+          "maxLength": 50,
+          "minLength": 1,
+          "type": "string"
+        },
+        "value": {},
+        "scope": {
+          "default": "self",
+          "enum": [
+            "self",
+            "ancestor"
+          ],
+          "type": "string"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuleTargetLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "attribute",
+        "operator",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/RuleCreate",
+      "type": "object"
+    }
+  },
+  "required": [
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_update
+
+Replace one rule; first read it and preserve every unchanged field.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+| `payload` | object | Required | See input schema. |
+
+### payload fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `request_id` | uuid | Required | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `300`. |
+| `provider` | string | `"meta"` |  minLength: `1`. maxLength: `64`. |
+| `status` | draft, active, paused | `"draft"` | See input schema. |
+| `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
+| `level` | campaign, adset, ad | `"ad"` | Advertising hierarchy levels that rules may target. |
+| `target_filter` | object | Required | Nested target predicates. |
+| `tasks` | array of object | Required |  minItems: `1`. maxItems: `20`. |
+| `schedule` | object | Required | Validated cron schedule and IANA timezone. |
+| `execution_limit` | object or null | `null` | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+| `metadata` | object | Optional | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "ConditionNode": {
+      "additionalProperties": false,
+      "description": "Condition or group node with explicit discriminating kind.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "condition",
+            "group"
+          ],
+          "type": "string"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MetricReferenceInput"
+            },
+            {
+              "$ref": "#/$defs/RuleMetricId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "timeframe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MetricTimeframeInput"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "operator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        },
+        "combinator": {
+          "anyOf": [
+            {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/ConditionNode"
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "DecreaseBudgetActionParameters": {
+      "additionalProperties": false,
+      "description": "Decrease parameters with an explicit account-currency floor.",
+      "properties": {
+        "mode": {
+          "enum": [
+            "percent",
+            "absolute"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "Percent when mode is percent; major account-currency units when absolute.",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "min_daily_budget": {
+          "description": "Minimum allowed budget in major account-currency units (for USD, 100 means $100).",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "mode",
+        "value",
+        "min_daily_budget"
+      ],
+      "type": "object"
+    },
+    "DecreaseBudgetRuleAction": {
+      "additionalProperties": false,
+      "description": "Budget decrease that cannot fall below its mandatory floor.",
+      "properties": {
+        "type": {
+          "const": "decrease_budget",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/DecreaseBudgetActionParameters"
+        }
+      },
+      "required": [
+        "type",
+        "params"
+      ],
+      "type": "object"
+    },
+    "IncreaseBudgetActionParameters": {
+      "additionalProperties": false,
+      "description": "Increase parameters with an explicit account-currency ceiling.",
+      "properties": {
+        "mode": {
+          "enum": [
+            "percent",
+            "absolute"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "Percent when mode is percent; major account-currency units when absolute.",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "max_daily_budget": {
+          "description": "Maximum allowed budget in major account-currency units (for USD, 100 means $100).",
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "mode",
+        "value",
+        "max_daily_budget"
+      ],
+      "type": "object"
+    },
+    "IncreaseBudgetRuleAction": {
+      "additionalProperties": false,
+      "description": "Budget increase that cannot exceed its mandatory ceiling.",
+      "properties": {
+        "type": {
+          "const": "increase_budget",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/IncreaseBudgetActionParameters"
+        }
+      },
+      "required": [
+        "type",
+        "params"
+      ],
+      "type": "object"
+    },
+    "MetricReferenceInput": {
+      "additionalProperties": false,
+      "description": "Immutable provider metric selector.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/RuleMetricId"
+        },
+        "source_metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "action_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "attribution_window": {
+          "default": "value",
+          "enum": [
+            "value",
+            "1d_click",
+            "7d_click",
+            "1d_view"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "MetricTimeframeInput": {
+      "additionalProperties": false,
+      "description": "Today or bounded rolling-day window.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "today",
+            "rolling_days"
+          ],
+          "type": "string"
+        },
+        "days": {
+          "default": 1,
+          "maximum": 365,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "OtherRuleAction": {
+      "additionalProperties": false,
+      "description": "One non-relative-budget action validated again by Core.",
+      "properties": {
+        "type": {
+          "enum": [
+            "set_budget",
+            "set_status",
+            "add_tag",
+            "remove_tag",
+            "replace_tag",
+            "edit_name",
+            "duplicate"
+          ],
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "RuleAction": {
+      "discriminator": {
+        "mapping": {
+          "add_tag": "#/$defs/OtherRuleAction",
+          "decrease_budget": "#/$defs/DecreaseBudgetRuleAction",
+          "duplicate": "#/$defs/OtherRuleAction",
+          "edit_name": "#/$defs/OtherRuleAction",
+          "increase_budget": "#/$defs/IncreaseBudgetRuleAction",
+          "remove_tag": "#/$defs/OtherRuleAction",
+          "replace_tag": "#/$defs/OtherRuleAction",
+          "set_budget": "#/$defs/OtherRuleAction",
+          "set_status": "#/$defs/OtherRuleAction"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IncreaseBudgetRuleAction"
+        },
+        {
+          "$ref": "#/$defs/DecreaseBudgetRuleAction"
+        },
+        {
+          "$ref": "#/$defs/OtherRuleAction"
+        }
+      ]
+    },
+    "RuleExecutionLimit": {
+      "additionalProperties": false,
+      "description": "Per-rule/per-asset execution capacity inside a rolling window.",
+      "properties": {
+        "max_executions": {
+          "maximum": 100000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "window_seconds": {
+          "maximum": 31536000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "scope": {
+          "const": "rule_asset",
+          "default": "rule_asset",
+          "type": "string"
+        }
+      },
+      "required": [
+        "max_executions",
+        "window_seconds"
+      ],
+      "type": "object"
+    },
+    "RuleMetricId": {
+      "enum": [
+        "spend",
+        "impressions",
+        "frequency",
+        "cpm",
+        "inline_link_clicks",
+        "meta.action:landing_page_view",
+        "ctr",
+        "cpc",
+        "leads",
+        "add_to_carts",
+        "meta.action:initiate_checkout",
+        "purchases",
+        "purchase_value",
+        "cpa",
+        "roas"
+      ],
+      "minLength": 1,
+      "type": "string"
+    },
+    "RuleSchedule": {
+      "additionalProperties": false,
+      "description": "Validated cron schedule and IANA timezone.",
+      "properties": {
+        "cron": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "timezone": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "cron",
+        "timezone"
+      ],
+      "type": "object"
+    },
+    "RuleTargetLevel": {
+      "description": "Advertising hierarchy levels that rules may target.",
+      "enum": [
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "string"
+    },
+    "RuleTask": {
+      "additionalProperties": false,
+      "description": "Ordered first-match rule task.",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "active_only": {
+          "default": true,
+          "type": "boolean"
+        },
+        "conditions": {
+          "$ref": "#/$defs/ConditionNode"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/RuleAction"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "conditions",
+        "actions"
+      ],
+      "type": "object"
+    },
+    "RuleUpdate": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "provider": {
+          "default": "meta",
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "paused"
+          ],
+          "type": "string"
+        },
+        "ad_account_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "type": "array"
+        },
+        "level": {
+          "$ref": "#/$defs/RuleTargetLevel",
+          "default": "ad"
+        },
+        "target_filter": {
+          "$ref": "#/$defs/TargetFilterGroup"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/RuleTask"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "type": "array"
+        },
+        "schedule": {
+          "$ref": "#/$defs/RuleSchedule"
+        },
+        "execution_limit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuleExecutionLimit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dry_run": {
+          "default": true,
+          "type": "boolean"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "request_id",
+        "name",
+        "ad_account_ids",
+        "target_filter",
+        "tasks",
+        "schedule",
+        "expected_version"
+      ],
+      "type": "object"
+    },
+    "TargetFilterGroup": {
+      "additionalProperties": false,
+      "description": "Nested target predicates.",
+      "properties": {
+        "kind": {
+          "const": "group",
+          "default": "group",
+          "type": "string"
+        },
+        "combinator": {
+          "default": "and",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "filter": "#/$defs/TargetFilterPredicate",
+                "group": "#/$defs/TargetFilterGroup"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TargetFilterPredicate"
+              },
+              {
+                "$ref": "#/$defs/TargetFilterGroup"
+              }
+            ]
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "TargetFilterPredicate": {
+      "additionalProperties": false,
+      "description": "One provider-neutral target predicate.",
+      "properties": {
+        "kind": {
+          "const": "filter",
+          "type": "string"
+        },
+        "attribute": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "operator": {
+          "maxLength": 50,
+          "minLength": 1,
+          "type": "string"
+        },
+        "value": {},
+        "scope": {
+          "default": "self",
+          "enum": [
+            "self",
+            "ancestor"
+          ],
+          "type": "string"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuleTargetLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "attribute",
+        "operator",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/RuleUpdate",
+      "type": "object"
+    }
+  },
+  "required": [
+    "rule_id",
+    "payload"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_change_status
+
+Change rule status after current target authorization.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required | See input schema. |
+| `status` | string | Required | See input schema. |
+| `request_id` | uuid | Required | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "type": "integer"
+    },
+    "status": {
+      "type": "string"
+    },
+    "request_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "rule_id",
+    "expected_version",
+    "status",
+    "request_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_delete
+
+Archive one authorized rule.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+| `expected_version` | integer | Required | See input schema. |
+| `request_id` | uuid | Required | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "type": "integer"
+    },
+    "request_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "rule_id",
+    "expected_version",
+    "request_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_changes
+
+List immutable changes for an authorized rule.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+| `limit` | integer | `25` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "rule_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rules_run
+
+Accept one idempotent durable rule run.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+| `version` | integer | Required | See input schema. |
+| `request_id` | uuid | Required | See input schema. |
+| `dry_run` | boolean | `true` | See input schema. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "request_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "rule_id",
+    "version",
+    "request_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rule_runs_list
+
+List authorized rule runs.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `25` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rule_runs_get
+
+Read one authorized rule run.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `run_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rule_activity_list
+
+List authorized rule activity records.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `limit` | integer | `25` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rule_activity_get
+
+Read one authorized rule activity record.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `activity_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "activity_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "activity_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## rule_activity_summary
+
+Return a activity summary for one authorized rule.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `rule_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "rule_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>

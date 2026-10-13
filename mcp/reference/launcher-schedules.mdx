@@ -1,0 +1,1799 @@
+---
+title: "Launcher schedules and limits"
+description: "Schedules keep pinned recurring inputs."
+---
+
+Schedules keep pinned recurring inputs. Read the current lock version before editing. Existing occurrences keep their recorded inputs. Account limits cap campaign counts and budget exposure; omission of an expected version applies only to initial limit configuration.
+
+The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
+
+Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
+
+## launcher_schedules_create
+
+Save pinned recurring inputs with SKIP overlap and current automation authority.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `data` | object | Required | Workspace content and an explicit account define future runs. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. |
+| `request` | object | Required | Brandless public schema with legacy receipt parsing for exact retries. |
+| `cron_expression` | string | Required |  minLength: `9`. maxLength: `100`. |
+| `timezone` | string | Required | See input schema. |
+| `batch_limit` | integer | Required |  minimum: `1`. maximum: `1000`. |
+| `batch_budget_limit_minor` | integer | Required |  exclusiveMinimum: `0`. |
+| `enabled` | boolean | `true` | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "BudgetConfig": {
+      "additionalProperties": false,
+      "description": "One budget owner and period using integer currency minor units.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "owner": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "period": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "amount_minor": {
+          "exclusiveMinimum": 0,
+          "maximum": 9223372036854775807,
+          "type": "integer"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner",
+        "period",
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "ExistingTargetSpec": {
+      "additionalProperties": false,
+      "description": "Exact provider target chosen from fresh account reads.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "campaign_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "adset_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "settings_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "campaign_id",
+        "adset_id",
+        "settings_fingerprint"
+      ],
+      "type": "object"
+    },
+    "FilterCondition": {
+      "additionalProperties": false,
+      "description": "Conditions combine with AND; their values combine with OR.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "concept",
+            "language",
+            "format",
+            "tags",
+            "source",
+            "imported_at"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "contains",
+            "in",
+            "gte",
+            "lte"
+          ],
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "values"
+      ],
+      "type": "object"
+    },
+    "FilterSpec": {
+      "additionalProperties": false,
+      "description": "Versioned server filter definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FilterCondition"
+          },
+          "maxItems": 30,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ManualGroup": {
+      "additionalProperties": false,
+      "description": "One stable user-assigned group over explicit creative families.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "group_key": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "creative_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "type": "array"
+        },
+        "targeting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetingConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BudgetConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "group_key"
+      ],
+      "type": "object"
+    },
+    "ProviderLocation": {
+      "additionalProperties": false,
+      "description": "Exact location-search reference with optional city radius.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "region",
+            "city",
+            "zip"
+          ],
+          "type": "string"
+        },
+        "key": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "radius": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "distance_unit": {
+          "anyOf": [
+            {
+              "enum": [
+                "kilometer",
+                "mile"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "key"
+      ],
+      "type": "object"
+    },
+    "ReplacementItem": {
+      "additionalProperties": false,
+      "description": "Fence one failed assignment and the exact approved corrected version.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "source_item_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "creative_version_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_ad_attempt": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_item_id",
+        "creative_version_id",
+        "expected_ad_attempt"
+      ],
+      "type": "object"
+    },
+    "ReplacementSpec": {
+      "additionalProperties": false,
+      "description": "A new request links a bounded corrected subset to retained source history.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "launch_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ReplacementItem"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "launch_id",
+        "expected_version",
+        "items"
+      ],
+      "type": "object"
+    },
+    "RequestedStatus": {
+      "description": "Requested provider status, distinct from actual delivery.",
+      "enum": [
+        "PAUSED",
+        "ACTIVE"
+      ],
+      "type": "string"
+    },
+    "SelectionSpec": {
+      "additionalProperties": false,
+      "description": "Direct or pinned collection selection with explicit exclusions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "direct",
+            "fixed",
+            "smart"
+          ],
+          "type": "string"
+        },
+        "creative_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "type": "array"
+        },
+        "excluded_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "type": "array"
+        },
+        "collection_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_lock_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filter_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FilterSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "TargetingConfig": {
+      "additionalProperties": false,
+      "description": "Country and audience controls with independent exclusions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "included_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "excluded_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "genders": {
+          "default": [],
+          "items": {
+            "enum": [
+              1,
+              2
+            ],
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "user_os": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "user_device": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "advantage_audience": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "locales": {
+          "default": [],
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "age_min": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "age_max": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "audience_semantics": {
+          "default": "control",
+          "enum": [
+            "control",
+            "suggestion"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkspaceLaunchSubmit": {
+      "additionalProperties": false,
+      "description": "Brandless public schema with legacy receipt parsing for exact retries.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "default": "Launch",
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "request_key": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "test",
+            "promote",
+            "refresh"
+          ],
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "test",
+            "scale"
+          ],
+          "type": "string"
+        },
+        "template_version_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "selection": {
+          "$ref": "#/$defs/SelectionSpec"
+        },
+        "repeat_across_groups": {
+          "default": false,
+          "type": "boolean"
+        },
+        "manual_groups": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ManualGroup"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "requested_status": {
+          "$ref": "#/$defs/RequestedStatus",
+          "default": "PAUSED"
+        },
+        "scheduled_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_launch_item_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExistingTargetSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "retest_reason": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "replacement": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReplacementSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "request_key",
+        "ad_account_id",
+        "operation",
+        "purpose",
+        "template_version_id",
+        "selection"
+      ],
+      "type": "object"
+    },
+    "WorkspaceScheduleWrite": {
+      "additionalProperties": false,
+      "description": "Workspace content and an explicit account define future runs.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/WorkspaceLaunchSubmit"
+        },
+        "cron_expression": {
+          "maxLength": 100,
+          "minLength": 9,
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "batch_limit": {
+          "maximum": 1000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "batch_budget_limit_minor": {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "request",
+        "cron_expression",
+        "timezone",
+        "batch_limit",
+        "batch_budget_limit_minor"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "$ref": "#/$defs/WorkspaceScheduleWrite",
+      "type": "object"
+    }
+  },
+  "required": [
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_schedules_change_status
+
+Pause or resume future admissions; preserve already created occurrence snapshots.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `schedule_id` | uuid | Required | See input schema. |
+| `enabled` | boolean | Required | See input schema. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+**Retries:** the tool advertises idempotent behavior. Reuse its request identifier only with unchanged inputs.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "schedule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "schedule_id",
+    "enabled",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_schedules_list
+
+List pinned recurring schedules in the currently authorized account.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `limit` | integer | `50` |  minimum: `1`. maximum: `100`. |
+| `after_id` | uuid or null | `null` | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_schedules_get
+
+Read a schedule definition and exact version references.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `schedule_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "schedule_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "schedule_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_schedules_update
+
+Save future settings; claimed occurrences keep their snapshot.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schedule_id` | uuid | Required | See input schema. |
+| `data` | object | Required | Workspace content and an explicit account define future runs. |
+| `expected_version` | integer | Required |  minimum: `1`. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `name` | string | Required |  minLength: `1`. maxLength: `200`. |
+| `request` | object | Required | Brandless public schema with legacy receipt parsing for exact retries. |
+| `cron_expression` | string | Required |  minLength: `9`. maxLength: `100`. |
+| `timezone` | string | Required | See input schema. |
+| `batch_limit` | integer | Required |  minimum: `1`. maximum: `1000`. |
+| `batch_budget_limit_minor` | integer | Required |  exclusiveMinimum: `0`. |
+| `enabled` | boolean | `true` | See input schema. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "BudgetConfig": {
+      "additionalProperties": false,
+      "description": "One budget owner and period using integer currency minor units.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "owner": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "period": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "amount_minor": {
+          "exclusiveMinimum": 0,
+          "maximum": 9223372036854775807,
+          "type": "integer"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner",
+        "period",
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "ExistingTargetSpec": {
+      "additionalProperties": false,
+      "description": "Exact provider target chosen from fresh account reads.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "campaign_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "adset_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "settings_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "campaign_id",
+        "adset_id",
+        "settings_fingerprint"
+      ],
+      "type": "object"
+    },
+    "FilterCondition": {
+      "additionalProperties": false,
+      "description": "Conditions combine with AND; their values combine with OR.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "concept",
+            "language",
+            "format",
+            "tags",
+            "source",
+            "imported_at"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "contains",
+            "in",
+            "gte",
+            "lte"
+          ],
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "values"
+      ],
+      "type": "object"
+    },
+    "FilterSpec": {
+      "additionalProperties": false,
+      "description": "Versioned server filter definition.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FilterCondition"
+          },
+          "maxItems": 30,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ManualGroup": {
+      "additionalProperties": false,
+      "description": "One stable user-assigned group over explicit creative families.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "group_key": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "creative_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "type": "array"
+        },
+        "targeting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetingConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BudgetConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "group_key"
+      ],
+      "type": "object"
+    },
+    "ProviderLocation": {
+      "additionalProperties": false,
+      "description": "Exact location-search reference with optional city radius.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "region",
+            "city",
+            "zip"
+          ],
+          "type": "string"
+        },
+        "key": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "radius": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "distance_unit": {
+          "anyOf": [
+            {
+              "enum": [
+                "kilometer",
+                "mile"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "key"
+      ],
+      "type": "object"
+    },
+    "ReplacementItem": {
+      "additionalProperties": false,
+      "description": "Fence one failed assignment and the exact approved corrected version.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "source_item_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "creative_version_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_ad_attempt": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_item_id",
+        "creative_version_id",
+        "expected_ad_attempt"
+      ],
+      "type": "object"
+    },
+    "ReplacementSpec": {
+      "additionalProperties": false,
+      "description": "A new request links a bounded corrected subset to retained source history.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "launch_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ReplacementItem"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "launch_id",
+        "expected_version",
+        "items"
+      ],
+      "type": "object"
+    },
+    "RequestedStatus": {
+      "description": "Requested provider status, distinct from actual delivery.",
+      "enum": [
+        "PAUSED",
+        "ACTIVE"
+      ],
+      "type": "string"
+    },
+    "SelectionSpec": {
+      "additionalProperties": false,
+      "description": "Direct or pinned collection selection with explicit exclusions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "direct",
+            "fixed",
+            "smart"
+          ],
+          "type": "string"
+        },
+        "creative_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "type": "array"
+        },
+        "excluded_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "type": "array"
+        },
+        "collection_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_lock_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filter_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FilterSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "TargetingConfig": {
+      "additionalProperties": false,
+      "description": "Country and audience controls with independent exclusions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_countries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "included_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "excluded_locations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderLocation"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "genders": {
+          "default": [],
+          "items": {
+            "enum": [
+              1,
+              2
+            ],
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "user_os": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "type": "array"
+        },
+        "user_device": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "advantage_audience": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_custom_audiences": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "locales": {
+          "default": [],
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "age_min": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "age_max": {
+          "anyOf": [
+            {
+              "maximum": 65,
+              "minimum": 13,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "audience_semantics": {
+          "default": "control",
+          "enum": [
+            "control",
+            "suggestion"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkspaceLaunchSubmit": {
+      "additionalProperties": false,
+      "description": "Brandless public schema with legacy receipt parsing for exact retries.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "default": "Launch",
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "request_key": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "test",
+            "promote",
+            "refresh"
+          ],
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "test",
+            "scale"
+          ],
+          "type": "string"
+        },
+        "template_version_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "selection": {
+          "$ref": "#/$defs/SelectionSpec"
+        },
+        "repeat_across_groups": {
+          "default": false,
+          "type": "boolean"
+        },
+        "manual_groups": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ManualGroup"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "requested_status": {
+          "$ref": "#/$defs/RequestedStatus",
+          "default": "PAUSED"
+        },
+        "scheduled_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_launch_item_ids": {
+          "default": [],
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExistingTargetSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "retest_reason": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "replacement": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReplacementSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "request_key",
+        "ad_account_id",
+        "operation",
+        "purpose",
+        "template_version_id",
+        "selection"
+      ],
+      "type": "object"
+    },
+    "WorkspaceScheduleWrite": {
+      "additionalProperties": false,
+      "description": "Workspace content and an explicit account define future runs.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/WorkspaceLaunchSubmit"
+        },
+        "cron_expression": {
+          "maxLength": 100,
+          "minLength": 9,
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "batch_limit": {
+          "maximum": 1000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "batch_budget_limit_minor": {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "request",
+        "cron_expression",
+        "timezone",
+        "batch_limit",
+        "batch_budget_limit_minor"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schedule_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "data": {
+      "$ref": "#/$defs/WorkspaceScheduleWrite",
+      "type": "object"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schedule_id",
+    "data",
+    "expected_version"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_account_limits_get
+
+Read configured account-wide campaign and budget admission ceilings.
+
+**Access:** `mcp:read`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+## launcher_account_limits_update
+
+Set account ceilings; omit expected version only on initial configuration.
+
+**Access:** `mcp:read` plus `mcp:write`. Object and function permissions also apply.
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `ad_account_id` | uuid | Required | See input schema. |
+| `data` | object | Required | Explicit currency exposure ceilings separate from subscription usage. |
+| `expected_version` | integer or null | `null` | See input schema. |
+
+### data fields
+
+| Parameter | Type | Required / default | Details |
+| --- | --- | --- | --- |
+| `schema_version` | 1 | `1` | See input schema. |
+| `currency` | string | Required |  pattern: `^[A-Z]{3}$`. |
+| `max_open_campaigns` | integer | Required |  minimum: `0`. maximum: `1000000`. |
+| `max_daily_budget_minor` | integer | Required |  minimum: `0`. maximum: `9223372036854775807`. |
+| `max_lifetime_commitment_minor` | integer | Required |  minimum: `0`. maximum: `9223372036854775807`. |
+
+**Retries:** the tool does not advertise idempotent replay. Read the current state before repeating a write.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "$defs": {
+    "AccountLimitsWrite": {
+      "additionalProperties": false,
+      "description": "Explicit currency exposure ceilings separate from subscription usage.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        },
+        "max_open_campaigns": {
+          "maximum": 1000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_daily_budget_minor": {
+          "maximum": 9223372036854775807,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_lifetime_commitment_minor": {
+          "maximum": 9223372036854775807,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "currency",
+        "max_open_campaigns",
+        "max_daily_budget_minor",
+        "max_lifetime_commitment_minor"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "data": {
+      "$ref": "#/$defs/AccountLimitsWrite",
+      "type": "object"
+    },
+    "expected_version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
