@@ -1,17 +1,17 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Superlaunch",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#E8A33D",
+    "light": "#E8A33D",
+    "dark": "#E8A33D"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "pages": [
       {
-        "group": "Getting Started",
+        "group": "Start here",
         "pages": [
           "index",
           "quickstart",
@@ -90,52 +90,100 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Superlaunch",
+          "icon": "arrow-up-right-from-square",
+          "href": "https://superlaunch.pro/"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "icon": "circle-question",
+          "href": "https://superlaunch.pro/contact"
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/superlaunch.svg",
+    "dark": "/logo/superlaunch.svg",
+    "href": "https://docs.superlaunch.pro/"
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:support@mintlify.com"
+        "href": "https://superlaunch.pro/contact"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Open Superlaunch",
+      "href": "https://app.superlaunch.pro/"
     }
   },
   "contextual": {
     "options": [
       "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      "view"
     ]
   },
   "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+    "links": [
+      {
+        "header": "Superlaunch",
+        "items": [
+          {
+            "label": "Website",
+            "href": "https://superlaunch.pro/"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://superlaunch.pro/pricing"
+          },
+          {
+            "label": "Contact",
+            "href": "https://superlaunch.pro/contact"
+          }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          {
+            "label": "Privacy",
+            "href": "https://superlaunch.pro/privacy.html"
+          },
+          {
+            "label": "Terms",
+            "href": "https://superlaunch.pro/terms.html"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Set up Superlaunch, manage advertising workflows, and connect AI agents through MCP.",
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "light": "#0B0E11",
+      "dark": "#0B0E11"
+    }
+  },
+  "seo": {
+    "organization": {
+      "name": "Superlaunch",
+      "url": "https://superlaunch.pro/"
+    },
+    "indexing": "navigable"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Space Grotesk"
+    },
+    "body": {
+      "family": "Inter"
     }
   }
 }
