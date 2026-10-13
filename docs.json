@@ -50,6 +50,21 @@
         ]
       },
       {
+        "group": "MCP reference",
+        "pages": [
+          "mcp/reference/accounts-brands",
+          "mcp/reference/insights",
+          "mcp/reference/rules",
+          "mcp/reference/actions",
+          "mcp/reference/activity",
+          "mcp/reference/memory",
+          "mcp/reference/launcher-library",
+          "mcp/reference/launcher-launches",
+          "mcp/reference/launcher-schedules",
+          "mcp/reference/launcher-drive"
+        ]
+      },
+      {
         "group": "MCP",
         "pages": [
           "mcp/overview",
@@ -69,21 +84,6 @@
           "support/troubleshooting",
           "reference/glossary",
           "reference/ai-access"
-        ]
-      },
-      {
-        "group": "MCP reference",
-        "pages": [
-          "mcp/reference/accounts-brands",
-          "mcp/reference/insights",
-          "mcp/reference/rules",
-          "mcp/reference/actions",
-          "mcp/reference/activity",
-          "mcp/reference/memory",
-          "mcp/reference/launcher-library",
-          "mcp/reference/launcher-launches",
-          "mcp/reference/launcher-schedules",
-          "mcp/reference/launcher-drive"
         ]
       }
     ],
