@@ -7,6 +7,8 @@ Call `actions_capabilities` to check whether provider effects are enabled. Creat
 
 The parameter tables show the top-level arguments and common nested objects. Expand the input schema for nested formats, constraints, and allowed values.
 
+<span id="actions-capabilities" />
+
 ## actions_capabilities
 
 List configured direct Meta creation, duplication, and status actions.
@@ -26,6 +28,8 @@ List configured direct Meta creation, duplication, and status actions.
 ```
 
 </Accordion>
+
+<span id="media-uploads-create" />
 
 ## media_uploads_create
 
@@ -153,6 +157,8 @@ Upload media to the current workspace library without requiring an account.  Ope
 
 </Accordion>
 
+<span id="media-uploads-complete" />
+
 ## media_uploads_complete
 
 Upload up to ten files into the current workspace media library.  The total interactive limit is 64 MiB by default, shared across all files.  Use returned media_asset_id with Launcher library tools. The legacy media_id remains compatible with creatives_create. Retry the same request_id and files to retain exact per-file receipts, including after a partial batch failure.
@@ -275,6 +281,8 @@ Upload up to ten files into the current workspace media library.  The total inte
 
 </Accordion>
 
+<span id="creatives-create" />
+
 ## creatives_create
 
 Create a Meta creative from one completed signed media upload.
@@ -373,6 +381,8 @@ Create a Meta creative from one completed signed media upload.
 ```
 
 </Accordion>
+
+<span id="campaigns-create" />
 
 ## campaigns_create
 
@@ -593,6 +603,8 @@ Validate by default or explicitly create one paused Meta campaign.
 ```
 
 </Accordion>
+
+<span id="adsets-create" />
 
 ## adsets_create
 
@@ -855,6 +867,8 @@ Validate by default or explicitly create one paused Meta ad set.
 
 </Accordion>
 
+<span id="ads-create" />
+
 ## ads_create
 
 Validate by default or explicitly create one paused Meta ad.
@@ -980,6 +994,8 @@ Validate by default or explicitly create one paused Meta ad.
 
 </Accordion>
 
+<span id="actions-execute" />
+
 ## actions_execute
 
 Execute set_status for one campaign, ad set, or ad.
@@ -1070,6 +1086,8 @@ Execute set_status for one campaign, ad set, or ad.
 
 </Accordion>
 
+<span id="campaigns-duplicate" />
+
 ## campaigns_duplicate
 
 Preview or copy a campaign with its children in the same account, paused.
@@ -1140,6 +1158,8 @@ Preview or copy a campaign with its children in the same account, paused.
 ```
 
 </Accordion>
+
+<span id="adsets-duplicate" />
 
 ## adsets_duplicate
 
@@ -1212,6 +1232,8 @@ Preview or copy an ad set with its ads in the same campaign, paused.
 
 </Accordion>
 
+<span id="ads-duplicate" />
+
 ## ads_duplicate
 
 Preview or copy an ad in the same ad set, paused.
@@ -1282,6 +1304,8 @@ Preview or copy an ad in the same ad set, paused.
 ```
 
 </Accordion>
+
+<span id="actions-get" />
 
 ## actions_get
 

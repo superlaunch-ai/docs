@@ -9,6 +9,8 @@ The parameter tables show the top-level arguments and common nested objects. Exp
 
 Successful Launcher responses include `status: "ok"`, the returned object or page, and `next_actions`. Follow returned cursors using the parameter specified by the tool. An accepted launch is not a completed provider write.
 
+<span id="launcher-discover" />
+
 ## launcher_discover
 
 Discover the Launcher journey, exact IDs, limits, access and browser upload instructions.
@@ -28,6 +30,8 @@ Discover the Launcher journey, exact IDs, limits, access and browser upload inst
 ```
 
 </Accordion>
+
+<span id="launcher-creatives-list" />
 
 ## launcher_creatives_list
 
@@ -92,6 +96,8 @@ List a active creative-family page in the authorized workspace.
 
 </Accordion>
 
+<span id="launcher-creatives-usage" />
+
 ## launcher_creatives_usage
 
 Read usage, held claims and source-input lineage for one creative and authorized account. Created claims indicate family use; inspect run operations for confirmed provider object IDs.
@@ -152,6 +158,8 @@ Read usage, held claims and source-input lineage for one creative and authorized
 
 </Accordion>
 
+<span id="launcher-creatives-get" />
+
 ## launcher_creatives_get
 
 Read a creative and exact version summaries; content never changes in place.
@@ -181,6 +189,8 @@ Read a creative and exact version summaries; content never changes in place.
 ```
 
 </Accordion>
+
+<span id="launcher-creative-versions-get" />
 
 ## launcher_creative_versions_get
 
@@ -217,6 +227,8 @@ Read one exact version with editable copy and media bindings.  Content is immuta
 ```
 
 </Accordion>
+
+<span id="launcher-creatives-create" />
 
 ## launcher_creatives_create
 
@@ -725,6 +737,8 @@ Create a creative family with an draft content version; approve the whole versio
 
 </Accordion>
 
+<span id="launcher-creatives-update" />
+
 ## launcher_creatives_update
 
 Edit family metadata with the current lock version; content requires a new version.
@@ -833,6 +847,8 @@ Edit family metadata with the current lock version; content requires a new versi
 
 </Accordion>
 
+<span id="launcher-creatives-archive" />
+
 ## launcher_creatives_archive
 
 Archive a family while preserving immutable content and existing launch history.
@@ -870,6 +886,8 @@ Archive a family while preserving immutable content and existing launch history.
 ```
 
 </Accordion>
+
+<span id="launcher-creative-versions-create" />
 
 ## launcher_creative_versions_create
 
@@ -1323,6 +1341,8 @@ Save corrected content as a new immutable draft version; preserve prior successf
 
 </Accordion>
 
+<span id="launcher-creative-versions-approve" />
+
 ## launcher_creative_versions_approve
 
 Approve the exact complete locale bundle using the current approval grant.
@@ -1360,6 +1380,8 @@ Approve the exact complete locale bundle using the current approval grant.
 ```
 
 </Accordion>
+
+<span id="launcher-creative-versions-revoke" />
 
 ## launcher_creative_versions_revoke
 
@@ -1406,6 +1428,8 @@ Revoke the complete approved bundle with a reason; history remains immutable.
 
 </Accordion>
 
+<span id="launcher-collections-list" />
+
 ## launcher_collections_list
 
 List fixed and smart collection definitions in the authorized workspace.
@@ -1451,6 +1475,8 @@ List fixed and smart collection definitions in the authorized workspace.
 ```
 
 </Accordion>
+
+<span id="launcher-collections-preview" />
 
 ## launcher_collections_preview
 
@@ -1597,6 +1623,8 @@ Preview unsaved smart filters across the workspace without creating anything.  R
 
 </Accordion>
 
+<span id="launcher-collections-get" />
+
 ## launcher_collections_get
 
 Read a collection definition and its revision before pinning a selection.
@@ -1626,6 +1654,8 @@ Read a collection definition and its revision before pinning a selection.
 ```
 
 </Accordion>
+
+<span id="launcher-collections-create" />
 
 ## launcher_collections_create
 
@@ -1784,6 +1814,8 @@ Create fixed family includes or a smart filter with explicit family exclusions.
 ```
 
 </Accordion>
+
+<span id="launcher-collections-update" />
 
 ## launcher_collections_update
 
@@ -1956,6 +1988,8 @@ replace the saved definition and members using its current lock version.
 
 </Accordion>
 
+<span id="launcher-collections-archive" />
+
 ## launcher_collections_archive
 
 Archive a collection; existing saved occurrence snapshots remain retained.
@@ -1994,6 +2028,8 @@ Archive a collection; existing saved occurrence snapshots remain retained.
 
 </Accordion>
 
+<span id="launcher-collections-resolve" />
+
 ## launcher_collections_resolve
 
 Resolve a consistent collection selection with AND conditions and OR values; reserves nothing.
@@ -2023,6 +2059,8 @@ Resolve a consistent collection selection with AND conditions and OR values; res
 ```
 
 </Accordion>
+
+<span id="launcher-templates-list" />
 
 ## launcher_templates_list
 
@@ -2070,6 +2108,8 @@ List active templates within the authorized workspace.
 
 </Accordion>
 
+<span id="launcher-templates-get" />
+
 ## launcher_templates_get
 
 Read typed saved template versions; saved configuration is not proof of provider eligibility.
@@ -2099,6 +2139,8 @@ Read typed saved template versions; saved configuration is not proof of provider
 ```
 
 </Accordion>
+
+<span id="launcher-templates-create" />
 
 ## launcher_templates_create
 
@@ -3161,6 +3203,8 @@ Save a typed template and its first exact configuration version without a provid
 ```
 
 </Accordion>
+
+<span id="launcher-template-versions-create" />
 
 ## launcher_template_versions_create
 
@@ -4237,6 +4281,8 @@ Save a new immutable template configuration version; scheduled references keep t
 
 </Accordion>
 
+<span id="launcher-templates-archive" />
+
 ## launcher_templates_archive
 
 Archive a template identity while retaining previously pinned configuration versions.
@@ -4274,6 +4320,8 @@ Archive a template identity while retaining previously pinned configuration vers
 ```
 
 </Accordion>
+
+<span id="launcher-media-list" />
 
 ## launcher_media_list
 
@@ -4395,6 +4443,8 @@ List imported asset IDs and metadata; storage locations stay private.
 
 </Accordion>
 
+<span id="launcher-media-get" />
+
 ## launcher_media_get
 
 Read imported media metadata without private URLs or object keys.
@@ -4424,6 +4474,8 @@ Read imported media metadata without private URLs or object keys.
 ```
 
 </Accordion>
+
+<span id="launcher-media-delete" />
 
 ## launcher_media_delete
 
@@ -4456,6 +4508,8 @@ Archive unused media and queue storage cleanup. Retained creative or execution r
 ```
 
 </Accordion>
+
+<span id="launcher-media-retry-thumbnail" />
 
 ## launcher_media_retry_thumbnail
 
