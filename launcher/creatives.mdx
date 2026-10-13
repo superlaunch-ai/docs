@@ -1,0 +1,34 @@
+---
+title: "Create and approve creatives"
+description: "Save content versions, check media, and approve the version you intend to launch."
+---
+
+A creative family holds a name, concept, tags, and saved content versions. Each version records the copy, format, language, and media that a launch uses.
+
+## Create a creative
+
+1. Open the Launcher creative library.
+2. Select **New creative**.
+3. Enter a name and the organizing fields you need.
+4. Choose the supported format and language.
+5. Add the message, headline, destination, and required identity fields.
+6. Choose saved media for the format and any supported placement variants.
+7. Save the creative and inspect its version.
+
+Supported content includes formats such as single images, single videos, carousels, and multilingual content where enabled. The editor and MCP schema define which fields apply to each format.
+
+## Approve a version
+
+Open the creative, inspect its copy and media, then approve the exact version. Approval requires approval access. A saved draft is not eligible merely because its creative family has an approved earlier version.
+
+When editing content, create a new version and review it before approval. Keep a note of the version ID if your launch must use exact content.
+
+## Revoke or archive
+
+Revoke approval when you need to prevent a version from selection. Archive the family when you want to remove it from active library use.
+
+Earlier launches retain their recorded content inputs. Approval changes do not rewrite provider objects created by those launches.
+
+## Check usage
+
+Use the creative's usage view or `launcher_creatives_usage` to find launches that used it. Read `launcher_creatives_get` or `launcher_creative_versions_get` when you need exact version details.

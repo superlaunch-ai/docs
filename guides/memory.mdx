@@ -1,0 +1,35 @@
+---
+title: "Save and manage memory"
+description: "Retain approved facts with private, team, brand, or ad-account scope."
+---
+
+Memory stores facts you want to reuse in later conversations. Save a fact when you ask your agent to remember it or approve a focused suggestion to save it.
+
+## Choose a scope
+
+| Scope | Use it for |
+| --- | --- |
+| Private | Your personal working preferences |
+| Team | Facts relevant to the workspace |
+| Brand | Guidance specific to a brand |
+| Ad account | Facts specific to an advertising account |
+
+Brand and ad-account scopes require the corresponding Superlaunch UUID. Private and team scopes do not take a target ID.
+
+## Save a fact
+
+> Remember for this brand that campaign copy must use British English and avoid discount claims unless I provide an approved offer.
+
+The agent should resolve the brand and call `memory_remember` with your fact, scope, request UUID, and consent value. It should report whether the result is active, pending indexing, duplicated, rejected, or needs confirmation.
+
+A stored fact awaiting indexing might not appear in semantic recall yet.
+
+## Review and correct
+
+Open **Memory** to review available records. Through MCP, `memory_list` lists records and `memory_get` reads an exact record. `memory_recall` finds relevant context for a query.
+
+Read the current version before using `memory_update`, `memory_set_enabled`, or `memory_forget`. Disable a record to stop future retrieval; forget it when you want permanent deletion.
+
+## Interpret recalled facts
+
+Recalled memory contains user-authored context. The agent should use it as context and evaluate it against your current request. A stored fact can be incomplete or outdated; it should not override your current instruction or grant new permission.

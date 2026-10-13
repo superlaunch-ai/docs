@@ -1,0 +1,30 @@
+---
+title: "Review activity and results"
+description: "Trace tool calls, provider actions, and rule runs to their outcomes."
+---
+
+Open **Activity** to review operations in your workspace. Use it after an agent write, a rule run, or a failed request.
+
+## Find an operation
+
+Filter by member, tool, action, account, rule, or status. A request or run ID helps you find a specific operation. Open the record to inspect its parameters, result, timing, and error code.
+
+An accepted request can still be pending. Report a provider change as successful only after its result confirms that change.
+
+## Through MCP
+
+Use `activity_list` to search the unified log. Exact filters work for known fields; `query` searches text across tool, action, member, target, request, and error metadata.
+
+Use `activity_get` for one complete record and `activity_summary` to count the complete filtered result set. Follow `next_cursor` until `complete` is true when you need the full list.
+
+The `rule_activity_*` tools return rule-specific activity. They do not replace the unified log for all tool and action operations.
+
+## Investigate a failure
+
+1. Find the request's activity record.
+2. Check the account and target IDs.
+3. Read the error code and result.
+4. Check related run or action records.
+5. Resolve authorization or input errors before retrying.
+
+After a timeout, read the result before submitting another provider write. For a Launcher batch, inspect [operation-level results](/launcher/recovery) so that you retry only eligible failed work.

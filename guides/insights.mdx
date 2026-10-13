@@ -1,0 +1,32 @@
+---
+title: "Analyze performance"
+description: "Choose comparable dates, metrics, attribution, and reporting levels."
+---
+
+Use **Insights** to compare advertising performance across accounts, campaigns, ad sets, and ads.
+
+## Build a report
+
+1. Open **Insights** and choose the **Ad account**.
+2. Set the **Reporting period**, or enter a **Start date** and **End date**.
+3. Choose the entity level under **Show data for**.
+4. Choose daily rows or period totals under **Show results as**.
+5. Select a supported breakdown under **Break down by**.
+6. For purchase analysis, choose the **Purchase type** and attribution setting under **Count purchases**.
+7. Set **Sort by** and **Order** to find the results you need.
+
+Compare accounts with care: currency, time zone, attribution, and reporting periods can differ. A high value does not by itself mean good performance; for example, high spend and high CPA have different implications from high ROAS.
+
+## Use your agent
+
+> Compare my Meta campaigns for October 1–7, 2026. Use purchase ROAS with the 7-day click attribution window, exclude campaigns with less than 100 in spend, and show the five highest and lowest results. Include currency, data-through date, and any warnings.
+
+Your agent should resolve accounts, then use `insights_rank` for a compact ranking. For daily rows or breakdowns, it should call `insights_capabilities` before `insights_query`.
+
+Structured metrics such as `actions` and `action_values` require explicit `action_types` and `attribution_windows`. The agent should ask you which event and window to use if the question leaves them unclear.
+
+## Check completeness
+
+The query result includes `complete` and `next_cursor`. Follow the cursor while preserving the query filters. A page of 25 rows can be only part of the report.
+
+Use the account time zone and returned period fields when comparing dates. Check `data_through` and warnings in ranking results before treating a period as final.

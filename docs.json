@@ -14,8 +14,48 @@
         "group": "Getting Started",
         "pages": [
           "index",
-          "quickstart"
+          "quickstart",
+          "concepts/how-it-works",
+          "concepts/ids-and-versions"
         ]
+      },
+      {
+        "group": "Workspace",
+        "pages": [
+          "workspace/connections",
+          "workspace/permissions"
+        ]
+      },
+      {
+        "group": "Workflows",
+        "pages": [
+          "guides/insights",
+          "guides/rules",
+          "guides/activity",
+          "guides/brands",
+          "guides/memory"
+        ]
+      },
+      {
+        "group": "Launcher",
+        "pages": [
+          "launcher/overview",
+          "launcher/media",
+          "launcher/creatives",
+          "launcher/collections"
+        ]
+      },
+      {
+        "group": "MCP",
+        "pages": []
+      },
+      {
+        "group": "Support",
+        "pages": []
+      },
+      {
+        "group": "MCP reference",
+        "pages": []
       }
     ],
     "global": {
