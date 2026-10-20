@@ -10,9 +10,9 @@ Use a rule to check campaign performance and apply an action on a schedule. For 
 1. Open **Rules** and select **New rule**.
 2. Select the ad accounts and target level.
 3. Add a target filter, or choose an empty filter to cover the selected level.
-4. Add a task with at least one condition and action.
-5. Set the metric, timeframe, operator, and comparison value for each condition.
-6. Set a schedule and time zone.
+4. Add a task with at least one action. Add conditions when the action depends on performance.
+5. For each condition, set the metric, timeframe, operator, and comparison value.
+6. Choose a recurring schedule or one exact run time, then set the time zone.
 7. Save as a draft with dry-run mode enabled.
 
 Use **Active items only** to limit a task to active objects. Turn it off if you need the rule to consider paused objects too.
@@ -25,7 +25,13 @@ Run the current rule version with `dry_run: true`. Review which objects match an
 
 > Draft a rule for this account that pauses active ads when spend exceeds 50 today and purchases are zero. Use dry-run mode, show the target filter and schedule, and wait for me to review before activation.
 
-Your agent should call `rules_schema` for the current metrics and action vocabulary. It should obtain the account ID and ask for any missing targeting or scheduling choices.
+Your agent should call `rules_schema` for the rule vocabulary and `rules_capabilities` for the selected account and level. Recorded event availability does not prove that Meta accepts the event for optimization. It should obtain the account ID and ask for any missing targeting or scheduling choices.
+
+## Timed actions and duplication
+
+A task can have an empty top-level condition group when you want a scheduled action without metric checks. Through MCP, use `schedule.cron` for recurring work or `schedule.run_at` for one exact time with a UTC offset. Choose one mode and supply an IANA time zone.
+
+Duplication rules can copy campaigns, ad sets, or ads. An ad-set rule can use a destination campaign in the same account and creates paused copies. An ad rule requires both destination campaign and ad-set IDs. Check the source level, destination, delivery status, and optional execution limit before activation.
 
 ## Edit or activate
 

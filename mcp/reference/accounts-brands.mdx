@@ -3,9 +3,7 @@ title: "Accounts, assets, and brands"
 description: "Resolve Superlaunch account and brand IDs before reading or changing objects."
 ---
 
-Resolve Superlaunch account and brand IDs before reading or changing objects. Asset IDs identify provider objects; account IDs identify Superlaunch records.
-
-The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
 <span id="ad-accounts-list" />
 
@@ -13,11 +11,13 @@ The tables list arguments and common nested fields. Expand **Full input schema**
 
 List ad accounts the current user may read.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `limit` | integer | `25` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `limit` | integer | `25` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -42,11 +42,13 @@ List ad accounts the current user may read.
 
 Read one authorized ad account.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -74,11 +76,13 @@ Read one authorized ad account.
 
 List brands the current user may read.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `limit` | integer | `25` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `limit` | integer | `25` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -101,34 +105,23 @@ List brands the current user may read.
 
 ## brands_create
 
-Create a brand profile and grant its creator write access. Optional fields include website, industry, description, markets, and languages. Assign ad accounts separately.
+Create a brand in the current workspace and grant its creator write access. Supply a fresh request_id UUID. Reuse it with the same payload to safely retry; changed payloads conflict. Optional profile fields are website, industry, description, markets, and languages. No ad accounts are linked.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Create a workspace brand; reuse request_id only for identical retries. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `name` | string | Required |  minLength: `1`. maxLength: `200`. pattern: `\S`. |
-| `website` | string or null | `null` |  |
-| `industry` | string or null | `null` |  |
-| `description` | string or null | `null` |  |
-| `markets` | array of string | Optional |  maxItems: `50`. |
-| `languages` | array of string | Optional |  maxItems: `50`. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "BrandCreate": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Create a workspace brand; reuse request_id only for identical retries.",
       "properties": {
@@ -137,7 +130,10 @@ Create a brand profile and grant its creator write access. Optional fields inclu
           "type": "string"
         },
         "name": {
-          "$ref": "#/$defs/BrandName"
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
         },
         "website": {
           "anyOf": [
@@ -177,14 +173,20 @@ Create a brand profile and grant its creator write access. Optional fields inclu
         },
         "markets": {
           "items": {
-            "$ref": "#/$defs/BrandLabel"
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
           },
           "maxItems": 50,
           "type": "array"
         },
         "languages": {
           "items": {
-            "$ref": "#/$defs/BrandLabel"
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
           },
           "maxItems": 50,
           "type": "array"
@@ -195,24 +197,6 @@ Create a brand profile and grant its creator write access. Optional fields inclu
         "name"
       ],
       "type": "object"
-    },
-    "BrandLabel": {
-      "maxLength": 100,
-      "minLength": 1,
-      "pattern": "\\S",
-      "type": "string"
-    },
-    "BrandName": {
-      "maxLength": 200,
-      "minLength": 1,
-      "pattern": "\\S",
-      "type": "string"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/BrandCreate"
     }
   },
   "required": [
@@ -228,234 +212,28 @@ Create a brand profile and grant its creator write access. Optional fields inclu
 
 ## brands_update
 
-Update selected profile or brand-kit fields. Omitted fields keep their values; empty lists clear markets or languages. A kit change saves a new version. Supply `kit.positioning` when creating the first kit.
+Update mutable fields on one writable brand. Supply a fresh request_id UUID and at least one field. Reuse the request_id with the same brand and payload to safely retry; changed payloads conflict. Empty markets or languages clear those lists. Use kit to partially update messaging, voice, colors, or typography; a changed kit creates an immutable version. kit.positioning is required when no active kit exists.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `brand_id` | uuid | Required | Brand UUID from `brands_list`. |
-| `payload` | object | Required | Partially update a brand; reuse request_id only for identical retries. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `brand_id` | uuid | Required |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `name` | string or null | `null` |  |
-| `website` | string or null | `null` |  |
-| `industry` | string or null | `null` |  |
-| `description` | string or null | `null` |  |
-| `markets` | array of string or null | `null` |  |
-| `languages` | array of string or null | `null` |  |
-| `kit` | object or null | `null` | Brand messaging, voice, colors, and typography. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "BrandKitColor": {
-      "additionalProperties": false,
-      "description": "One semantic color in a brand palette.",
-      "properties": {
-        "role": {
-          "enum": [
-            "primary",
-            "secondary",
-            "accent",
-            "background",
-            "text"
-          ],
-          "type": "string"
-        },
-        "name": {
-          "maxLength": 80,
-          "minLength": 1,
-          "type": "string"
-        },
-        "hex": {
-          "pattern": "^#[0-9A-Fa-f]{6}$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "role",
-        "name",
-        "hex"
-      ],
-      "type": "object"
-    },
-    "BrandKitPositioning": {
-      "maxLength": 300,
-      "minLength": 1,
+  "additionalProperties": false,
+  "properties": {
+    "brand_id": {
+      "format": "uuid",
       "type": "string"
     },
-    "BrandKitTagline": {
-      "maxLength": 160,
-      "type": "string"
-    },
-    "BrandKitTypographyUpdate": {
-      "additionalProperties": false,
-      "description": "Partial primary brand typeface update; null clears a font.",
-      "properties": {
-        "heading_font": {
-          "anyOf": [
-            {
-              "maxLength": 120,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "body_font": {
-          "anyOf": [
-            {
-              "maxLength": 120,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        }
-      },
-      "type": "object"
-    },
-    "BrandKitUpdate": {
-      "additionalProperties": false,
-      "description": "Partial versioned kit update; omitted fields retain their current values.",
-      "properties": {
-        "positioning": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BrandKitPositioning"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "tagline": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BrandKitTagline"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "colors": {
-          "anyOf": [
-            {
-              "items": {
-                "$ref": "#/$defs/BrandKitColor"
-              },
-              "maxItems": 5,
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "typography": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BrandKitTypographyUpdate"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "voice": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BrandKitVoiceUpdate"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "proof_points": {
-          "anyOf": [
-            {
-              "items": {
-                "type": "string"
-              },
-              "maxItems": 3,
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        }
-      },
-      "type": "object"
-    },
-    "BrandKitVoiceUpdate": {
-      "additionalProperties": false,
-      "description": "Partial brand voice update; empty traits clear and null clears guidance.",
-      "properties": {
-        "traits": {
-          "anyOf": [
-            {
-              "items": {
-                "type": "string"
-              },
-              "maxItems": 5,
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "guidance": {
-          "anyOf": [
-            {
-              "maxLength": 500,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        }
-      },
-      "type": "object"
-    },
-    "BrandLabel": {
-      "maxLength": 100,
-      "minLength": 1,
-      "pattern": "\\S",
-      "type": "string"
-    },
-    "BrandName": {
-      "maxLength": 200,
-      "minLength": 1,
-      "pattern": "\\S",
-      "type": "string"
-    },
-    "BrandUpdate": {
+    "payload": {
       "additionalProperties": false,
       "description": "Partially update a brand; reuse request_id only for identical retries.",
       "properties": {
@@ -466,7 +244,10 @@ Update selected profile or brand-kit fields. Omitted fields keep their values; e
         "name": {
           "anyOf": [
             {
-              "$ref": "#/$defs/BrandName"
+              "maxLength": 200,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
             },
             {
               "type": "null"
@@ -514,7 +295,10 @@ Update selected profile or brand-kit fields. Omitted fields keep their values; e
           "anyOf": [
             {
               "items": {
-                "$ref": "#/$defs/BrandLabel"
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "\\S",
+                "type": "string"
               },
               "maxItems": 50,
               "type": "array"
@@ -529,7 +313,10 @@ Update selected profile or brand-kit fields. Omitted fields keep their values; e
           "anyOf": [
             {
               "items": {
-                "$ref": "#/$defs/BrandLabel"
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "\\S",
+                "type": "string"
               },
               "maxItems": 50,
               "type": "array"
@@ -543,7 +330,175 @@ Update selected profile or brand-kit fields. Omitted fields keep their values; e
         "kit": {
           "anyOf": [
             {
-              "$ref": "#/$defs/BrandKitUpdate"
+              "additionalProperties": false,
+              "description": "Partial versioned kit update; omitted fields retain their current values.",
+              "properties": {
+                "positioning": {
+                  "anyOf": [
+                    {
+                      "maxLength": 300,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "tagline": {
+                  "anyOf": [
+                    {
+                      "maxLength": 160,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "colors": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "additionalProperties": false,
+                        "description": "One semantic color in a brand palette.",
+                        "properties": {
+                          "role": {
+                            "enum": [
+                              "primary",
+                              "secondary",
+                              "accent",
+                              "background",
+                              "text"
+                            ],
+                            "type": "string"
+                          },
+                          "name": {
+                            "maxLength": 80,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "hex": {
+                            "pattern": "^#[0-9A-Fa-f]{6}$",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "role",
+                          "name",
+                          "hex"
+                        ],
+                        "type": "object"
+                      },
+                      "maxItems": 5,
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "typography": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "description": "Partial primary brand typeface update; null clears a font.",
+                      "properties": {
+                        "heading_font": {
+                          "anyOf": [
+                            {
+                              "maxLength": 120,
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "default": null
+                        },
+                        "body_font": {
+                          "anyOf": [
+                            {
+                              "maxLength": 120,
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "default": null
+                        }
+                      },
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "voice": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "description": "Partial brand voice update; empty traits clear and null clears guidance.",
+                      "properties": {
+                        "traits": {
+                          "anyOf": [
+                            {
+                              "items": {
+                                "type": "string"
+                              },
+                              "maxItems": 5,
+                              "type": "array"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "default": null
+                        },
+                        "guidance": {
+                          "anyOf": [
+                            {
+                              "maxLength": 500,
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "default": null
+                        }
+                      },
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "proof_points": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "maxItems": 3,
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                }
+              },
+              "type": "object"
             },
             {
               "type": "null"
@@ -556,16 +511,6 @@ Update selected profile or brand-kit fields. Omitted fields keep their values; e
         "request_id"
       ],
       "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "brand_id": {
-      "format": "uuid",
-      "type": "string"
-    },
-    "payload": {
-      "$ref": "#/$defs/BrandUpdate"
     }
   },
   "required": [
@@ -584,11 +529,13 @@ Update selected profile or brand-kit fields. Omitted fields keep their values; e
 
 Read one authorized brand with its active structured brand kit.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `brand_id` | uuid | Required | Brand UUID from `brands_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `brand_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -614,34 +561,30 @@ Read one authorized brand with its active structured brand kit.
 
 ## assets_list
 
-List a page of campaigns, ad sets, ads, or creatives for an account.
+List one filtered normalized asset page under an authorized account.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `level` | campaign, adset, ad, creative | Required | Asset level: campaign, ad set, ad, or creative. |
-| `limit` | integer | `25` |  minimum: `1`. maximum: `200`. |
-| `cursor` | string or null | `null` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `level` | campaign, adset, ad, creative | Required |
+| `limit` | integer | `25` |
+| `cursor` | string or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "AssetCursor": {
-      "anyOf": [
-        {
-          "pattern": "^[0-9]+$",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ]
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
     },
-    "AssetLevel": {
+    "level": {
       "enum": [
         "campaign",
         "adset",
@@ -650,27 +593,22 @@ List a page of campaigns, ad sets, ads, or creatives for an account.
       ],
       "type": "string"
     },
-    "AssetLimit": {
+    "limit": {
       "maximum": 200,
       "minimum": 1,
-      "type": "integer"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "ad_account_id": {
-      "format": "uuid",
-      "type": "string"
-    },
-    "level": {
-      "$ref": "#/$defs/AssetLevel"
-    },
-    "limit": {
-      "$ref": "#/$defs/AssetLimit",
+      "type": "integer",
       "default": 25
     },
     "cursor": {
-      "$ref": "#/$defs/AssetCursor",
+      "anyOf": [
+        {
+          "pattern": "^[0-9]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
       "default": null,
       "type": [
         "string",
@@ -692,14 +630,16 @@ List a page of campaigns, ad sets, ads, or creatives for an account.
 
 ## assets_get
 
-Read one campaign, ad set, ad, or creative from the imported account data.
+Read one normalized asset under an authorized account.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `asset_id` | string | Required | Provider object ID returned by `assets_list`. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `asset_id` | string | Required |
+| `ad_account_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 

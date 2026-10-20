@@ -3,9 +3,7 @@ title: "Launcher Drive tools"
 description: "Authorize Google Drive and select files or folders in Superlaunch first."
 ---
 
-Authorize Google Drive and select files or folders in Superlaunch first. These tools expose selected items under `drive.file`. An empty result does not mean the folder is empty. Folder selection does not grant access to all children or start automatic importing.
-
-The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
 <span id="launcher-drive-folders-list" />
 
@@ -13,11 +11,13 @@ The tables list arguments and common nested fields. Expand **Full input schema**
 
 List saved workspace folders. Connect Google Drive in Superlaunch first.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `connection_id` | uuid | Required | Google Drive connection UUID. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `connection_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -43,17 +43,17 @@ List saved workspace folders. Connect Google Drive in Superlaunch first.
 
 ## launcher_drive_folders_save
 
-Save a folder selected in Superlaunch's Google Picker. Select the media files too: folder selection alone does not grant access to its children or start an import.
+Save a folder selected in Superlaunch's Google Picker with drive.file. Folder selection grants no access to its children. Select each new media batch in Google Picker, then refresh the folder list. No automatic import starts.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `connection_id` | uuid | Required | Google Drive connection UUID. |
-| `folder_id` | string | Required |  pattern: `^[A-Za-z0-9_-]{1,200}$`. |
-| `protected_manifest_ref` | uuid or null | `null` | Protected selection reference returned by the Drive picker. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `connection_id` | uuid | Required |
+| `folder_id` | string | Required |
+| `protected_manifest_ref` | uuid or null | `null` |
 
-**Retries:** check the current state before repeating the operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -100,21 +100,21 @@ Save a folder selected in Superlaunch's Google Picker. Select the media files to
 
 ## launcher_drive_folder_files_list
 
-List up to 100 files and folders that you selected through Google Picker. An empty result can mean that you have not selected files in that folder.
+List up to 100 selected media files and folders with drive.file. This is a selected subset: an empty page does not mean the folder is empty. Select each new batch in Superlaunch's Google Picker, then refresh this tool. Follow next_page_token for more authorized items; no complete-folder claim or automatic monitoring is made. Child navigation verifies saved-root ancestry. Protected references expire after one hour. Files are not downloaded.
 
-Follow `next_page_token` for more selected items. Protected folder references expire after one hour. This tool lists files; use the browser to import them.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-**Access:** `mcp:read`.
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `connection_id` | uuid | Required |
+| `folder_id` | string | Required |
+| `parent_folder_id` | string or null | `null` |
+| `parent_manifest_ref` | uuid or null | `null` |
+| `search` | string | `""` |
+| `media_type` | all, image, video | `"all"` |
+| `page_token` | string or null | `null` |
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `connection_id` | uuid | Required | Google Drive connection UUID. |
-| `folder_id` | string | Required |  pattern: `^[A-Za-z0-9_-]{1,200}$`. |
-| `parent_folder_id` | string or null | `null` | Google Drive folder to browse. |
-| `parent_manifest_ref` | uuid or null | `null` | Protected reference for the parent folder. |
-| `search` | string | `""` |  maxLength: `200`. |
-| `media_type` | all, image, video | `"all"` |  |
-| `page_token` | string or null | `null` | `next_page_token` from the preceding Drive result. |
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 

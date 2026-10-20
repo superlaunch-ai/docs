@@ -3,17 +3,15 @@ title: "Insights tools"
 description: "Query reports and rank advertising performance."
 ---
 
-Call `insights_capabilities` before querying. Choose the reporting period, entity level, metrics, conversion event, and attribution window. Follow query cursors before reporting complete results.
-
-The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
 <span id="insights-capabilities" />
 
 ## insights_capabilities
 
-List supported metrics, reporting levels, breakdowns, and pagination settings.
+List insight grains, compatible metrics, dimensions, and paging semantics.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
 **Arguments:** none.
 
@@ -33,42 +31,39 @@ List supported metrics, reporting levels, breakdowns, and pagination settings.
 
 ## insights_query
 
-Read one page of reporting data. Call `insights_capabilities` to check supported combinations.
+Query one bounded insights page, then follow next_cursor when needed. Call `insights_capabilities` first for valid combinations. The default page contains 25 rows and the MCP maximum is 100 rows to keep tool results within agent context limits. Prefer the default instead of requesting the maximum unless a larger page is necessary. Daily account, campaign, and adset queries automatically roll up aggregation-safe metrics from ad rows; reach and frequency remain exact native metrics at the requested level. Filter structured metrics with `action_types` and `attribution_windows` instead of returning every raw Meta action tuple. Both filters are REQUIRED for actions, action_values, and other structured metrics. For purchase analysis, for example, supply action_types=["omni_purchase"], attribution_windows=["value"]. Choose the action and attribution window that match the question; they are not inferred. Use sorting and `min_spend` before paginating for top-N analysis; use `entity_ids` for targeted follow-up queries.
 
-Pages default to 25 rows, with a maximum of 100. Follow `next_cursor` with the same filters to read more. Use sorting and `min_spend` to narrow results, or `entity_ids` to inspect specific objects.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-For structured metrics such as `actions` and `action_values`, supply both `action_types` and `attribution_windows`. For example, use `action_types: ["omni_purchase"]` and `attribution_windows: ["7d_click"]` for purchases attributed within seven days of a click. Choose these values to match the report you need.
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_ids` | array | Required |
+| `date_from` | string | Required |
+| `date_to` | string | Required |
+| `metrics` | array | Required |
+| `entity_level` | account, campaign, adset, ad | `"ad"` |
+| `entity_ids` | array or null | `null` |
+| `report_spec` | base_daily, demographic_daily, country_daily | `"base_daily"` |
+| `grain` | daily, period | `"daily"` |
+| `action_types` | array or null | `null` |
+| `attribution_windows` | array or null | `null` |
+| `min_spend` | number or null | `null` |
+| `sort_by` | entity_id, date, spend, impressions, clicks, ctr, purchases, roas | `"entity_id"` |
+| `sort_direction` | asc, desc | `"asc"` |
+| `sort_action_type` | string | `"omni_purchase"` |
+| `sort_attribution` | value, 1d_click, 7d_click, 1d_view | `"value"` |
+| `limit` | integer | `25` |
+| `cursor` | string or null | `null` |
 
-Daily account, campaign, and ad-set totals can aggregate compatible metrics from ad rows. Reach and frequency use the requested reporting level.
-
-**Access:** `mcp:read`.
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
-| `date_from` | string | Required | First reporting date in `YYYY-MM-DD` format. |
-| `date_to` | string | Required | Last reporting date in `YYYY-MM-DD` format. |
-| `metrics` | array of strings | Required |minItems: `1`. maxItems: `20`. Allowed values are in the full input schema. |
-| `entity_level` | account, campaign, adset, ad | `"ad"` | Reporting level: account, campaign, ad set, or ad. |
-| `entity_ids` | array of string or null | `null` |  |
-| `report_spec` | base_daily, demographic_daily, country_daily | `"base_daily"` | Report format from `insights_capabilities`. |
-| `grain` | daily, period | `"daily"` | Time grouping from `insights_capabilities`. |
-| `action_types` | array of string or null | `null` | Conversion events to include in structured metrics. |
-| `attribution_windows` | array of value, 1d_click, 7d_click, 1d_view or null | `null` | Attribution windows to include in structured metrics. |
-| `min_spend` | number or null | `null` | Minimum spend in account-currency major units. |
-| `sort_by` | entity_id, date, spend, impressions, clicks, ctr, purchases, roas | `"entity_id"` |  |
-| `sort_direction` | asc, desc | `"asc"` |  |
-| `sort_action_type` | string | `"omni_purchase"` |  |
-| `sort_attribution` | value, 1d_click, 7d_click, 1d_view | `"value"` |  |
-| `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
-| `cursor` | string or null | `null` |  |
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "InsightAccountIds": {
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_ids": {
       "items": {
         "format": "uuid",
         "type": "string"
@@ -77,151 +72,6 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
       "minItems": 1,
       "type": "array"
     },
-    "InsightActionType": {
-      "maxLength": 200,
-      "minLength": 1,
-      "type": "string"
-    },
-    "InsightActionTypes": {
-      "items": {
-        "$ref": "#/$defs/InsightActionType"
-      },
-      "maxItems": 50,
-      "type": "array"
-    },
-    "InsightAttributionWindow": {
-      "enum": [
-        "value",
-        "1d_click",
-        "7d_click",
-        "1d_view"
-      ],
-      "type": "string"
-    },
-    "InsightAttributionWindows": {
-      "items": {
-        "$ref": "#/$defs/InsightAttributionWindow"
-      },
-      "maxItems": 4,
-      "type": "array"
-    },
-    "InsightEntityId": {
-      "maxLength": 300,
-      "minLength": 1,
-      "type": "string"
-    },
-    "InsightEntityIds": {
-      "items": {
-        "$ref": "#/$defs/InsightEntityId"
-      },
-      "maxItems": 100,
-      "type": "array"
-    },
-    "InsightEntityLevel": {
-      "enum": [
-        "account",
-        "campaign",
-        "adset",
-        "ad"
-      ],
-      "type": "string"
-    },
-    "InsightGrain": {
-      "enum": [
-        "daily",
-        "period"
-      ],
-      "type": "string"
-    },
-    "InsightLimit": {
-      "maximum": 100,
-      "minimum": 1,
-      "type": "integer"
-    },
-    "InsightMetric": {
-      "enum": [
-        "spend",
-        "impressions",
-        "clicks",
-        "reach",
-        "frequency",
-        "inline_link_clicks",
-        "inline_post_engagement",
-        "unique_clicks",
-        "unique_inline_link_clicks",
-        "quality_ranking",
-        "engagement_rate_ranking",
-        "conversion_rate_ranking",
-        "actions",
-        "action_values",
-        "conversions",
-        "conversion_values",
-        "outbound_clicks",
-        "unique_outbound_clicks",
-        "video_play_actions",
-        "video_continuous_2_sec_watched_actions",
-        "video_15_sec_watched_actions",
-        "video_30_sec_watched_actions",
-        "video_p25_watched_actions",
-        "video_p50_watched_actions",
-        "video_p75_watched_actions",
-        "video_p95_watched_actions",
-        "video_p100_watched_actions",
-        "video_thruplay_watched_actions",
-        "video_avg_time_watched_actions",
-        "video_time_watched_actions",
-        "ctr",
-        "cpc",
-        "cpm"
-      ],
-      "type": "string"
-    },
-    "InsightMetrics": {
-      "items": {
-        "$ref": "#/$defs/InsightMetric"
-      },
-      "maxItems": 20,
-      "minItems": 1,
-      "type": "array"
-    },
-    "InsightMinimumSpend": {
-      "minimum": 0,
-      "type": "number"
-    },
-    "InsightReportSpec": {
-      "enum": [
-        "base_daily",
-        "demographic_daily",
-        "country_daily"
-      ],
-      "type": "string"
-    },
-    "InsightSortBy": {
-      "enum": [
-        "entity_id",
-        "date",
-        "spend",
-        "impressions",
-        "clicks",
-        "ctr",
-        "purchases",
-        "roas"
-      ],
-      "type": "string"
-    },
-    "InsightSortDirection": {
-      "enum": [
-        "asc",
-        "desc"
-      ],
-      "type": "string"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "ad_account_ids": {
-      "$ref": "#/$defs/InsightAccountIds"
-    },
     "date_from": {
       "type": "string"
     },
@@ -229,16 +79,68 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
       "type": "string"
     },
     "metrics": {
-      "$ref": "#/$defs/InsightMetrics"
+      "items": {
+        "enum": [
+          "spend",
+          "impressions",
+          "clicks",
+          "reach",
+          "frequency",
+          "inline_link_clicks",
+          "inline_post_engagement",
+          "unique_clicks",
+          "unique_inline_link_clicks",
+          "quality_ranking",
+          "engagement_rate_ranking",
+          "conversion_rate_ranking",
+          "actions",
+          "action_values",
+          "conversions",
+          "conversion_values",
+          "outbound_clicks",
+          "unique_outbound_clicks",
+          "video_play_actions",
+          "video_continuous_2_sec_watched_actions",
+          "video_15_sec_watched_actions",
+          "video_30_sec_watched_actions",
+          "video_p25_watched_actions",
+          "video_p50_watched_actions",
+          "video_p75_watched_actions",
+          "video_p95_watched_actions",
+          "video_p100_watched_actions",
+          "video_thruplay_watched_actions",
+          "video_avg_time_watched_actions",
+          "video_time_watched_actions",
+          "ctr",
+          "cpc",
+          "cpm"
+        ],
+        "type": "string"
+      },
+      "maxItems": 20,
+      "minItems": 1,
+      "type": "array"
     },
     "entity_level": {
-      "$ref": "#/$defs/InsightEntityLevel",
+      "enum": [
+        "account",
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "string",
       "default": "ad"
     },
     "entity_ids": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightEntityIds"
+          "items": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
         },
         {
           "type": "null"
@@ -251,17 +153,32 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
       ]
     },
     "report_spec": {
-      "$ref": "#/$defs/InsightReportSpec",
+      "enum": [
+        "base_daily",
+        "demographic_daily",
+        "country_daily"
+      ],
+      "type": "string",
       "default": "base_daily"
     },
     "grain": {
-      "$ref": "#/$defs/InsightGrain",
+      "enum": [
+        "daily",
+        "period"
+      ],
+      "type": "string",
       "default": "daily"
     },
     "action_types": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightActionTypes"
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 50,
+          "type": "array"
         },
         {
           "type": "null"
@@ -276,7 +193,17 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
     "attribution_windows": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightAttributionWindows"
+          "items": {
+            "enum": [
+              "value",
+              "1d_click",
+              "7d_click",
+              "1d_view"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "type": "array"
         },
         {
           "type": "null"
@@ -291,7 +218,8 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
     "min_spend": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightMinimumSpend"
+          "minimum": 0,
+          "type": "number"
         },
         {
           "type": "null"
@@ -304,11 +232,25 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
       ]
     },
     "sort_by": {
-      "$ref": "#/$defs/InsightSortBy",
+      "enum": [
+        "entity_id",
+        "date",
+        "spend",
+        "impressions",
+        "clicks",
+        "ctr",
+        "purchases",
+        "roas"
+      ],
+      "type": "string",
       "default": "entity_id"
     },
     "sort_direction": {
-      "$ref": "#/$defs/InsightSortDirection",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "type": "string",
       "default": "asc"
     },
     "sort_action_type": {
@@ -316,11 +258,19 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
       "type": "string"
     },
     "sort_attribution": {
-      "$ref": "#/$defs/InsightAttributionWindow",
+      "enum": [
+        "value",
+        "1d_click",
+        "7d_click",
+        "1d_view"
+      ],
+      "type": "string",
       "default": "value"
     },
     "limit": {
-      "$ref": "#/$defs/InsightLimit",
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
       "default": 25
     },
     "cursor": {
@@ -355,36 +305,37 @@ Daily account, campaign, and ad-set totals can aggregate compatible metrics from
 
 ## insights_rank
 
-Rank performance over a date range. Choose one reporting level, then use `global` for a combined ranking across accounts or `per_account` for separate rankings.
+Rank compact period performance without returning raw insight pages. Use one entity level per call and choose an explicit conversion action and attribution window for conversion metrics. `highest` and `lowest` are numeric extremes, not automatic business judgments. `global` returns one ranking across the requested accounts; `per_account` returns one bounded ranking for each account. Add minimum evidence filters for meaningful results. The result never includes raw structured Meta metric arrays or a pagination cursor.
 
-Conversion metrics require an explicit event and attribution window. Set minimum spend or conversion filters to exclude low-data results. `highest` and `lowest` refer to numeric values; lower CPA can be better. This tool returns compact rankings without pagination.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-**Access:** `mcp:read`.
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_ids` | array | Required |
+| `date_from` | string | Required |
+| `date_to` | string | Required |
+| `entity_level` | campaign, adset, ad | Required |
+| `rank_by` | spend, impressions, clicks, ctr, cpc, cpm, conversions, conversion_value, cpa, roas | Required |
+| `action_type` | string | `"omni_purchase"` |
+| `attribution_window` | value, 1d_click, 7d_click, 1d_view | `"value"` |
+| `direction` | highest, lowest, both | `"both"` |
+| `rank_scope` | global, per_account | `"global"` |
+| `statuses` | array or null | `null` |
+| `min_spend` | number or null | `null` |
+| `min_impressions` | integer or null | `null` |
+| `min_clicks` | integer or null | `null` |
+| `min_conversions` | number or string or null | `null` |
+| `limit` | integer | `5` |
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
-| `date_from` | string | Required | First reporting date in `YYYY-MM-DD` format. |
-| `date_to` | string | Required | Last reporting date in `YYYY-MM-DD` format. |
-| `entity_level` | campaign, adset, ad | Required | Reporting level: account, campaign, ad set, or ad. |
-| `rank_by` | spend, impressions, clicks, ctr, cpc, cpm, conversions, conversion_value, cpa, roas | Required | Metric to rank by. |
-| `action_type` | string | `"omni_purchase"` |  minLength: `1`. maxLength: `200`. |
-| `attribution_window` | value, 1d_click, 7d_click, 1d_view | `"value"` |  |
-| `direction` | highest, lowest, both | `"both"` | Return highest values, lowest values, or both. |
-| `rank_scope` | global, per_account | `"global"` | Combined ranking (`global`) or one ranking per account (`per_account`). |
-| `statuses` | array of string or null | `null` |  |
-| `min_spend` | number or null | `null` | Minimum spend in account-currency major units. |
-| `min_impressions` | integer or null | `null` |  |
-| `min_clicks` | integer or null | `null` |  |
-| `min_conversions` | number or string or null | `null` |  |
-| `limit` | integer | `5` |  minimum: `1`. maximum: `20`. |
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "InsightAccountIds": {
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_ids": {
       "items": {
         "format": "uuid",
         "type": "string"
@@ -393,49 +344,13 @@ Conversion metrics require an explicit event and attribution window. Set minimum
       "minItems": 1,
       "type": "array"
     },
-    "InsightActionType": {
-      "maxLength": 200,
-      "minLength": 1,
+    "date_from": {
       "type": "string"
     },
-    "InsightAttributionWindow": {
-      "enum": [
-        "value",
-        "1d_click",
-        "7d_click",
-        "1d_view"
-      ],
+    "date_to": {
       "type": "string"
     },
-    "InsightMinimumConversions": {
-      "anyOf": [
-        {
-          "minimum": 0.0,
-          "type": "number"
-        },
-        {
-          "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-          "type": "string"
-        }
-      ]
-    },
-    "InsightMinimumCount": {
-      "minimum": 0,
-      "type": "integer"
-    },
-    "InsightMinimumSpend": {
-      "minimum": 0,
-      "type": "number"
-    },
-    "InsightRankDirection": {
-      "enum": [
-        "highest",
-        "lowest",
-        "both"
-      ],
-      "type": "string"
-    },
-    "InsightRankEntityLevel": {
+    "entity_level": {
       "enum": [
         "campaign",
         "adset",
@@ -443,12 +358,7 @@ Conversion metrics require an explicit event and attribution window. Set minimum
       ],
       "type": "string"
     },
-    "InsightRankLimit": {
-      "maximum": 20,
-      "minimum": 1,
-      "type": "integer"
-    },
-    "InsightRankMetric": {
+    "rank_by": {
       "enum": [
         "spend",
         "impressions",
@@ -463,60 +373,49 @@ Conversion metrics require an explicit event and attribution window. Set minimum
       ],
       "type": "string"
     },
-    "InsightRankScope": {
+    "action_type": {
+      "maxLength": 200,
+      "minLength": 1,
+      "type": "string",
+      "default": "omni_purchase"
+    },
+    "attribution_window": {
+      "enum": [
+        "value",
+        "1d_click",
+        "7d_click",
+        "1d_view"
+      ],
+      "type": "string",
+      "default": "value"
+    },
+    "direction": {
+      "enum": [
+        "highest",
+        "lowest",
+        "both"
+      ],
+      "type": "string",
+      "default": "both"
+    },
+    "rank_scope": {
       "enum": [
         "global",
         "per_account"
       ],
-      "type": "string"
-    },
-    "InsightStatuses": {
-      "items": {
-        "maxLength": 64,
-        "minLength": 1,
-        "type": "string"
-      },
-      "maxItems": 16,
-      "type": "array"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "ad_account_ids": {
-      "$ref": "#/$defs/InsightAccountIds"
-    },
-    "date_from": {
-      "type": "string"
-    },
-    "date_to": {
-      "type": "string"
-    },
-    "entity_level": {
-      "$ref": "#/$defs/InsightRankEntityLevel"
-    },
-    "rank_by": {
-      "$ref": "#/$defs/InsightRankMetric"
-    },
-    "action_type": {
-      "$ref": "#/$defs/InsightActionType",
-      "default": "omni_purchase"
-    },
-    "attribution_window": {
-      "$ref": "#/$defs/InsightAttributionWindow",
-      "default": "value"
-    },
-    "direction": {
-      "$ref": "#/$defs/InsightRankDirection",
-      "default": "both"
-    },
-    "rank_scope": {
-      "$ref": "#/$defs/InsightRankScope",
+      "type": "string",
       "default": "global"
     },
     "statuses": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightStatuses"
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "type": "array"
         },
         {
           "type": "null"
@@ -531,7 +430,8 @@ Conversion metrics require an explicit event and attribution window. Set minimum
     "min_spend": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightMinimumSpend"
+          "minimum": 0,
+          "type": "number"
         },
         {
           "type": "null"
@@ -546,7 +446,8 @@ Conversion metrics require an explicit event and attribution window. Set minimum
     "min_impressions": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightMinimumCount"
+          "minimum": 0,
+          "type": "integer"
         },
         {
           "type": "null"
@@ -561,7 +462,8 @@ Conversion metrics require an explicit event and attribution window. Set minimum
     "min_clicks": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightMinimumCount"
+          "minimum": 0,
+          "type": "integer"
         },
         {
           "type": "null"
@@ -576,7 +478,16 @@ Conversion metrics require an explicit event and attribution window. Set minimum
     "min_conversions": {
       "anyOf": [
         {
-          "$ref": "#/$defs/InsightMinimumConversions"
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ]
         },
         {
           "type": "null"
@@ -590,7 +501,9 @@ Conversion metrics require an explicit event and attribution window. Set minimum
       ]
     },
     "limit": {
-      "$ref": "#/$defs/InsightRankLimit",
+      "maximum": 20,
+      "minimum": 1,
+      "type": "integer",
       "default": 5
     }
   },

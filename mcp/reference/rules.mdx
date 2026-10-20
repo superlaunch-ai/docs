@@ -3,17 +3,15 @@ title: "Rule tools"
 description: "Create rules, edit their conditions, and inspect runs."
 ---
 
-Read `rules_schema` for the current rule vocabulary. Read the current rule version before an update. `rules_update` replaces the definition. `rules_run` defaults to dry-run mode.
-
-The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
 <span id="rules-schema" />
 
 ## rules_schema
 
-List the metrics, conditions, actions, and fields supported by the rule builder.
+Return rule vocabulary; call rules_capabilities for account event values.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
 **Arguments:** none.
 
@@ -33,13 +31,15 @@ List the metrics, conditions, actions, and fields supported by the rule builder.
 
 ## rules_list
 
-List rules for which you can read all target accounts.
+List rules whose complete target set is readable.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `limit` | integer | `25` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `limit` | integer | `25` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -62,13 +62,15 @@ List rules for which you can read all target accounts.
 
 ## rules_get
 
-Read a rule and its current version before editing it.
+Read the complete current rule definition for a lossless replacement.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -94,32 +96,15 @@ Read a rule and its current version before editing it.
 
 ## rules_create
 
-Create a rule for accounts where you have the required permissions.
+Create one rule after target and functional authorization.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Complete rule definition. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `name` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `provider` | string | `"meta"` |  minLength: `1`. maxLength: `64`. |
-| `status` | draft, active, paused | `"draft"` |  |
-| `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
-| `level` | campaign, adset, ad | `"ad"` | Advertising hierarchy levels that rules may target. |
-| `target_filter` | object | Required | Nested target predicates. |
-| `tasks` | array of object | Required |  minItems: `1`. maxItems: `20`. |
-| `schedule` | object | Required | Validated cron schedule and IANA timezone. |
-| `execution_limit` | object or null | `null` |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-| `metadata` | object | Optional |  |
-
-**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -255,6 +240,64 @@ Create a rule for accounts where you have the required permissions.
       ],
       "type": "object"
     },
+    "DuplicateParameters": {
+      "additionalProperties": false,
+      "description": "Existing destination hierarchy and initial status for an ad copy.",
+      "properties": {
+        "destination_campaign_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "destination_adset_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "PAUSED",
+          "enum": [
+            "PAUSED",
+            "ACTIVE"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "DuplicateRuleAction": {
+      "additionalProperties": false,
+      "description": "Duplicate a target with parameters validated for its rule level.",
+      "properties": {
+        "type": {
+          "const": "duplicate",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/DuplicateParameters"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
     "IncreaseBudgetActionParameters": {
       "additionalProperties": false,
       "description": "Increase parameters with an explicit account-currency ceiling.",
@@ -381,8 +424,7 @@ Create a rule for accounts where you have the required permissions.
             "add_tag",
             "remove_tag",
             "replace_tag",
-            "edit_name",
-            "duplicate"
+            "edit_name"
           ],
           "type": "string"
         },
@@ -401,7 +443,7 @@ Create a rule for accounts where you have the required permissions.
         "mapping": {
           "add_tag": "#/$defs/OtherRuleAction",
           "decrease_budget": "#/$defs/DecreaseBudgetRuleAction",
-          "duplicate": "#/$defs/OtherRuleAction",
+          "duplicate": "#/$defs/DuplicateRuleAction",
           "edit_name": "#/$defs/OtherRuleAction",
           "increase_budget": "#/$defs/IncreaseBudgetRuleAction",
           "remove_tag": "#/$defs/OtherRuleAction",
@@ -417,6 +459,9 @@ Create a rule for accounts where you have the required permissions.
         },
         {
           "$ref": "#/$defs/DecreaseBudgetRuleAction"
+        },
+        {
+          "$ref": "#/$defs/DuplicateRuleAction"
         },
         {
           "$ref": "#/$defs/OtherRuleAction"
@@ -548,21 +593,115 @@ Create a rule for accounts where you have the required permissions.
         "add_to_carts",
         "meta.action:initiate_checkout",
         "purchases",
+        "start_trials",
         "purchase_value",
         "cpa",
-        "roas"
+        "roas",
+        "cost_per_start_trial",
+        "content_views",
+        "cost_per_content_view",
+        "content_view_value",
+        "searches",
+        "cost_per_search",
+        "search_value",
+        "wishlist_adds",
+        "cost_per_wishlist_add",
+        "wishlist_add_value",
+        "cost_per_add_to_cart",
+        "add_to_cart_value",
+        "checkouts",
+        "cost_per_checkout",
+        "checkout_value",
+        "payment_info_adds",
+        "cost_per_payment_info_add",
+        "payment_info_add_value",
+        "cost_per_lead",
+        "lead_value",
+        "registrations",
+        "cost_per_registration",
+        "registration_value",
+        "contacts",
+        "cost_per_contact",
+        "contact_value",
+        "scheduled_events",
+        "cost_per_scheduled_event",
+        "scheduled_event_value",
+        "submitted_applications",
+        "cost_per_submitted_application",
+        "submitted_application_value",
+        "start_trial_value",
+        "subscriptions",
+        "cost_per_subscription",
+        "subscription_value",
+        "product_customizations",
+        "cost_per_product_customization",
+        "product_customization_value",
+        "donations",
+        "cost_per_donation",
+        "donation_value",
+        "location_searches",
+        "cost_per_location_search",
+        "location_search_value",
+        "app_installs",
+        "cost_per_app_install",
+        "app_activations",
+        "cost_per_app_activation",
+        "app_activation_value",
+        "tutorial_completions",
+        "cost_per_tutorial_completion",
+        "tutorial_completion_value",
+        "levels_achieved",
+        "cost_per_level_achieved",
+        "level_achieved_value",
+        "achievements_unlocked",
+        "cost_per_achievement_unlocked",
+        "achievement_unlocked_value",
+        "ratings",
+        "cost_per_rating",
+        "rating_value",
+        "credits_spent",
+        "cost_per_credits_spent",
+        "credits_spent_value",
+        "app_ad_impressions",
+        "cost_per_app_ad_impression",
+        "app_ad_clicks",
+        "cost_per_app_ad_click",
+        "day_2_retention_events",
+        "cost_per_day_2_retention_event",
+        "day_7_retention_events",
+        "cost_per_day_7_retention_event"
       ],
       "minLength": 1,
       "type": "string"
     },
     "RuleSchedule": {
       "additionalProperties": false,
-      "description": "Validated cron schedule and IANA timezone.",
+      "description": "Recurring cron or one exact offset-aware run_at instant in an IANA timezone.",
       "properties": {
         "cron": {
-          "maxLength": 100,
-          "minLength": 1,
-          "type": "string"
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "run_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "timezone": {
           "maxLength": 100,
@@ -571,7 +710,6 @@ Create a rule for accounts where you have the required permissions.
         }
       },
       "required": [
-        "cron",
         "timezone"
       ],
       "type": "object"
@@ -739,32 +877,14 @@ Create a rule for accounts where you have the required permissions.
 
 Replace one rule; first read it and preserve every unchanged field.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
-| `payload` | object | Required |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `name` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `provider` | string | `"meta"` |  minLength: `1`. maxLength: `64`. |
-| `status` | draft, active, paused | `"draft"` |  |
-| `ad_account_ids` | array of uuid | Required |  minItems: `1`. maxItems: `20`. |
-| `level` | campaign, adset, ad | `"ad"` | Advertising hierarchy levels that rules may target. |
-| `target_filter` | object | Required | Nested target predicates. |
-| `tasks` | array of object | Required |  minItems: `1`. maxItems: `20`. |
-| `schedule` | object | Required | Validated cron schedule and IANA timezone. |
-| `execution_limit` | object or null | `null` |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-| `metadata` | object | Optional |  |
-| `expected_version` | integer | Required |  minimum: `1`. |
-
-**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -900,6 +1020,64 @@ Replace one rule; first read it and preserve every unchanged field.
       ],
       "type": "object"
     },
+    "DuplicateParameters": {
+      "additionalProperties": false,
+      "description": "Existing destination hierarchy and initial status for an ad copy.",
+      "properties": {
+        "destination_campaign_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "destination_adset_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "PAUSED",
+          "enum": [
+            "PAUSED",
+            "ACTIVE"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "DuplicateRuleAction": {
+      "additionalProperties": false,
+      "description": "Duplicate a target with parameters validated for its rule level.",
+      "properties": {
+        "type": {
+          "const": "duplicate",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/DuplicateParameters"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
     "IncreaseBudgetActionParameters": {
       "additionalProperties": false,
       "description": "Increase parameters with an explicit account-currency ceiling.",
@@ -1026,8 +1204,7 @@ Replace one rule; first read it and preserve every unchanged field.
             "add_tag",
             "remove_tag",
             "replace_tag",
-            "edit_name",
-            "duplicate"
+            "edit_name"
           ],
           "type": "string"
         },
@@ -1046,7 +1223,7 @@ Replace one rule; first read it and preserve every unchanged field.
         "mapping": {
           "add_tag": "#/$defs/OtherRuleAction",
           "decrease_budget": "#/$defs/DecreaseBudgetRuleAction",
-          "duplicate": "#/$defs/OtherRuleAction",
+          "duplicate": "#/$defs/DuplicateRuleAction",
           "edit_name": "#/$defs/OtherRuleAction",
           "increase_budget": "#/$defs/IncreaseBudgetRuleAction",
           "remove_tag": "#/$defs/OtherRuleAction",
@@ -1062,6 +1239,9 @@ Replace one rule; first read it and preserve every unchanged field.
         },
         {
           "$ref": "#/$defs/DecreaseBudgetRuleAction"
+        },
+        {
+          "$ref": "#/$defs/DuplicateRuleAction"
         },
         {
           "$ref": "#/$defs/OtherRuleAction"
@@ -1108,21 +1288,115 @@ Replace one rule; first read it and preserve every unchanged field.
         "add_to_carts",
         "meta.action:initiate_checkout",
         "purchases",
+        "start_trials",
         "purchase_value",
         "cpa",
-        "roas"
+        "roas",
+        "cost_per_start_trial",
+        "content_views",
+        "cost_per_content_view",
+        "content_view_value",
+        "searches",
+        "cost_per_search",
+        "search_value",
+        "wishlist_adds",
+        "cost_per_wishlist_add",
+        "wishlist_add_value",
+        "cost_per_add_to_cart",
+        "add_to_cart_value",
+        "checkouts",
+        "cost_per_checkout",
+        "checkout_value",
+        "payment_info_adds",
+        "cost_per_payment_info_add",
+        "payment_info_add_value",
+        "cost_per_lead",
+        "lead_value",
+        "registrations",
+        "cost_per_registration",
+        "registration_value",
+        "contacts",
+        "cost_per_contact",
+        "contact_value",
+        "scheduled_events",
+        "cost_per_scheduled_event",
+        "scheduled_event_value",
+        "submitted_applications",
+        "cost_per_submitted_application",
+        "submitted_application_value",
+        "start_trial_value",
+        "subscriptions",
+        "cost_per_subscription",
+        "subscription_value",
+        "product_customizations",
+        "cost_per_product_customization",
+        "product_customization_value",
+        "donations",
+        "cost_per_donation",
+        "donation_value",
+        "location_searches",
+        "cost_per_location_search",
+        "location_search_value",
+        "app_installs",
+        "cost_per_app_install",
+        "app_activations",
+        "cost_per_app_activation",
+        "app_activation_value",
+        "tutorial_completions",
+        "cost_per_tutorial_completion",
+        "tutorial_completion_value",
+        "levels_achieved",
+        "cost_per_level_achieved",
+        "level_achieved_value",
+        "achievements_unlocked",
+        "cost_per_achievement_unlocked",
+        "achievement_unlocked_value",
+        "ratings",
+        "cost_per_rating",
+        "rating_value",
+        "credits_spent",
+        "cost_per_credits_spent",
+        "credits_spent_value",
+        "app_ad_impressions",
+        "cost_per_app_ad_impression",
+        "app_ad_clicks",
+        "cost_per_app_ad_click",
+        "day_2_retention_events",
+        "cost_per_day_2_retention_event",
+        "day_7_retention_events",
+        "cost_per_day_7_retention_event"
       ],
       "minLength": 1,
       "type": "string"
     },
     "RuleSchedule": {
       "additionalProperties": false,
-      "description": "Validated cron schedule and IANA timezone.",
+      "description": "Recurring cron or one exact offset-aware run_at instant in an IANA timezone.",
       "properties": {
         "cron": {
-          "maxLength": 100,
-          "minLength": 1,
-          "type": "string"
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "run_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "timezone": {
           "maxLength": 100,
@@ -1131,7 +1405,6 @@ Replace one rule; first read it and preserve every unchanged field.
         }
       },
       "required": [
-        "cron",
         "timezone"
       ],
       "type": "object"
@@ -1391,18 +1664,18 @@ Replace one rule; first read it and preserve every unchanged field.
 
 ## rules_change_status
 
-Set a rule to draft, active, or paused using its current version.
+Change rule status after current target authorization.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
-| `expected_version` | integer | Required | Current version from the latest read; prevents overwriting another edit. |
-| `status` | string | Required |  |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+| `expected_version` | integer | Required |
+| `status` | string | Required |
+| `request_id` | uuid | Required |
 
-**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1443,15 +1716,15 @@ Set a rule to draft, active, or paused using its current version.
 
 Archive one authorized rule.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
-| `expected_version` | integer | Required | Current version from the latest read; prevents overwriting another edit. |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+| `expected_version` | integer | Required |
+| `request_id` | uuid | Required |
 
-**Retries:** after a timeout, read the current state before submitting again to avoid duplicate changes.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1486,14 +1759,16 @@ Archive one authorized rule.
 
 ## rules_changes
 
-Read the saved change history for a rule.
+List immutable changes for an authorized rule.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
-| `limit` | integer | `25` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+| `limit` | integer | `25` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1523,18 +1798,18 @@ Read the saved change history for a rule.
 
 ## rules_run
 
-Submit a rule run and return its ID for tracking. The run continues after the tool call returns.
+Accept one idempotent durable rule run.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
-| `version` | integer | Required |  |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+| `version` | integer | Required |
+| `request_id` | uuid | Required |
+| `dry_run` | boolean | `true` |
 
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1575,11 +1850,13 @@ Submit a rule run and return its ID for tracking. The run continues after the to
 
 List authorized rule runs.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `limit` | integer | `25` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `limit` | integer | `25` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1604,11 +1881,13 @@ List authorized rule runs.
 
 Read one authorized rule run.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `run_id` | uuid | Required |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `run_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1636,11 +1915,13 @@ Read one authorized rule run.
 
 List authorized rule activity records.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `limit` | integer | `25` |  |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `limit` | integer | `25` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1665,11 +1946,13 @@ List authorized rule activity records.
 
 Read one authorized rule activity record.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `activity_id` | uuid | Required | Activity UUID from the tool result or `activity_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `activity_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1695,13 +1978,15 @@ Read one authorized rule activity record.
 
 ## rule_activity_summary
 
-Summarize activity for one rule.
+Return a bounded activity summary for one authorized rule.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `rule_id` | uuid | Required | Rule UUID from `rules_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `rule_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1721,4 +2006,47 @@ Summarize activity for one rule.
 }
 ```
 
+</Accordion>
+
+<span id="rules-capabilities" />
+
+## rules_capabilities
+
+List authorized rule metrics and recorded event availability for one account. Call before writing event conditions. Additional monetary event values require actual stored reporting; observed does not establish optimization eligibility.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `level` | campaign, adset, ad | `"ad"` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+  ```json
+  {
+    "additionalProperties": false,
+    "properties": {
+      "ad_account_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "level": {
+        "description": "Advertising hierarchy levels that rules may target.",
+        "enum": [
+          "campaign",
+          "adset",
+          "ad"
+        ],
+        "type": "string",
+        "default": "ad"
+      }
+    },
+    "required": [
+      "ad_account_id"
+    ],
+    "type": "object"
+  }
+  ```
 </Accordion>

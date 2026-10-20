@@ -16,7 +16,7 @@ Open **Launcher → Templates** and select **Create template**. Set:
 - Allowed creative formats and language mode.
 - Grouping and object naming.
 
-Use the available selectors for provider objects such as Pages and promotion assets. Resolve exact IDs instead of entering an object name as an ID.
+Use the available selectors for provider objects such as Pages and promotion assets. Resolve exact IDs instead of entering an object name as an ID. Through MCP, use `launcher_assets_list` and follow its parent requirements and cursors. Pages and Instagram accounts come from synced data; check `sync_status` and `synced_at`. Other asset kinds use live provider discovery.
 
 ## Budget and delivery
 
@@ -28,6 +28,6 @@ Set the delivery time zone before entering start and end times. A launch schedul
 
 ## Reuse or revise
 
-Save the template and choose the version during [launch setup](/launcher/launch). Through MCP, use `launcher_templates_get` to inspect its versions and `launcher_template_versions_create` to save new settings.
+Save the template and choose the version during [launch setup](/launcher/launch). Through MCP, use `launcher_templates_get` to inspect its versions, `launcher_template_versions_get` to read an exact retained version, and `launcher_template_versions_create` to save new settings.
 
 Archive a template to remove it from active use. Keep earlier version IDs when reviewing an existing launch or schedule.
