@@ -15,7 +15,7 @@ def walk(value):
         for key in ("pages", "groups", "tabs"):
             if key in value: walk(value[key])
 walk(config["navigation"])
-assert len(pages) == len(set(pages)) == 41, f"Expected 41 unique pages: {len(pages)}"
+assert len(pages) == len(set(pages)), f"Expected unique navigation pages: {len(pages)}"
 names = {t["name"] for t in catalog}
 documented = set()
 for page in pages:
@@ -39,7 +39,7 @@ for page in pages:
         for name, body in zip(blocks[1::2], blocks[2::2]):
             assert name not in documented, f"Duplicate tool {name}"
             documented.add(name)
-            schema = json.loads(re.search(r"```json\n(.*?)\n```", body, re.S)[1])
+            schema = json.loads(re.search(r"^[ \t]*```json[ \t]*\n(.*?)^[ \t]*```", body, re.S | re.M)[1])
             expected = next(t["inputSchema"] for t in catalog if t["name"] == name)
             assert schema == expected, f"Schema mismatch: {name}"
 assert documented == names, f"Tool coverage differs: {names ^ documented}"

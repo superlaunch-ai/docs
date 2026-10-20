@@ -26,4 +26,4 @@ if '--check' in sys.argv:
     assert path.read_text() == result, 'Run python3 scripts/generate_llms.py to refresh the index'
 else:
     path.write_text(result)
-print('Documentation index matches all 41 navigation pages')
+print(f"Documentation index matches all {sum(len(group['pages']) for group in config['navigation']['pages'])} navigation pages")

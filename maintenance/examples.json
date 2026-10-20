@@ -96,7 +96,7 @@
   {
     "tool": "launcher_creatives_list",
     "title": "Discover saved creatives",
-    "note": "Inspect the returned version and approval information before selecting content.",
+    "note": "Inspect saved version details and current eligibility before selecting content.",
     "args": {
       "limit": 25
     }
