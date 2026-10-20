@@ -3,51 +3,29 @@ title: "Activity tools"
 description: "Use the unified log for tool calls, actions, and rule operations."
 ---
 
-Use the unified log for tool calls, actions, and rule operations. Exact filters select known fields; `query` searches text. Follow `next_cursor` until `complete` is true. Time filters form a half-open interval: include `started_after`, exclude `started_before`.
-
-The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
 <span id="activity-list" />
 
 ## activity_list
 
-Search tool calls, actions, and rule runs. Use exact filters such as `tool_name` and `status`, or use `query` for text search. Follow `next_cursor` until `complete` is true.
+Search the complete authorized tool, action, and rule-run log. Use exact filters for known fields or `query` for case-insensitive text search across tool, action, member, target, request, and error metadata. Follow `next_cursor` until `complete` is true.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Filters and pagination for the activity log. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `query` | string or null | `null` |  |
-| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | Kind of operation to include. |
-| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` |  |
-| `team_member_user_id` | uuid or null | `null` | Filter by the member who initiated the operation. |
-| `initiator_type` | string or null | `null` |  |
-| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
-| `mcp_connection_id` | uuid or null | `null` | Filter by a specific MCP connection. |
-| `rule_id` | uuid or null | `null` | Rule UUID from `rules_list`. |
-| `rule_run_id` | uuid or null | `null` | Filter by a specific rule run. |
-| `launch_id` | uuid or null | `null` | Launch UUID from submission or `launcher_launches_list`. |
-| `tool_name` | string or null | `null` | Exact MCP tool name to filter by. |
-| `action_name` | string or null | `null` | Exact action name to filter by. |
-| `target_type` | string or null | `null` |  |
-| `target_id` | string or null | `null` |  |
-| `started_after` | date-time or null | `null` | Include operations starting at or after this timestamp. |
-| `started_before` | date-time or null | `null` | Exclude operations starting at or after this timestamp. |
-| `limit` | integer | `25` |  minimum: `1`. maximum: `100`. |
-| `cursor` | integer | `0` |  minimum: `0`. maximum: `4294967295`. |
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "ActivityQuery": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Bounded page request for the unified activity log.",
       "properties": {
@@ -67,7 +45,15 @@ Search tool calls, actions, and rule runs. Use exact filters such as `tool_name`
         "activity_type": {
           "anyOf": [
             {
-              "$ref": "#/$defs/ActivityType"
+              "description": "User-visible kinds of work.",
+              "enum": [
+                "tool_call",
+                "action",
+                "rule_run",
+                "launch_run",
+                "creative_import"
+              ],
+              "type": "string"
             },
             {
               "type": "null"
@@ -78,7 +64,18 @@ Search tool calls, actions, and rule runs. Use exact filters such as `tool_name`
         "status": {
           "anyOf": [
             {
-              "$ref": "#/$defs/ActivityStatus"
+              "description": "Small shared activity lifecycle.",
+              "enum": [
+                "running",
+                "succeeded",
+                "failed",
+                "denied",
+                "skipped",
+                "undone",
+                "undo_failed",
+                "reconciliation_needed"
+              ],
+              "type": "string"
             },
             {
               "type": "null"
@@ -261,37 +258,6 @@ Search tool calls, actions, and rule runs. Use exact filters such as `tool_name`
         }
       },
       "type": "object"
-    },
-    "ActivityStatus": {
-      "description": "Small shared activity lifecycle.",
-      "enum": [
-        "running",
-        "succeeded",
-        "failed",
-        "denied",
-        "skipped",
-        "undone",
-        "undo_failed",
-        "reconciliation_needed"
-      ],
-      "type": "string"
-    },
-    "ActivityType": {
-      "description": "User-visible kinds of work.",
-      "enum": [
-        "tool_call",
-        "action",
-        "rule_run",
-        "launch_run",
-        "creative_import"
-      ],
-      "type": "string"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/ActivityQuery"
     }
   },
   "required": [
@@ -309,11 +275,13 @@ Search tool calls, actions, and rule runs. Use exact filters such as `tool_name`
 
 Read one complete authorized activity record by ID.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `activity_id` | uuid | Required | Activity UUID from the tool result or `activity_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `activity_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -341,39 +309,21 @@ Read one complete authorized activity record by ID.
 
 Count the complete authorized result set for activity filters.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Permission-filtered search criteria for the unified activity log. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `query` | string or null | `null` |  |
-| `activity_type` | tool_call, action, rule_run, launch_run, creative_import or null | `null` | Kind of operation to include. |
-| `status` | running, succeeded, failed, denied, skipped, undone, undo_failed, reconciliation_needed or null | `null` |  |
-| `team_member_user_id` | uuid or null | `null` | Filter by the member who initiated the operation. |
-| `initiator_type` | string or null | `null` |  |
-| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
-| `mcp_connection_id` | uuid or null | `null` | Filter by a specific MCP connection. |
-| `rule_id` | uuid or null | `null` | Rule UUID from `rules_list`. |
-| `rule_run_id` | uuid or null | `null` | Filter by a specific rule run. |
-| `launch_id` | uuid or null | `null` | Launch UUID from submission or `launcher_launches_list`. |
-| `tool_name` | string or null | `null` | Exact MCP tool name to filter by. |
-| `action_name` | string or null | `null` | Exact action name to filter by. |
-| `target_type` | string or null | `null` |  |
-| `target_id` | string or null | `null` |  |
-| `started_after` | date-time or null | `null` | Include operations starting at or after this timestamp. |
-| `started_before` | date-time or null | `null` | Exclude operations starting at or after this timestamp. |
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "ActivityFilters": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Permission-filtered search criteria for the unified activity log.",
       "properties": {
@@ -393,7 +343,15 @@ Count the complete authorized result set for activity filters.
         "activity_type": {
           "anyOf": [
             {
-              "$ref": "#/$defs/ActivityType"
+              "description": "User-visible kinds of work.",
+              "enum": [
+                "tool_call",
+                "action",
+                "rule_run",
+                "launch_run",
+                "creative_import"
+              ],
+              "type": "string"
             },
             {
               "type": "null"
@@ -404,7 +362,18 @@ Count the complete authorized result set for activity filters.
         "status": {
           "anyOf": [
             {
-              "$ref": "#/$defs/ActivityStatus"
+              "description": "Small shared activity lifecycle.",
+              "enum": [
+                "running",
+                "succeeded",
+                "failed",
+                "denied",
+                "skipped",
+                "undone",
+                "undo_failed",
+                "reconciliation_needed"
+              ],
+              "type": "string"
             },
             {
               "type": "null"
@@ -575,37 +544,6 @@ Count the complete authorized result set for activity filters.
         }
       },
       "type": "object"
-    },
-    "ActivityStatus": {
-      "description": "Small shared activity lifecycle.",
-      "enum": [
-        "running",
-        "succeeded",
-        "failed",
-        "denied",
-        "skipped",
-        "undone",
-        "undo_failed",
-        "reconciliation_needed"
-      ],
-      "type": "string"
-    },
-    "ActivityType": {
-      "description": "User-visible kinds of work.",
-      "enum": [
-        "tool_call",
-        "action",
-        "rule_run",
-        "launch_run",
-        "creative_import"
-      ],
-      "type": "string"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/ActivityFilters"
     }
   },
   "required": [

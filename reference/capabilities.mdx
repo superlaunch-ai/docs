@@ -1,0 +1,44 @@
+---
+title: "Current product capabilities"
+description: "Find reporting, AutoRules, Launcher, Meta actions, memory, team access, and their MCP discovery tools."
+---
+
+Use this map to find supported workflows. The current reference covers 104 MCP tools. Your workspace access, enabled features, provider permissions, and account eligibility determine which operations you can use. Call the relevant discovery tool before preparing a write.
+
+## Analyze advertising performance
+
+Compare accounts, campaigns, ad sets, and ads. Select date ranges, daily rows or period totals, attribution, breakdowns, and metric columns. Search the column catalog, including available saved custom metrics. Use `insights_capabilities`, `insights_query`, and `insights_rank` for agent reports. Check pagination, currency, time zone, data-through dates, and warnings. See [Insights](/guides/insights).
+
+## Automate decisions with AutoRules
+
+Create, edit, archive, and run rules. Use performance conditions or a condition-free timed action. Set recurring cron timing or one exact run time, an IANA time zone, dry-run mode, and optional execution limits. Supported actions include delivery status changes, budget changes, and duplication at supported levels. Check `rules_schema` and account-specific `rules_capabilities`. See [Rules](/guides/rules).
+
+## Prepare and run Launcher batches
+
+- Upload images and videos to the shared workspace library, or import files selected through Google Drive.
+- Save creative families and immutable content versions. Use exact version IDs for copy, media, language, and placement choices. Saved draft content needs no separate approval step; preview still checks eligibility.
+- Organize fixed or smart collections. Save versioned templates with campaign, budget, destination, targeting, grouping, naming, and delivery settings.
+- Test new creatives, promote successful tests, or refresh an existing ad set. Choose immediate, supported one-time, or recurring execution and the intended provider delivery status.
+- Preview counts and budget exposure before submission. Inspect launch and operation results, retry eligible failures, or submit corrected replacement content with a new request key.
+
+Call `launcher_discover`, `launcher_capabilities`, and `launcher_languages_list`. Resolve provider assets and existing targets with the Launcher read tools. `launcher_source_details_get` reads normalized source settings and pages of ads. `launcher_template_versions_get` reads exact retained template settings. See [Launcher](/launcher/overview).
+
+The content schema includes single images, single videos, carousels, collections, flexible content, existing posts, catalogs, and multilingual content. Check the specific account, objective, source assets, and preview result before choosing a format. A schema field alone does not prove live provider eligibility.
+
+## Create, update, or duplicate Meta objects
+
+Use direct tools for supported media uploads, creative creation, campaign/ad-set/ad creation, partial updates, duplication, and status changes. Call `actions_capabilities` first. Write tools default to dry-run mode where the schema specifies it. New campaigns, ad sets, and ads start paused.
+
+Ad-set duplication can target another existing campaign in the same account and stays paused. Ad duplication can target an existing ad set when you supply its campaign and ad-set IDs together. Ad content updates require explicit replacement-creative policy. Check confirmed results and reconciliation warnings before retrying. See [Direct Meta actions](/mcp/reference/actions).
+
+## Keep brand context and shared memory
+
+Create and edit brand profiles and structured brand kits. Store approved facts in private, workspace, brand, or ad-account memory scopes. Recall, inspect, edit, enable, disable, or delete memory through the supported tools. Save private facts only after the user asks for persistence or approves the specific save. See [Brands](/guides/brands) and [Memory](/guides/memory).
+
+## Manage access and trace work
+
+Invite teammates with workspace and ad-account roles. Resend or revoke pending invitations and inspect delivery status. Permissions apply to both the web app and MCP. Use OAuth to connect an AI client with read or write scopes. Review tool calls, rule runs, and provider outcomes in Activity. Check workspace billing and usage before paid operations. See [Team access](/workspace/permissions), [MCP setup](/mcp/connect), [Activity](/guides/activity), and [Billing](/support/billing).
+
+## Choose an interface
+
+Use the web app for interactive setup and review. Use the [MCP tool reference](/mcp/tools) for supported agent operations and exact input schemas. Public documentation and text exports grant no access to private workspace data. Availability in the web app does not imply a matching public HTTP endpoint or MCP tool.

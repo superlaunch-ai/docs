@@ -5,6 +5,7 @@
 ## Start here
 
 - [Superlaunch documentation](https://docs.superlaunch.pro/index.md): Connect your accounts, work with AI agents, and manage campaigns in Superlaunch.
+- [Current product capabilities](https://docs.superlaunch.pro/reference/capabilities.md): Find reporting, AutoRules, Launcher, Meta actions, memory, team access, and their MCP discovery tools.
 - [Set up Superlaunch](https://docs.superlaunch.pro/quickstart.md): Connect your first Meta ad account and check a report.
 - [How Superlaunch works](https://docs.superlaunch.pro/concepts/how-it-works.md): Analyze ad performance, reuse creative work, and automate campaign tasks with your team or an AI agent.
 - [IDs, versions, and retries](https://docs.superlaunch.pro/concepts/ids-and-versions.md): Use the right identifiers and avoid duplicate operations.
@@ -24,12 +25,12 @@
 
 ## Launcher
 
-- [Launcher overview](https://docs.superlaunch.pro/launcher/overview.md): Prepare approved creatives and reuse campaign settings for launches.
+- [Launcher overview](https://docs.superlaunch.pro/launcher/overview.md): Save creative versions, reuse campaign settings, and run immediate or scheduled launches.
 - [Upload and import media](https://docs.superlaunch.pro/launcher/media.md): Add images and videos to the shared library or import selected Drive files.
-- [Create and approve creatives](https://docs.superlaunch.pro/launcher/creatives.md): Save content versions, check media, and approve the version you intend to launch.
+- [Create and version creatives](https://docs.superlaunch.pro/launcher/creatives.md): Save immutable content versions, select exact versions, and review their media.
 - [Organize collections](https://docs.superlaunch.pro/launcher/collections.md): Use fixed selections or smart filters to choose creatives for launches.
 - [Create launch templates](https://docs.superlaunch.pro/launcher/templates.md): Save versioned campaign settings, budgets, destinations, and naming.
-- [Prepare and submit a launch](https://docs.superlaunch.pro/launcher/launch.md): Select an operation, approved content, target, timing, and delivery status.
+- [Prepare and submit a launch](https://docs.superlaunch.pro/launcher/launch.md): Select an operation, saved content, target, timing, and delivery status.
 - [Schedule recurring launches](https://docs.superlaunch.pro/launcher/schedules.md): Set recurring timing, selection behavior, and batch limits.
 - [Inspect and recover launches](https://docs.superlaunch.pro/launcher/recovery.md): Understand partial results and choose retries or replacement work.
 
@@ -41,7 +42,7 @@
 - [Your first MCP workflow](https://docs.superlaunch.pro/mcp/first-workflow.md): Verify access and ask your agent for a read-only performance check.
 - [MCP workflows](https://docs.superlaunch.pro/mcp/workflows.md): Use discovery, validation, writes, and result checks in the right order.
 - [MCP troubleshooting](https://docs.superlaunch.pro/mcp/troubleshooting.md): Resolve connection, permission, input, and result-completeness problems.
-- [MCP tool index](https://docs.superlaunch.pro/mcp/tools.md): Find all 97 documented MCP tools by task, with access requirements and parameter references.
+- [MCP tool index](https://docs.superlaunch.pro/mcp/tools.md): Find all 104 documented MCP tools by task, access requirement, and exact input schema.
 - [MCP argument examples](https://docs.superlaunch.pro/mcp/examples.md): Valid argument shapes for discovery, reporting, campaign validation, memory, and launch polling.
 
 ## MCP reference
@@ -49,7 +50,7 @@
 - [Accounts, assets, and brands](https://docs.superlaunch.pro/mcp/reference/accounts-brands.md): Resolve Superlaunch account and brand IDs before reading or changing objects.
 - [Insights tools](https://docs.superlaunch.pro/mcp/reference/insights.md): Query reports and rank advertising performance.
 - [Rule tools](https://docs.superlaunch.pro/mcp/reference/rules.md): Create rules, edit their conditions, and inspect runs.
-- [Direct Meta actions](https://docs.superlaunch.pro/mcp/reference/actions.md): Upload media, create Meta objects, duplicate setups, and change delivery status.
+- [Direct Meta actions](https://docs.superlaunch.pro/mcp/reference/actions.md): Upload media, create or update Meta objects, duplicate setups, and change delivery status.
 - [Activity tools](https://docs.superlaunch.pro/mcp/reference/activity.md): Use the unified log for tool calls, actions, and rule operations.
 - [Memory tools](https://docs.superlaunch.pro/mcp/reference/memory.md): Save facts only after an explicit request or focused approval.
 - [Launcher library tools](https://docs.superlaunch.pro/mcp/reference/launcher-library.md): Manage media, creative versions, approvals, collections, and templates.

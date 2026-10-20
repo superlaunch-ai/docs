@@ -1,9 +1,9 @@
 ---
-title: "Create and approve creatives"
-description: "Save content versions, check media, and approve the version you intend to launch."
+title: "Create and version creatives"
+description: "Save immutable content versions, select exact versions, and review their media."
 ---
 
-A creative contains your ad copy and media. Superlaunch saves content edits as separate versions so you can approve and launch specific content. The tools call the parent creative a **creative family**.
+A creative contains your ad copy and media. Superlaunch saves content edits as separate versions so you can select and launch specific content. The tools call the parent creative a **creative family**.
 
 ## Create a creative
 
@@ -15,19 +15,19 @@ A creative contains your ad copy and media. Superlaunch saves content edits as s
 6. Choose saved media for the format and any supported placement variants.
 7. Save the creative and inspect its version.
 
-Supported content includes formats such as single images, single videos, carousels, and multilingual content where enabled. The editor and MCP schema define which fields apply to each format.
+The content schema includes single images, single videos, carousels, collections, flexible ads, existing posts, and catalogs. Multilingual content and placement media use saved variant and slot assignments. Schema support does not guarantee that an account, objective, or placement can launch a format. Use account capabilities and preview to check the exact combination.
 
-## Approve a version
+## Select a saved version
 
-Open the creative, inspect its copy and media, then approve the exact version. Approval requires approval access. Approve each new version before selecting it for a launch.
+Saved draft content is eligible for launch checks. You do not need a separate approval step. Inspect the copy, media, language, and destination before submitting a launch.
 
-When editing content, create a new version and review it before approval. Keep a note of the version ID if your launch must use exact content.
+Content edits create a new immutable version. Use `launcher_creatives_get` to page through saved version summaries and `launcher_creative_versions_get` to read exact content. Pin `creative_id` and `creative_version_id` pairs in `selection.creative_versions`. You can select distinct versions of one creative in the same launch.
 
 ## Revoke or archive
 
-Revoke approval when you need to prevent a version from selection. Archive the family when you want to remove it from active library use.
+Revoke a version when you need to prevent its selection. Archive the family when you want to remove it from active library use.
 
-Earlier launches retain their recorded content inputs. Approval changes do not rewrite provider objects created by those launches.
+Earlier launches retain their recorded content inputs. Revocation does not rewrite provider objects created by earlier launches.
 
 ## Check usage
 

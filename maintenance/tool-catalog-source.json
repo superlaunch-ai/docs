@@ -1,0 +1,7 @@
+{
+  "checked_on": "2026-10-20",
+  "repository": "superlaunch-ai/mcp",
+  "commit": "dcddb363a7cbb512b1e11ede7a2f5dffae0066a1",
+  "core_package": "superlaunch-core==0.1.6rc58",
+  "tool_count": 104
+}

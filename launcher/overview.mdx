@@ -1,6 +1,6 @@
 ---
 title: "Launcher overview"
-description: "Prepare approved creatives and reuse campaign settings for launches."
+description: "Save creative versions, reuse campaign settings, and run immediate or scheduled launches."
 ---
 
 Launcher creates campaigns and ads from your workspace's creative library. Use it to prepare batches, reuse campaign settings, schedule work, and inspect provider results.
@@ -11,27 +11,27 @@ Launcher creates campaigns and ads from your workspace's creative library. Use i
 | --- | --- |
 | Media | Uploaded or imported image or video |
 | Creative | A named family of content with saved versions |
-| Approved creative version | Exact content eligible for selection |
+| Saved creative version | Exact content selected for a launch |
 | Collection | A fixed selection or smart filter over creatives |
 | Template version | Saved campaign, ad-set, budget, and naming settings |
 | Launch | Submitted work with recorded inputs and operation results |
 | Schedule | Recurring launch configuration and limits |
 
-The library belongs to the workspace. Launches target an ad account. Approval and execution require their respective permissions. Account limits cap the campaigns and configured budgets that Launcher can create; they are not a cap on all Meta account spend.
+The library belongs to the workspace. Launches target an ad account. Authoring, execution, scheduling, and control require their respective permissions. Account limits cap the campaigns and configured budgets that Launcher can create; they are not a cap on all Meta account spend.
 
 ## Prepare and launch
 
 1. [Upload or import media](/launcher/media).
-2. [Save and approve a creative version](/launcher/creatives).
+2. [Save a creative version](/launcher/creatives).
 3. [Create a template](/launcher/templates).
 4. Select creatives or a [collection](/launcher/collections).
 5. [Prepare and submit a launch](/launcher/launch).
 6. Inspect its [results and recovery options](/launcher/recovery).
 
-Through MCP, call `launcher_discover` to check available tools, limits, and setup requirements.
+Through MCP, call `launcher_discover` to check available tools, limits, and setup requirements. Use `launcher_capabilities` for account policy and `launcher_languages_list` for supported language identities. Preview checks current provider eligibility.
 
 ## Preview and usage
 
-A preview estimates selected creatives, writes, budget exposure, and usage. It reserves nothing. Submission checks current approvals, access, billing, and limits again.
+A preview estimates selected creatives, writes, budget exposure, and usage. It reserves nothing. Submission checks saved content eligibility, access, billing, and limits again.
 
 Superlaunch records usage for confirmed changes in Meta. Check **Billing** for your allowance and recorded usage.

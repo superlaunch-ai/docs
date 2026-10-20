@@ -1,9 +1,9 @@
 ---
 title: "Prepare and submit a launch"
-description: "Select an operation, approved content, target, timing, and delivery status."
+description: "Select an operation, saved content, target, timing, and delivery status."
 ---
 
-Before you submit, confirm the workspace, ad account, approved creative versions, and campaign settings. A launch can create campaigns and ads in Meta and count toward your workspace usage.
+Before you submit, confirm the workspace, ad account, saved creative versions, and campaign settings. A launch can create campaigns and ads in Meta and count toward your workspace usage.
 
 ## Choose an operation
 
@@ -11,11 +11,11 @@ Choose a **Launch type**:
 
 | Launch type | Use it to |
 | --- | --- |
-| Test new creatives | Create a test from approved library content |
+| Test new creatives | Create a test from saved library content |
 | Promote successful tests | Use results from earlier tests in a new campaign or an existing ad set |
 | Refresh an existing ad set | Add creatives to an ad set you select |
 
-For an existing ad set, review its current settings before submitting.
+For an existing ad set, review its current settings before submitting. Use `launcher_source_details_get` to read normalized source settings and page through source ads. Use the returned IDs and follow `next_cursor`.
 
 Through MCP, call `launcher_discover`, resolve accounts, and use `launcher_targets_list` followed by `launcher_targets_get` when an existing target is required.
 
@@ -23,7 +23,7 @@ Through MCP, call `launcher_discover`, resolve accounts, and use `launcher_targe
 
 1. Open **Launcher** and choose the ad account.
 2. Select **New launch** and enter a **Launch name**.
-3. Select the operation and template version.
+3. Select the operation and template version. Pin exact saved creative versions when you need specific content.
 4. Choose creatives or resolve a collection.
 5. Review grouping, budget, and targeting.
 6. Choose the launch time. Recurring timing is available for **Test new creatives**.
@@ -35,7 +35,11 @@ Activation can start delivery and spend. Confirm that choice before submission.
 
 Select **Preview (optional)** to check the planned Meta objects, names, estimated usage, and configured budgets. Meta can still reject a request at submission or execution.
 
-Correct missing inputs and review the selection. Submission checks permissions, approval, provider state, billing, and limits again.
+Correct missing inputs and review the selection. Submission checks permissions, saved content eligibility, provider state, billing, and limits again.
+
+## Version reuse
+
+Use `selection.creative_versions` to pin exact versions. Use `manual_groups.creative_version_ids` for explicit grouping. Selecting another saved version needs no retest reason. Reusing the same confirmed version requires `retest_reason`; held or uncertain usage cannot be retested. Read current usage before submitting.
 
 ## Submit and track
 

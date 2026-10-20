@@ -1,19 +1,17 @@
 ---
 title: "Direct Meta actions"
-description: "Upload media, create Meta objects, duplicate setups, and change delivery status."
+description: "Upload media, create or update Meta objects, duplicate setups, and change delivery status."
 ---
 
-Call `actions_capabilities` to check whether live Meta changes are enabled. Creation, duplication, and status requests default to `dry_run: true`. Campaigns, ad sets, and ads created through these tools start paused. Direct budget amounts use integer account-currency minor units.
-
-The tables list arguments and common nested fields. Expand **Full input schema** for all fields and allowed values. Workspace and account permissions apply to every tool.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
 <span id="actions-capabilities" />
 
 ## actions_capabilities
 
-Check which Meta actions and live changes are enabled.
+List configured direct Meta actions, including partial updates.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
 **Arguments:** none.
 
@@ -33,35 +31,23 @@ Check which Meta actions and live changes are enabled.
 
 ## media_uploads_create
 
-Open a media picker or prepare a signed upload to the workspace library. The picker accepts up to ten files, with a default total limit of 64 MiB. To get a signed upload URL for one file, supply its metadata.
+Upload media to the current workspace library without requiring an account. Open a picker for up to ten files (64 MiB total by default), or supply metadata for one signed PUT grant. A successful PUT confirms library persistence. Use media_asset_id with Launcher library tools; media_id retains compatibility with creatives_create. Uploads do not contact Meta.
 
-A successful upload saves the file in the library. Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`. Uploading a file does not create a Meta creative.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-**Access:** `mcp:read` and `mcp:write`.
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Request ID and optional file metadata for a signed upload. |
-
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
-| `filename` | string or null | `null` | Original file name, including its extension. |
-| `mime_type` | image/jpeg, image/png, image/webp, video/mp4, video/quicktime or null | `null` | File content type, such as `image/jpeg`. |
-| `byte_size` | integer or null | `null` | File size in bytes. |
-| `checksum_sha256` | string or null | `null` | SHA-256 checksum of the file bytes. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "MediaUploadCreate": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Open the media picker or create one bounded signed upload grant.",
       "properties": {
@@ -144,12 +130,6 @@ A successful upload saves the file in the library. Use `media_asset_id` with Lau
       "type": "object"
     }
   },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/MediaUploadCreate"
-    }
-  },
   "required": [
     "payload"
   ],
@@ -163,65 +143,58 @@ A successful upload saves the file in the library. Use `media_asset_id` with Lau
 
 ## media_uploads_complete
 
-Upload one to ten selected files and return a result for each file. The default combined limit is 64 MiB.
+Upload up to ten files into the current workspace media library. The total interactive limit is 64 MiB by default, shared across all files. Use returned media_asset_id with Launcher library tools. The legacy media_id remains compatible with creatives_create. Retry the same request_id and files to retain exact per-file receipts, including after a partial batch failure.
 
-Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`. After a partial failure, retry with the same `request_id` and files to retain the results for files that already succeeded.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-**Access:** `mcp:read` and `mcp:write`.
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `files` | array | Required |
+| `media_id` | uuid or null | `null` |
+| `request_id` | uuid or null | `null` |
+| `ad_account_id` | uuid or null | `null` |
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `files` | array of object | Required |  minItems: `1`. maxItems: `10`. |
-| `media_id` | uuid or null | `null` | Upload identifier used by direct Meta creative creation. |
-| `request_id` | uuid or null | `null` | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid or null | `null` | Superlaunch account UUID from `ad_accounts_list`. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "MediaUploadFile": {
-      "additionalProperties": false,
-      "description": "One Prefab-selected file sent directly to the upload completion tool.",
-      "properties": {
-        "name": {
-          "maxLength": 255,
-          "minLength": 1,
-          "type": "string"
-        },
-        "size": {
-          "maximum": 1073741824,
-          "minimum": 1,
-          "type": "integer"
-        },
-        "type": {
-          "maxLength": 100,
-          "minLength": 1,
-          "type": "string"
-        },
-        "data": {
-          "maxLength": 357914456,
-          "minLength": 1,
-          "type": "string"
-        }
-      },
-      "required": [
-        "name",
-        "size",
-        "type",
-        "data"
-      ],
-      "type": "object"
-    }
-  },
   "additionalProperties": false,
   "properties": {
     "files": {
       "items": {
-        "$ref": "#/$defs/MediaUploadFile"
+        "additionalProperties": false,
+        "description": "One Prefab-selected file sent directly to the upload completion tool.",
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "size": {
+            "maximum": 1073741824,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "type": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "data": {
+            "maxLength": 357914456,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "size",
+          "type",
+          "data"
+        ],
+        "type": "object"
       },
       "maxItems": 10,
       "minItems": 1,
@@ -291,32 +264,21 @@ Use `media_asset_id` with Launcher tools or `media_id` with `creatives_create`. 
 
 Create a Meta creative from one completed signed media upload.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Upload completed media to Meta and create one ad creative. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `media_id` | uuid | Required | Upload identifier used by direct Meta creative creation. |
-| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
-| `object_story_spec` | object | Required |  |
-| `url_tags` | string or null | `null` |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "CreativeCreate": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Upload completed media to Meta and create one ad creative.",
       "properties": {
@@ -338,7 +300,8 @@ Create a Meta creative from one completed signed media upload.
           "type": "string"
         },
         "object_story_spec": {
-          "$ref": "#/$defs/JsonObjectInput"
+          "additionalProperties": true,
+          "type": "object"
         },
         "url_tags": {
           "anyOf": [
@@ -365,16 +328,6 @@ Create a Meta creative from one completed signed media upload.
         "object_story_spec"
       ],
       "type": "object"
-    },
-    "JsonObjectInput": {
-      "additionalProperties": true,
-      "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/CreativeCreate"
     }
   },
   "required": [
@@ -390,43 +343,23 @@ Create a Meta creative from one completed signed media upload.
 
 ## campaigns_create
 
-Validate campaign inputs or create a paused Meta campaign. The default is `dry_run: true`.
+Validate by default or explicitly create one paused Meta campaign.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Create or validate one paused Meta campaign. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
-| `objective` | string | Required |  minLength: `1`. maxLength: `100`. |
-| `status` | "PAUSED" | `"PAUSED"` |  |
-| `special_ad_categories` | array of string | Optional |  maxItems: `10`. |
-| `special_ad_category_country` | array of string or null | `null` |  |
-| `daily_budget` | integer or null | `null` | Daily budget in the ad account currency's minor units (for USD, 10000 means $100.00). |
-| `is_adset_budget_sharing_enabled` | boolean or null | `null` |  |
-| `lifetime_budget` | integer or null | `null` | Lifetime budget in the ad account currency's minor units (for USD, 10000 means $100.00). |
-| `bid_strategy` | string or null | `null` |  |
-| `buying_type` | string or null | `null` |  |
-| `promoted_object` | object or null | `null` |  |
-| `start_time` | string or null | `null` |  |
-| `stop_time` | string or null | `null` |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "CampaignCreate": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Create or validate one paused Meta campaign.",
       "properties": {
@@ -541,7 +474,8 @@ Validate campaign inputs or create a paused Meta campaign. The default is `dry_r
         "promoted_object": {
           "anyOf": [
             {
-              "$ref": "#/$defs/JsonObjectInput"
+              "additionalProperties": true,
+              "type": "object"
             },
             {
               "type": "null"
@@ -587,16 +521,6 @@ Validate campaign inputs or create a paused Meta campaign. The default is `dry_r
         "objective"
       ],
       "type": "object"
-    },
-    "JsonObjectInput": {
-      "additionalProperties": true,
-      "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/CampaignCreate"
     }
   },
   "required": [
@@ -612,47 +536,23 @@ Validate campaign inputs or create a paused Meta campaign. The default is `dry_r
 
 ## adsets_create
 
-Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: true`.
+Validate by default or explicitly create one paused Meta ad set.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Create or validate one paused Meta ad set under an existing campaign. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `campaign_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
-| `optimization_goal` | string | Required |  minLength: `1`. maxLength: `100`. |
-| `billing_event` | string | Required |  minLength: `1`. maxLength: `100`. |
-| `targeting` | object | Required |  |
-| `status` | "PAUSED" | `"PAUSED"` |  |
-| `daily_budget` | integer or null | `null` | Daily budget in the ad account currency's minor units (for USD, 2100 means $21.00). |
-| `lifetime_budget` | integer or null | `null` | Lifetime budget in the ad account currency's minor units (for USD, 2100 means $21.00). |
-| `bid_amount` | integer or null | `null` | Bid amount in the ad account currency's minor units. |
-| `bid_strategy` | string or null | `null` |  |
-| `promoted_object` | object or null | `null` |  |
-| `destination_type` | string or null | `null` |  |
-| `attribution_spec` | array of object or null | `null` |  |
-| `start_time` | string or null | `null` |  |
-| `end_time` | string or null | `null` |  |
-| `dsa_beneficiary` | string or null | `null` |  |
-| `dsa_payor` | string or null | `null` |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "AdSetCreate": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Create or validate one paused Meta ad set under an existing campaign.",
       "properties": {
@@ -685,7 +585,8 @@ Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: 
           "type": "string"
         },
         "targeting": {
-          "$ref": "#/$defs/JsonObjectInput"
+          "additionalProperties": true,
+          "type": "object"
         },
         "status": {
           "const": "PAUSED",
@@ -747,7 +648,8 @@ Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: 
         "promoted_object": {
           "anyOf": [
             {
-              "$ref": "#/$defs/JsonObjectInput"
+              "additionalProperties": true,
+              "type": "object"
             },
             {
               "type": "null"
@@ -772,7 +674,8 @@ Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: 
           "anyOf": [
             {
               "items": {
-                "$ref": "#/$defs/JsonObjectInput"
+                "additionalProperties": true,
+                "type": "object"
               },
               "maxItems": 20,
               "type": "array"
@@ -850,16 +753,6 @@ Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: 
         "targeting"
       ],
       "type": "object"
-    },
-    "JsonObjectInput": {
-      "additionalProperties": true,
-      "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/AdSetCreate"
     }
   },
   "required": [
@@ -875,36 +768,23 @@ Validate ad-set inputs or create a paused Meta ad set. The default is `dry_run: 
 
 ## ads_create
 
-Validate ad inputs or create a paused Meta ad. The default is `dry_run: true`.
+Validate by default or explicitly create one paused Meta ad.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Create or validate one paused Meta ad using an existing creative. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `adset_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `name` | string | Required |  minLength: `1`. maxLength: `255`. |
-| `creative_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `status` | "PAUSED" | `"PAUSED"` |  |
-| `conversion_domain` | string or null | `null` |  |
-| `tracking_specs` | array of object or null | `null` |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "AdCreate": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Create or validate one paused Meta ad using an existing creative.",
       "properties": {
@@ -953,7 +833,8 @@ Validate ad inputs or create a paused Meta ad. The default is `dry_run: true`.
           "anyOf": [
             {
               "items": {
-                "$ref": "#/$defs/JsonObjectInput"
+                "additionalProperties": true,
+                "type": "object"
               },
               "maxItems": 50,
               "type": "array"
@@ -977,16 +858,6 @@ Validate ad inputs or create a paused Meta ad. The default is `dry_run: true`.
         "creative_id"
       ],
       "type": "object"
-    },
-    "JsonObjectInput": {
-      "additionalProperties": true,
-      "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/AdCreate"
     }
   },
   "required": [
@@ -1002,33 +873,23 @@ Validate ad inputs or create a paused Meta ad. The default is `dry_run: true`.
 
 ## actions_execute
 
-Change the status of a campaign, ad set, or ad with `set_status`.
+Execute set_status for one campaign, ad set, or ad.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Set one existing campaign, ad set, or ad ACTIVE or PAUSED. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `target_type` | campaign, adset, ad | Required |  |
-| `target_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `status` | ACTIVE, PAUSED | Required |  |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "StatusActionExecute": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
       "description": "Set one existing campaign, ad set, or ad ACTIVE or PAUSED.",
       "properties": {
@@ -1075,12 +936,6 @@ Change the status of a campaign, ad set, or ad with `set_status`.
       "type": "object"
     }
   },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/StatusActionExecute"
-    }
-  },
   "required": [
     "payload"
   ],
@@ -1096,32 +951,58 @@ Change the status of a campaign, ad set, or ad with `set_status`.
 
 Preview or copy a campaign with its children in the same account, paused.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Copy one source in its account; copied hierarchies always start paused. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "DuplicateAction": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
-      "description": "Copy one source in its account; copied hierarchies always start paused.",
+      "description": "Copy one source within its authorized account.",
       "properties": {
+        "destination_campaign_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "destination_adset_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "PAUSED",
+          "enum": [
+            "PAUSED",
+            "ACTIVE"
+          ],
+          "type": "string"
+        },
         "request_id": {
           "format": "uuid",
           "type": "string"
@@ -1146,12 +1027,6 @@ Preview or copy a campaign with its children in the same account, paused.
         "source_id"
       ],
       "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/DuplicateAction"
     }
   },
   "required": [
@@ -1167,33 +1042,25 @@ Preview or copy a campaign with its children in the same account, paused.
 
 ## adsets_duplicate
 
-Preview or copy an ad set with its ads in the same campaign, paused.
+Copy an ad set and its ads PAUSED into an existing campaign. The destination campaign must belong to the same authorized account. Omit it to retain the original campaign.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Copy one source in its account; copied hierarchies always start paused. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "DuplicateAction": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
-      "description": "Copy one source in its account; copied hierarchies always start paused.",
+      "description": "Copy an ad set and its children paused within the authorized account.",
       "properties": {
         "request_id": {
           "format": "uuid",
@@ -1208,6 +1075,24 @@ Preview or copy an ad set with its ads in the same campaign, paused.
           "minLength": 1,
           "type": "string"
         },
+        "destination_campaign_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "const": "PAUSED",
+          "default": "PAUSED",
+          "type": "string"
+        },
         "dry_run": {
           "default": true,
           "type": "boolean"
@@ -1219,12 +1104,6 @@ Preview or copy an ad set with its ads in the same campaign, paused.
         "source_id"
       ],
       "type": "object"
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/DuplicateAction"
     }
   },
   "required": [
@@ -1240,34 +1119,60 @@ Preview or copy an ad set with its ads in the same campaign, paused.
 
 ## ads_duplicate
 
-Preview or copy an ad in the same ad set, paused.
+Preview or copy an ad into an existing ad set; defaults to PAUSED. Supply destination campaign and ad set IDs together to choose a destination within the source account. Set status=ACTIVE only for an intentional live copy.
 
-**Access:** `mcp:read` and `mcp:write`.
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `payload` | object | Required | Copy one source in its account; copied hierarchies always start paused. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
 
-### payload fields
-
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `request_id` | uuid | Required | UUID for this operation; use a new UUID for changed inputs. |
-| `ad_account_id` | uuid | Required | Superlaunch account UUID from `ad_accounts_list`. |
-| `source_id` | string | Required |  minLength: `1`. maxLength: `300`. |
-| `dry_run` | boolean | `true` | `true` checks the request without making live changes in Meta. |
-
-**Retries:** reuse the same `request_id` with unchanged inputs for the same operation.
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
 ```json
 {
-  "$defs": {
-    "DuplicateAction": {
+  "additionalProperties": false,
+  "properties": {
+    "payload": {
       "additionalProperties": false,
-      "description": "Copy one source in its account; copied hierarchies always start paused.",
+      "description": "Copy one source within its authorized account.",
       "properties": {
+        "destination_campaign_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "destination_adset_id": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "PAUSED",
+          "enum": [
+            "PAUSED",
+            "ACTIVE"
+          ],
+          "type": "string"
+        },
         "request_id": {
           "format": "uuid",
           "type": "string"
@@ -1294,12 +1199,6 @@ Preview or copy an ad in the same ad set, paused.
       "type": "object"
     }
   },
-  "additionalProperties": false,
-  "properties": {
-    "payload": {
-      "$ref": "#/$defs/DuplicateAction"
-    }
-  },
   "required": [
     "payload"
   ],
@@ -1313,13 +1212,15 @@ Preview or copy an ad in the same ad set, paused.
 
 ## actions_get
 
-Read an action result using its activity ID.
+Read one permission-filtered action result by Activity ID.
 
-**Access:** `mcp:read`.
+**Access:** `mcp:read`. Workspace and target permissions also apply.
 
-| Parameter | Type | Required / default | Details |
-| --- | --- | --- | --- |
-| `activity_id` | uuid | Required | Activity UUID from the tool result or `activity_list`. |
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `activity_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 <Accordion title="Full input schema">
 
@@ -1339,4 +1240,1687 @@ Read an action result using its activity ID.
 }
 ```
 
+</Accordion>
+
+<span id="campaigns-update" />
+
+## campaigns_update
+
+Patch selected existing campaign fields. Budgets use integer account minor units; ownership/type cannot change. Dry run defaults true. Inspect result verification: simulation, confirmed, or reconciliation_required.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+  ```json
+  {
+    "additionalProperties": false,
+    "properties": {
+      "payload": {
+        "additionalProperties": false,
+        "description": "Patch one existing campaign; monetary values use account minor units.",
+        "properties": {
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ad_account_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "target_id": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "changes": {
+            "additionalProperties": false,
+            "description": "Campaign-level fields; zero spend_cap explicitly removes the cap.",
+            "properties": {
+              "name": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "ACTIVE",
+                      "PAUSED"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "daily_budget": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "lifetime_budget": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "bid_strategy": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "LOWEST_COST_WITHOUT_CAP",
+                      "LOWEST_COST_WITH_BID_CAP",
+                      "COST_CAP",
+                      "LOWEST_COST_WITH_MIN_ROAS"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "spend_cap": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "type": "object"
+          },
+          "dry_run": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request_id",
+          "ad_account_id",
+          "target_id",
+          "changes"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "payload"
+    ],
+    "type": "object"
+  }
+  ```
+</Accordion>
+
+<span id="adsets-update" />
+
+## adsets_update
+
+Patch existing ad-set settings. Dates require UTC offsets; nested objects merge and selected lists replace. Budgets use integer minor units. Dry run defaults true. Inspect result verification: simulation, confirmed, or reconciliation_required.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+  ```json
+  {
+    "additionalProperties": false,
+    "properties": {
+      "payload": {
+        "additionalProperties": false,
+        "description": "Patch an existing ad set without changing parent budgets or status.",
+        "properties": {
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ad_account_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "target_id": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "changes": {
+            "additionalProperties": false,
+            "description": "Editable ad-set settings, validated against its current parent and state.",
+            "properties": {
+              "name": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "ACTIVE",
+                      "PAUSED"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "daily_budget": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "lifetime_budget": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "bid_strategy": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "LOWEST_COST_WITHOUT_CAP",
+                      "LOWEST_COST_WITH_BID_CAP",
+                      "COST_CAP",
+                      "LOWEST_COST_WITH_MIN_ROAS"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "start_time": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "end_time": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "targeting": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Partial targeting; nested objects merge and selected lists replace.",
+                    "properties": {
+                      "interests": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "description": "An existing provider audience or interest identity.",
+                              "properties": {
+                                "id": {
+                                  "maxLength": 300,
+                                  "minLength": 1,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "behaviors": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "description": "An existing provider audience or interest identity.",
+                              "properties": {
+                                "id": {
+                                  "maxLength": 300,
+                                  "minLength": 1,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "custom_audiences": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "description": "An existing provider audience or interest identity.",
+                              "properties": {
+                                "id": {
+                                  "maxLength": 300,
+                                  "minLength": 1,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "age_min": {
+                        "anyOf": [
+                          {
+                            "maximum": 65,
+                            "minimum": 18,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "age_max": {
+                        "anyOf": [
+                          {
+                            "maximum": 65,
+                            "minimum": 18,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "genders": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "enum": [
+                                1,
+                                2
+                              ],
+                              "type": "integer"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "locales": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "exclusiveMinimum": 0,
+                              "type": "integer"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "geo_locations": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "description": "Selected location lists; provided lists replace their previous contents.",
+                            "properties": {
+                              "countries": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "pattern": "^[A-Z]{2}$",
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "regions": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "description": "A provider geographic location key.",
+                                      "properties": {
+                                        "key": {
+                                          "maxLength": 300,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "radius": {
+                                          "anyOf": [
+                                            {
+                                              "maximum": 80,
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        },
+                                        "distance_unit": {
+                                          "anyOf": [
+                                            {
+                                              "enum": [
+                                                "mile",
+                                                "kilometer"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        }
+                                      },
+                                      "required": [
+                                        "key"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "cities": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "description": "A provider geographic location key.",
+                                      "properties": {
+                                        "key": {
+                                          "maxLength": 300,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "radius": {
+                                          "anyOf": [
+                                            {
+                                              "maximum": 80,
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        },
+                                        "distance_unit": {
+                                          "anyOf": [
+                                            {
+                                              "enum": [
+                                                "mile",
+                                                "kilometer"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        }
+                                      },
+                                      "required": [
+                                        "key"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "zips": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "description": "A provider geographic location key.",
+                                      "properties": {
+                                        "key": {
+                                          "maxLength": 300,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "radius": {
+                                          "anyOf": [
+                                            {
+                                              "maximum": 80,
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        },
+                                        "distance_unit": {
+                                          "anyOf": [
+                                            {
+                                              "enum": [
+                                                "mile",
+                                                "kilometer"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        }
+                                      },
+                                      "required": [
+                                        "key"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "location_types": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "enum": [
+                                        "home",
+                                        "recent",
+                                        "travel_in"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "excluded_geo_locations": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "description": "Selected location lists; provided lists replace their previous contents.",
+                            "properties": {
+                              "countries": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "pattern": "^[A-Z]{2}$",
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "regions": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "description": "A provider geographic location key.",
+                                      "properties": {
+                                        "key": {
+                                          "maxLength": 300,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "radius": {
+                                          "anyOf": [
+                                            {
+                                              "maximum": 80,
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        },
+                                        "distance_unit": {
+                                          "anyOf": [
+                                            {
+                                              "enum": [
+                                                "mile",
+                                                "kilometer"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        }
+                                      },
+                                      "required": [
+                                        "key"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "cities": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "description": "A provider geographic location key.",
+                                      "properties": {
+                                        "key": {
+                                          "maxLength": 300,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "radius": {
+                                          "anyOf": [
+                                            {
+                                              "maximum": 80,
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        },
+                                        "distance_unit": {
+                                          "anyOf": [
+                                            {
+                                              "enum": [
+                                                "mile",
+                                                "kilometer"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        }
+                                      },
+                                      "required": [
+                                        "key"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "zips": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "description": "A provider geographic location key.",
+                                      "properties": {
+                                        "key": {
+                                          "maxLength": 300,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        },
+                                        "radius": {
+                                          "anyOf": [
+                                            {
+                                              "maximum": 80,
+                                              "minimum": 1,
+                                              "type": "integer"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        },
+                                        "distance_unit": {
+                                          "anyOf": [
+                                            {
+                                              "enum": [
+                                                "mile",
+                                                "kilometer"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ],
+                                          "default": null
+                                        }
+                                      },
+                                      "required": [
+                                        "key"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "location_types": {
+                                "anyOf": [
+                                  {
+                                    "items": {
+                                      "enum": [
+                                        "home",
+                                        "recent",
+                                        "travel_in"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "excluded_custom_audiences": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "description": "An existing provider audience or interest identity.",
+                              "properties": {
+                                "id": {
+                                  "maxLength": 300,
+                                  "minLength": 1,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "targeting_automation": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "description": "Explicit Advantage audience control.",
+                            "properties": {
+                              "advantage_audience": {
+                                "enum": [
+                                  0,
+                                  1
+                                ],
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "advantage_audience"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "flexible_spec": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "description": "Supported detailed targeting selections.",
+                              "properties": {
+                                "interests": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "description": "An existing provider audience or interest identity.",
+                                        "properties": {
+                                          "id": {
+                                            "maxLength": 300,
+                                            "minLength": 1,
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "id"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "default": null
+                                },
+                                "behaviors": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "description": "An existing provider audience or interest identity.",
+                                        "properties": {
+                                          "id": {
+                                            "maxLength": 300,
+                                            "minLength": 1,
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "id"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "default": null
+                                },
+                                "custom_audiences": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "description": "An existing provider audience or interest identity.",
+                                        "properties": {
+                                          "id": {
+                                            "maxLength": 300,
+                                            "minLength": 1,
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "id"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "default": null
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "publisher_platforms": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "enum": [
+                                "facebook",
+                                "instagram",
+                                "audience_network",
+                                "messenger",
+                                "threads"
+                              ],
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "facebook_positions": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "maxLength": 300,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "instagram_positions": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "maxLength": 300,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "audience_network_positions": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "maxLength": 300,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "messenger_positions": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "maxLength": 300,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "threads_positions": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "maxLength": 300,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "device_platforms": {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "enum": [
+                                "mobile",
+                                "desktop"
+                              ],
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "optimization_goal": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "destination_type": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "promoted_object": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Dataset/pixel and conversion event or destination resource selection.",
+                    "properties": {
+                      "pixel_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "custom_event_type": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "custom_conversion_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "application_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "object_store_url": {
+                        "anyOf": [
+                          {
+                            "format": "uri",
+                            "maxLength": 2083,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "page_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "product_set_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "attribution_spec": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "additionalProperties": false,
+                      "description": "Explicit click or view attribution window.",
+                      "properties": {
+                        "event_type": {
+                          "enum": [
+                            "CLICK_THROUGH",
+                            "VIEW_THROUGH"
+                          ],
+                          "type": "string"
+                        },
+                        "window_days": {
+                          "enum": [
+                            1,
+                            7
+                          ],
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "event_type",
+                        "window_days"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 2,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "billing_event": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "bid_amount": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "bid_constraints": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Meta minimum ROAS expressed in provider units (10000 equals 1.0).",
+                    "properties": {
+                      "roas_average_floor": {
+                        "exclusiveMinimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "roas_average_floor"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "type": "object"
+          },
+          "dry_run": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request_id",
+          "ad_account_id",
+          "target_id",
+          "changes"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "payload"
+    ],
+    "type": "object"
+  }
+  ```
+</Accordion>
+
+<span id="ads-update" />
+
+## ads_update
+
+Patch one existing ad. Content requires creative_policy=replace. Edits may trigger review; new content does not retain existing post engagement. Never creates a new ad. Dry run defaults true. Inspect result verification: simulation, confirmed, or reconciliation_required.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `payload` | object | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+  ```json
+  {
+    "additionalProperties": false,
+    "properties": {
+      "payload": {
+        "additionalProperties": false,
+        "description": "Patch an existing ad; replacement creative creation must be explicit.",
+        "properties": {
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ad_account_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "target_id": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "changes": {
+            "additionalProperties": false,
+            "description": "Existing ad edits, without implicit ad or creative creation.",
+            "properties": {
+              "name": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "ACTIVE",
+                      "PAUSED"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "creative_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "content": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Content edits require an explicitly authorized replacement creative.",
+                    "properties": {
+                      "primary_text": {
+                        "anyOf": [
+                          {
+                            "maxLength": 10000,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "headline": {
+                        "anyOf": [
+                          {
+                            "maxLength": 1000,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "description": {
+                        "anyOf": [
+                          {
+                            "maxLength": 1000,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "call_to_action": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "destination_url": {
+                        "anyOf": [
+                          {
+                            "format": "uri",
+                            "maxLength": 2083,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "url_tags": {
+                        "anyOf": [
+                          {
+                            "maxLength": 4096,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "page_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "instagram_user_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "object_story_id": {
+                        "anyOf": [
+                          {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "creative_policy": {
+                "anyOf": [
+                  {
+                    "const": "replace",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "tracking_specs": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "additionalProperties": false,
+                      "description": "Selected supported conversion tracking identities.",
+                      "properties": {
+                        "action_type": {
+                          "items": {
+                            "maxLength": 300,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "fb_pixel": {
+                          "anyOf": [
+                            {
+                              "items": {
+                                "maxLength": 300,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "default": null
+                        },
+                        "application": {
+                          "anyOf": [
+                            {
+                              "items": {
+                                "maxLength": 300,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "default": null
+                        }
+                      },
+                      "required": [
+                        "action_type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "conversion_domain": {
+                "anyOf": [
+                  {
+                    "maxLength": 300,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "type": "object"
+          },
+          "dry_run": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request_id",
+          "ad_account_id",
+          "target_id",
+          "changes"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "payload"
+    ],
+    "type": "object"
+  }
+  ```
 </Accordion>

@@ -16,7 +16,7 @@ Set a minimum spend or conversion count to exclude results with too little data.
 
 ## Create a draft rule
 
-Call `rules_schema`, resolve accounts, and build the full rule definition. Supply a target filter, tasks with conditions and actions, and a schedule with time zone. Save as a draft with `dry_run: true`.
+Call `rules_schema`, resolve accounts, and build the full rule definition. Supply a target filter, tasks with actions and optional conditions, and a schedule with time zone. Save as a draft with `dry_run: true`.
 
 Read the rule back and run its current version in dry-run mode. Review decisions before activation. See [Rules](/guides/rules).
 
@@ -24,7 +24,7 @@ Read the rule back and run its current version in dry-run mode. Review decisions
 
 Call `launcher_discover`, choose an account, and inspect saved creatives and templates. [Upload or import media](/launcher/media) if you need new files.
 
-Approve exact creative versions, resolve the selection, inspect an existing target where required, and preview the launch. Submit with one stable request key. Poll the launch and operation records, including partial failures.
+Select exact saved creative versions, resolve the selection, inspect an existing target where required, and preview the launch. Submit with one stable request key. Poll the launch and operation records, including partial failures.
 
 ## Create Meta objects directly
 
@@ -38,11 +38,17 @@ Create a campaign, then an ad set, then an ad with the required parent IDs. Revi
 
 ## Reuse a successful setup
 
-Use `campaigns_duplicate`, `adsets_duplicate`, or `ads_duplicate` to copy an existing Meta setup. Copies stay in the same account: an ad-set copy stays in its campaign, and an ad copy stays in its ad set. The copies start paused.
+Use `campaigns_duplicate`, `adsets_duplicate`, or `ads_duplicate` to copy an existing Meta setup. Copies stay in the source account. An ad-set copy can target an existing campaign through `destination_campaign_id`; omit it to keep the source campaign. Ad-set copies stay paused. An ad copy can target an existing ad set when you supply its campaign and ad-set IDs together. Ad copies default to paused; an active copy requires an explicit status choice.
 
 To use a setup in a different account, prepare a new launch with that account's assets and compatible template settings. Check its currency, Pages, pixels, audiences, and permissions before submitting.
 
 For successful Launcher tests, choose **Promote successful tests** and select the source ads. See [Prepare and submit a launch](/launcher/launch).
+
+## Update existing Meta objects
+
+Use `campaigns_update`, `adsets_update`, or `ads_update` for supported partial changes. Read the current object, select only the fields you intend to change, and run a dry run first. Budget values use account-currency minor units.
+
+Ad content edits require `creative_policy: "replace"`. New creative content can trigger provider review and does not preserve the existing post engagement. Inspect the returned verification state: `simulation`, `confirmed`, or `reconciliation_required`. Read results before retrying an uncertain write.
 
 ## Save a confirmed fact
 
