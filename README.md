@@ -33,7 +33,7 @@ The copy follows Google's developer style guide and Diataxis. `AGENTS.md` record
 
 ## Text exports
 
-The short index comes from navigation and page metadata through `scripts/generate_llms.py`. CI rejects stale generated content. Mintlify generates the full-text export and page Markdown:
+The short index comes from navigation and page metadata through `scripts/generate_llms.py`. CI rejects stale generated content. The same script generates the full-text export from the public navigation pages. Mintlify serves both custom files and provides page Markdown:
 - https://docs.superlaunch.pro/llms.txt
 - https://docs.superlaunch.pro/llms-full.txt
 - Page Markdown, such as https://docs.superlaunch.pro/mcp/overview.md
