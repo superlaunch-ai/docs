@@ -42,7 +42,9 @@
         "group": "API",
         "pages": [
           "reference/custom-metrics-api",
-          "reference/ad-accounts-api"
+          "reference/ad-accounts-api",
+          "reference/api-keys",
+          "reference/api-authorization"
         ]
       },
       {

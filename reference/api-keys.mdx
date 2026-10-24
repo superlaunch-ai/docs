@@ -1,0 +1,15 @@
+---
+title: "Get an API key"
+description: "Create and store a team API key for public API requests."
+---
+
+Create a team API key before you call the public API.
+
+1. Open **Team → API keys** in Superlaunch.
+2. Create a key. Select the ad accounts that the key can access.
+3. Select the permissions that the integration needs. Set an expiry.
+4. Copy the secret when it appears. Superlaunch shows it once.
+
+Store the secret in your integration's secret store. Do not add it to source code, URLs, or logs.
+
+Use [Authorization](/reference/api-authorization) to send the key. Use [Ad accounts](/reference/ad-accounts-api) to find an allowed account ID. A key that expires or is revoked stops new requests.

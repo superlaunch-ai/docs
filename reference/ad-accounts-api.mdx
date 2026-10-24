@@ -1,35 +1,42 @@
 ---
 title: "Ad accounts"
-description: "Find the account IDs and settings that public metrics API requests need."
+description: "List the ad accounts that a team API key can access."
 ---
 
-Use the public ad account route to find an account before you create a metric, import values, or query results. This route returns accounts allowed by the team API key and the key issuer's current access.
+Use this route to find the internal account UUID for [Custom metrics](/reference/custom-metrics-api). [Get an API key](/reference/api-keys) and read [Authorization](/reference/api-authorization) first.
 
-## Request accounts
+## List ad accounts
 
-Send a team API key with `Authorization: Bearer <metric_api_key>`.
+`GET /api/public/ad-accounts`
 
-```http
-GET /api/public/ad-accounts
-Authorization: Bearer <metric_api_key>
+The route returns accounts allowed by both the key and the key issuer's current access. Use `query` to search. Use `provider` or `external_account_id` to filter. `limit` is 1 to 100 and defaults to 50. Use the opaque `cursor` from a response to get the next page. Keep the filters the same.
+
+**Request**
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/ad-accounts?provider=meta&limit=50' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
 ```
 
-You can use these query parameters:
+**Response — HTTP 200**
 
-| Parameter | Use |
-| --- | --- |
-| `query` | Search the available accounts. |
-| `provider` | Filter by provider. |
-| `external_account_id` | Filter by the provider account ID. |
-| `limit` | Set the page size, from 1 to 100. The default is 50. |
-| `cursor` | Request the next page. |
+```json
+{
+  "items": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "provider": "meta",
+      "external_account_id": "act_120000000001",
+      "name": "Example account",
+      "currency": "USD",
+      "timezone": "America/New_York"
+    }
+  ],
+  "next_cursor": null,
+  "complete": true
+}
+```
 
-The response has `items`, `next_cursor`, and `complete`. Follow `next_cursor` until `complete` is true. Keep the same filters on each page.
-
-Each item has an internal `id` UUID, `provider`, `external_account_id`, `name`, `currency`, and `timezone`. The last three fields can be null. Use the internal `id` as `ad_account_id` in [Custom metrics](/reference/custom-metrics-api) requests. Keep it separate from the provider account ID. For an account-level imported value, use the provider account ID as `entity_id`.
-
-## Access
-
-Create a key in **Team → API keys** with an explicit list of allowed accounts and the needed read permission. The issuer must still belong to the team and have access to the requested account. A revoked or expired key cannot list accounts. The route does not return accounts outside the key's allowed list.
+Use `id` as `ad_account_id` in other public API requests. For an account-level imported value, use the provider account ID as `entity_id`. `name`, `currency`, and `timezone` can be null. Follow `next_cursor` until `complete` is `true`.
 
 See [Import custom metrics](/guides/custom-metrics) for the app workflow.
