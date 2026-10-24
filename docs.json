@@ -21,6 +21,12 @@
         ]
       },
       {
+        "group": "API",
+        "pages": [
+          "reference/custom-metrics-api"
+        ]
+      },
+      {
         "group": "Workspace",
         "pages": [
           "workspace/connections",
@@ -32,7 +38,6 @@
         "pages": [
           "guides/insights",
           "guides/custom-metrics",
-          "reference/custom-metrics-api",
           "guides/rules",
           "guides/activity",
           "guides/brands",
