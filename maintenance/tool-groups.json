@@ -122,5 +122,18 @@
     "rule_activity_get",
     "rule_activity_summary",
     "rules_capabilities"
+  ],
+  "mcp/reference/custom-metrics": [
+    "custom_metrics_list",
+    "custom_metrics_get",
+    "custom_metrics_create",
+    "custom_metrics_update",
+    "custom_metrics_archive",
+    "custom_metrics_import_prepare",
+    "custom_metrics_upload_create",
+    "custom_metrics_import_get",
+    "custom_metrics_import_list",
+    "custom_metrics_import_commit",
+    "metrics_query"
   ]
 }

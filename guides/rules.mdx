@@ -19,6 +19,12 @@ Use **Active items only** to limit a task to active objects. Turn it off if you 
 
 Budget-increase actions require a maximum daily budget; budget-decrease actions require a minimum. Absolute adjustments and rule safety bounds use major account-currency units. Direct creation tools use minor units instead.
 
+## Use custom metrics
+
+Select an active custom metric for the Rule's ad account and target level. Custom metrics use closed account dates. The Rule checks that every required custom value exists before it selects a task. A missing value cannot pass through an `OR` condition or a fallback task. An explicit zero is a value.
+
+An import in progress or a failed import does not stop the Rule. The Rule reads current stored values, which can include some corrections from that import. Check the import task and use dry-run mode when you test a new Rule. See [Import custom metrics](/guides/custom-metrics).
+
 ## Check a dry run
 
 Run the current rule version with `dry_run: true`. Review which objects match and which actions the rule would take before allowing live changes.

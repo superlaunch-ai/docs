@@ -1,9 +1,9 @@
 ---
 title: "MCP tool index"
-description: "Find all 104 documented MCP tools by task, access requirement, and exact input schema."
+description: "Find all 115 documented MCP tools by task, access requirement, and exact input schema."
 ---
 
-This reference covers 104 tools from the reviewed deployed MCP source. Your access, client settings, and enabled features determine which tools you can use. See the [capability overview](/reference/capabilities) for product workflows.
+This reference covers 115 tools from the reviewed deployed MCP source. Your access, client settings, and enabled features determine which tools you can use. See the [capability overview](/reference/capabilities) for product workflows.
 
 Use an MCP client with [OAuth authorization](/mcp/authentication). Read tools require `mcp:read`. Write tools also require `mcp:write` and the relevant workspace and target permissions. Preserve argument nesting such as `payload`, `request`, `data`, `family`, and `content`.
 
@@ -41,6 +41,7 @@ Read the [argument examples](/mcp/examples) and [IDs and retries](/concepts/ids-
 | [`campaigns_update`](/mcp/reference/actions#campaigns-update) | Write | Patch selected existing campaign fields. |
 | [`adsets_update`](/mcp/reference/actions#adsets-update) | Write | Patch existing ad-set settings. |
 | [`ads_update`](/mcp/reference/actions#ads-update) | Write | Patch one existing ad. |
+
 ## Activity tools
 
 | Tool | Access | Purpose |
@@ -64,6 +65,7 @@ Read the [argument examples](/mcp/examples) and [IDs and retries](/concepts/ids-
 | [`launcher_drive_folders_list`](/mcp/reference/launcher-drive#launcher-drive-folders-list) | Read | List saved workspace folders. |
 | [`launcher_drive_folders_save`](/mcp/reference/launcher-drive#launcher-drive-folders-save) | Write | Save a folder selected in Superlaunch's Google Picker with drive.file. |
 | [`launcher_drive_folder_files_list`](/mcp/reference/launcher-drive#launcher-drive-folder-files-list) | Read | List up to 100 selected media files and folders with drive.file. |
+
 ## Launcher launch tools
 
 | Tool | Access | Purpose |
@@ -160,3 +162,19 @@ Read the [argument examples](/mcp/examples) and [IDs and retries](/concepts/ids-
 | [`rule_activity_get`](/mcp/reference/rules#rule-activity-get) | Read | Read one authorized rule activity record. |
 | [`rule_activity_summary`](/mcp/reference/rules#rule-activity-summary) | Read | Return a bounded activity summary for one authorized rule. |
 | [`rules_capabilities`](/mcp/reference/rules#rules-capabilities) | Read | List authorized rule metrics and recorded event availability for one account. |
+
+## Custom metric tools
+
+| Tool | Access | Purpose |
+| --- | --- | --- |
+| [`custom_metrics_list`](/mcp/reference/custom-metrics#custom-metrics-list) | Read | List definitions for one permitted account. |
+| [`custom_metrics_get`](/mcp/reference/custom-metrics#custom-metrics-get) | Read | Read one definition and its readable enabled rule dependencies. |
+| [`custom_metrics_create`](/mcp/reference/custom-metrics#custom-metrics-create) | Write | Create a metric. |
+| [`custom_metrics_update`](/mcp/reference/custom-metrics#custom-metrics-update) | Write | Edit text or supported levels using the current updated_at timestamp. |
+| [`custom_metrics_archive`](/mcp/reference/custom-metrics#custom-metrics-archive) | Write | Archive a metric while keeping values. |
+| [`custom_metrics_import_prepare`](/mcp/reference/custom-metrics#custom-metrics-import-prepare) | Write | Validate up to 100 complete daily values. |
+| [`custom_metrics_upload_create`](/mcp/reference/custom-metrics#custom-metrics-upload-create) | Write | Create a short-lived CSV grant. |
+| [`custom_metrics_import_get`](/mcp/reference/custom-metrics#custom-metrics-import-get) | Read | Read import status, progress, timestamps, and safe errors. |
+| [`custom_metrics_import_list`](/mcp/reference/custom-metrics#custom-metrics-import-list) | Read | Read account import history with task status and progress. |
+| [`custom_metrics_import_commit`](/mcp/reference/custom-metrics#custom-metrics-import-commit) | Write | Queue an import task. |
+| [`metrics_query`](/mcp/reference/custom-metrics#metrics-query) | Read | Read provider and custom values at one level. |

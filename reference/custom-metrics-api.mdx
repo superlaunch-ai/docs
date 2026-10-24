@@ -1,0 +1,68 @@
+---
+title: "Public metrics API"
+description: "Create metric definitions, import values, check tasks, and query results with a team API key."
+---
+
+Use the public metrics API for scheduled imports and reads. The routes start with `/api/public`. They use the same metric definitions and import tasks as the Superlaunch app and MCP tools.
+
+## Get an API key
+
+In **Team → API keys**, create a key. Select its allowed ad accounts, permissions, and expiry. Copy the secret when it appears. It is shown once.
+
+Send `Authorization: Bearer <metric_api_key>` on public requests. A key can act only on its explicit account list. The issuer must still have access to each account. Expiry, revocation, or loss of access stops new requests. A key cannot call unrelated API routes or manage API keys.
+
+Use `GET /api/public/ad-accounts` to find the internal ad account UUID. Keep it separate from the provider account ID.
+
+## Routes
+
+| Task | Route |
+| --- | --- |
+| Find allowed accounts | `GET /api/public/ad-accounts` |
+| List or create metrics | `GET /api/public/custom-metrics` or `POST /api/public/custom-metrics` |
+| Read or edit one metric | `GET /api/public/custom-metrics/{metric_id}` or `PATCH /api/public/custom-metrics/{metric_id}` |
+| Download the current CSV template | `GET /api/public/custom-metrics/template.csv` |
+| Prepare JSON rows | `POST /api/public/custom-metric-imports` |
+| Prepare a CSV file | `POST /api/public/custom-metric-imports/file` |
+| List imports or read one task | `GET /api/public/custom-metric-imports` or `GET /api/public/custom-metric-imports/{import_id}` |
+| Commit a valid task | `POST /api/public/custom-metric-imports/{import_id}/commit` |
+| Create a CSV upload grant | `POST /api/public/custom-metric-upload-grants` |
+| Send CSV bytes with a grant | `PUT /api/public/custom-metric-uploads/{upload_id}` |
+| Query values | `POST /api/public/metrics/query` |
+
+List routes use a bounded page and an opaque `cursor`. Keep the account and filters the same when you request the next page.
+
+## Prepare and commit values
+
+Send the ad account UUID, an idempotency key, and daily rows. The example IDs are placeholders. Replace them with IDs that you can access.
+
+```json
+{
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "idempotency_key": "crm-export-2026-10-23",
+  "rows": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "date": "2026-10-23",
+      "value": "30"
+    }
+  ]
+}
+```
+
+The `value` field is a decimal string. Use a closed date in the ad account time zone. A zero value is `"0"`. A missing row leaves the stored value unchanged.
+
+The prepare response has a `task_id`, preview, and bounded errors. Preparation does not write daily values. Check the preview. Commit a valid task with `POST /api/public/custom-metric-imports/{import_id}/commit?ad_account_id=<account_uuid>`. A new accepted task returns HTTP `202`. Read the same task ID until its status is `completed` or `failed`.
+
+The same idempotency key and payload return the same task. The same key with different data returns a conflict. A failed task can have some values applied. Read its counts before you prepare a correction.
+
+For a CSV file, use the multipart prepare route with the current template. A signed upload grant provides another CSV path for clients that cannot use multipart. Upload prepares the task; it does not commit it.
+
+## Query values
+
+Send `ad_account_id`, `entity_level`, `metric_refs`, `date_from`, and `date_to` to `POST /api/public/metrics/query`. Use `custom:<metric_uuid>` for a custom metric. You can include supported provider metrics in the same request. Select `daily` or `period` grain. Follow the response cursor for more rows.
+
+A query reads current stored values. It can include some corrections from an active or failed import. A missing value stays null. The query checks current account and read access.
+
+See [Import custom metrics](/guides/custom-metrics) for the app flow and [Custom metric MCP tools](/mcp/reference/custom-metrics) for agent calls.

@@ -31,6 +31,8 @@
         "group": "Workflows",
         "pages": [
           "guides/insights",
+          "guides/custom-metrics",
+          "reference/custom-metrics-api",
           "guides/rules",
           "guides/activity",
           "guides/brands",
@@ -69,6 +71,7 @@
           "mcp/reference/accounts-brands",
           "mcp/reference/insights",
           "mcp/reference/rules",
+          "mcp/reference/custom-metrics",
           "mcp/reference/actions",
           "mcp/reference/activity",
           "mcp/reference/memory",

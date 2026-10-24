@@ -1,0 +1,50 @@
+---
+title: "Import custom metrics"
+description: "Add daily values from a CSV file, then use them in Insights and Rules."
+---
+
+Custom metrics let you use daily results from your own data. Values can come from a CSV file, the public API, or MCP. All three methods use the same metric and import records.
+
+You need access to an ad account and the **Custom metrics** import permission. To create or edit a metric, you also need the manage permission.
+
+## Create a metric
+
+1. Open **Custom metrics** in the Data menu.
+2. Select the ad account.
+3. Create a metric. Enter a key, name, description, value type, unit, and supported levels.
+4. Save the metric.
+
+Use `integer` or `decimal` for imported values. Use `count`, `currency`, or `seconds` as the unit. A metric can accept account, campaign, ad set, or ad values. Keep one meaning for each metric key. If its meaning changes, create a new metric.
+
+Calculated metrics use the `amount_per_count` or `amount_per_spend` template. Import their additive parts. The system calculates the ratio from totals.
+
+## Import a CSV file
+
+1. Select **Download CSV template** for the current account. The template includes active metric keys and account fields.
+2. Enter one value for each metric, entity, and closed account date. Enter an exact decimal in the `value` column. A blank value is invalid.
+3. Select **Upload values**, then select the CSV file.
+4. Select **Prepare import**. Check row errors and the preview of current and new values.
+5. Select **Commit import** when the preview is valid.
+
+Preparation does not change values. Commit creates a task. The task page shows its ID, file, status, row counts, and confirmed progress. You can leave the page and return through **Import history**. When the task completes, select **Open in Insights**. If the file has more than one entity level, select the level first.
+
+A supplied `0` is a value. A missing row is unknown. A later import replaces the same metric, entity, and date. Dates that you omit stay unchanged.
+
+Only one import can run for an ad account at a time. A failed task can leave some values applied. Check its confirmed counts. Prepare a new import to correct those values.
+
+## Read the values
+
+In **Insights**, open the metric selector and choose the **Custom metrics** group. Select custom and Meta metrics in the same report. Use the account, entity level, and date filters. A missing value stays empty.
+
+You can also use a custom metric in a Rule. Rules use closed account dates and check all required custom inputs before they select a task. A missing input cannot pass through an `OR` condition or a fallback task. During an active or failed import, a Rule reads the current stored values. Run a new Rule in dry-run mode and check its decisions before you enable live actions.
+
+## Use another input method
+
+- [Public metrics API](/reference/custom-metrics-api) covers API keys, JSON and CSV preparation, commit, task status, and queries.
+- [Custom metric MCP tools](/mcp/reference/custom-metrics) lists the tool arguments and input schemas. A fresh authorized MCP client can discover all 11 tools.
+
+## Access and history
+
+The metric and its values belong to one team and ad account. Reads require current account and Insights access. Imports and definition changes need their own grants. An archived metric keeps its stored values and history. An active calculated metric or enabled Rule can block archive.
+
+Import history keeps the task ID and result. An operator retention command can expire unused previews after 24 hours. It can clear old task payloads after 7 or 90 days, based on task status. Current metric values remain available.
