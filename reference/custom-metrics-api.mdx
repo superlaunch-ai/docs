@@ -18,7 +18,7 @@ curl --request GET 'https://api.superlaunch.pro/api/public/custom-metrics?ad_acc
   --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -73,7 +73,7 @@ curl --request POST 'https://api.superlaunch.pro/api/public/custom-metrics' \
 }'
 ```
 
-**Response — HTTP 201**
+**Response: HTTP 201**
 
 ```json
 {
@@ -108,7 +108,7 @@ curl --request GET 'https://api.superlaunch.pro/api/public/custom-metrics/200000
   --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -150,7 +150,7 @@ curl --request PATCH 'https://api.superlaunch.pro/api/public/custom-metrics/2000
 }'
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -186,7 +186,7 @@ curl --request GET 'https://api.superlaunch.pro/api/public/custom-metrics/templa
   --output custom-metrics-template.csv
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```http
 Content-Type: text/csv
@@ -222,7 +222,7 @@ curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-import
 }'
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -281,7 +281,7 @@ curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-import
   --form 'file=@custom-metrics.csv;type=text/csv'
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -337,7 +337,7 @@ curl --request GET 'https://api.superlaunch.pro/api/public/custom-metric-imports
   --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -397,7 +397,7 @@ curl --request GET 'https://api.superlaunch.pro/api/public/custom-metric-imports
   --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -453,7 +453,7 @@ curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-import
   --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
 ```
 
-**Response — HTTP 202**
+**Response: HTTP 202**
 
 ```json
 {
@@ -517,7 +517,7 @@ curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-upload
 }'
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -546,7 +546,7 @@ curl --request PUT 'https://api.superlaunch.pro/api/public/custom-metric-uploads
   --data-binary '@custom-metrics.csv'
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
@@ -613,7 +613,7 @@ curl --request POST 'https://api.superlaunch.pro/api/public/metrics/query' \
 }'
 ```
 
-**Response — HTTP 200**
+**Response: HTTP 200**
 
 ```json
 {
