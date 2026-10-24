@@ -32,11 +32,16 @@
         "pages": [
           "guides/insights",
           "guides/custom-metrics",
-          "reference/custom-metrics-api",
           "guides/rules",
           "guides/activity",
           "guides/brands",
           "guides/memory"
+        ]
+      },
+      {
+        "group": "API",
+        "pages": [
+          "reference/custom-metrics-api"
         ]
       },
       {
