@@ -1,41 +1,213 @@
 ---
 title: "Custom metrics"
-description: "Create metric definitions, import values, check tasks, and query results with a team API key."
+description: "Create metric definitions, prepare and commit imports, and query values with the public API."
 ---
 
-Use the public metrics API for scheduled imports and reads. The routes start with `/api/public`. They use the same metric definitions and import tasks as the Superlaunch app and MCP tools.
+These routes start with `/api/public`. [Get an API key](/reference/api-keys), read [Authorization](/reference/api-authorization), and use [Ad accounts](/reference/ad-accounts-api) to find `ad_account_id` before you start. The examples use sample UUIDs. Replace them with your own IDs. Each curl block has a copy control.
 
-## Get an API key
+## List metrics
 
-In **Team → API keys**, create a key. Select its allowed ad accounts, permissions, and expiry. Copy the secret when it appears. It is shown once.
+`GET /api/public/custom-metrics`
 
-Send `Authorization: Bearer <metric_api_key>` on public requests. A key can act only on its explicit account list. The issuer must still have access to each account. Expiry, revocation, or loss of access stops new requests. A key cannot call unrelated API routes or manage API keys.
+Set the required `ad_account_id`. You can filter by `query`, `status` (`active`, `archived`, or `all`), or `entity_level`. Use `limit` (1–100, default 50) and `cursor` for more pages.
 
-Use [Ad accounts](/reference/ad-accounts-api) to find the internal ad account UUID. Keep it separate from the provider account ID.
+**Request**
 
-## Routes
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/custom-metrics?ad_account_id=10000000-0000-4000-8000-000000000001&status=active&limit=50' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
 
-| Task | Route |
-| --- | --- |
-| List or create metrics | `GET /api/public/custom-metrics` or `POST /api/public/custom-metrics` |
-| Read or edit one metric | `GET /api/public/custom-metrics/{metric_id}` or `PATCH /api/public/custom-metrics/{metric_id}` |
-| Download the current CSV template | `GET /api/public/custom-metrics/template.csv` |
-| Prepare JSON rows | `POST /api/public/custom-metric-imports` |
-| Prepare a CSV file | `POST /api/public/custom-metric-imports/file` |
-| List imports or read one task | `GET /api/public/custom-metric-imports` or `GET /api/public/custom-metric-imports/{import_id}` |
-| Commit a valid task | `POST /api/public/custom-metric-imports/{import_id}/commit` |
-| Create a CSV upload grant | `POST /api/public/custom-metric-upload-grants` |
-| Send CSV bytes with a grant | `PUT /api/public/custom-metric-uploads/{upload_id}` |
-| Query values | `POST /api/public/metrics/query` |
-
-List routes use a bounded page and an opaque `cursor`. Keep the account and filters the same when you request the next page.
-
-## Prepare and commit values
-
-Send the ad account UUID, an idempotency key, and daily rows. The example IDs are placeholders. Replace them with IDs that you can access.
+**Response — HTTP 200**
 
 ```json
 {
+  "items": [
+    {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "ad_account_id": "10000000-0000-4000-8000-000000000001",
+      "key": "crm_purchases",
+      "label": "CRM purchases",
+      "description": "Daily purchases from CRM",
+      "supported_input_levels": [
+        "campaign"
+      ],
+      "value_type": "integer",
+      "unit": "count",
+      "allow_negative": false,
+      "status": "active",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "next_cursor": null,
+  "complete": true
+}
+```
+
+Keep the account and filters the same when you use `next_cursor`.
+
+## Create a metric
+
+`POST /api/public/custom-metrics`
+
+Send a unique `Idempotency-Key` header and the metric definition. The account UUID comes from [Ad accounts](/reference/ad-accounts-api).
+
+**Request**
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/public/custom-metrics' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --header 'Idempotency-Key: crm-purchases-definition-1' \
+  --data '{
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "key": "crm_purchases",
+  "label": "CRM purchases",
+  "description": "Daily purchases from CRM",
+  "supported_input_levels": [
+    "campaign"
+  ],
+  "value_type": "integer",
+  "unit": "count",
+  "allow_negative": false
+}'
+```
+
+**Response — HTTP 201**
+
+```json
+{
+  "id": "20000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "key": "crm_purchases",
+  "label": "CRM purchases",
+  "description": "Daily purchases from CRM",
+  "supported_input_levels": [
+    "campaign"
+  ],
+  "value_type": "integer",
+  "unit": "count",
+  "allow_negative": false,
+  "status": "active",
+  "updated_at": "2026-10-24T10:00:00Z"
+}
+```
+
+A replay with the same key and payload returns the same definition. A different payload with that key returns HTTP 409.
+
+## Get a metric
+
+`GET /api/public/custom-metrics/{metric_id}`
+
+Set the metric UUID in the path and `ad_account_id` in the query.
+
+**Request**
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/custom-metrics/20000000-0000-4000-8000-000000000001?ad_account_id=10000000-0000-4000-8000-000000000001' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "metric": {
+    "id": "20000000-0000-4000-8000-000000000001",
+    "ad_account_id": "10000000-0000-4000-8000-000000000001",
+    "key": "crm_purchases",
+    "label": "CRM purchases",
+    "description": "Daily purchases from CRM",
+    "supported_input_levels": [
+      "campaign"
+    ],
+    "value_type": "integer",
+    "unit": "count",
+    "allow_negative": false,
+    "status": "active",
+    "updated_at": "2026-10-24T10:00:00Z"
+  },
+  "enabled_rule_ids": []
+}
+```
+
+## Edit a metric
+
+`PATCH /api/public/custom-metrics/{metric_id}`
+
+Send `ad_account_id` and the last `updated_at` from a read. This prevents an edit from overwriting a newer definition. You can change the label, description, input levels, or status.
+
+**Request**
+
+```bash
+curl --request PATCH 'https://api.superlaunch.pro/api/public/custom-metrics/20000000-0000-4000-8000-000000000001' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "updated_at": "2026-10-24T10:00:00Z",
+  "label": "CRM purchases (verified)"
+}'
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "id": "20000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "key": "crm_purchases",
+  "label": "CRM purchases (verified)",
+  "description": "Daily purchases from CRM",
+  "supported_input_levels": [
+    "campaign"
+  ],
+  "value_type": "integer",
+  "unit": "count",
+  "allow_negative": false,
+  "status": "active",
+  "updated_at": "2026-10-24T11:00:00Z"
+}
+```
+
+A stale `updated_at` returns a conflict. Read the metric again before you retry.
+
+## Download the CSV template
+
+`GET /api/public/custom-metrics/template.csv`
+
+Set `ad_account_id`. This route returns the current CSV format and metric keys for that account. Save the response as a file before you prepare a CSV import.
+
+**Request**
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/custom-metrics/template.csv?ad_account_id=10000000-0000-4000-8000-000000000001' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --output custom-metrics-template.csv
+```
+
+**Response — HTTP 200**
+
+```http
+Content-Type: text/csv
+Content-Disposition: attachment; filename=custom-metrics-template.csv
+```
+
+Open the saved file to see its headers. Keep those headers when you add rows.
+
+## Prepare JSON rows
+
+`POST /api/public/custom-metric-imports`
+
+Send an account UUID, an idempotency key, and up to 1,000 daily rows. `value` is a decimal string. Use a closed date in the account time zone.
+
+**Request**
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-imports' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
   "ad_account_id": "10000000-0000-4000-8000-000000000001",
   "idempotency_key": "crm-export-2026-10-23",
   "rows": [
@@ -47,21 +219,442 @@ Send the ad account UUID, an idempotency key, and daily rows. The example IDs ar
       "value": "30"
     }
   ]
+}'
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "task_id": "30000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "status": "prepared",
+  "counts": {
+    "total": 1,
+    "added": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "zeros": 0,
+    "errors": 0
+  },
+  "expected_versions": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "preview_rows": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "date": "2026-10-23",
+      "value": "30",
+      "previous_value": null,
+      "previous_updated_at": null,
+      "change": "added"
+    }
+  ],
+  "errors": [],
+  "next_error_cursor": null,
+  "expires_at": "2026-10-25T10:00:00Z",
+  "created_at": "2026-10-24T10:00:00Z",
+  "updated_at": "2026-10-24T10:00:00Z"
 }
 ```
 
-The `value` field is a decimal string. Use a closed date in the ad account time zone. A zero value is `"0"`. A missing row leaves the stored value unchanged.
+Preparation checks the rows and returns a preview. It does not write values. A zero is `"0"`; a missing row leaves a stored value unchanged.
 
-The prepare response has a `task_id`, preview, and bounded errors. Preparation does not write daily values. Check the preview. Commit a valid task with `POST /api/public/custom-metric-imports/{import_id}/commit?ad_account_id=<account_uuid>`. A new accepted task returns HTTP `202`. Read the same task ID until its status is `completed` or `failed`.
+## Prepare a CSV file
 
-The same idempotency key and payload return the same task. The same key with different data returns a conflict. A failed task can have some values applied. Read its counts before you prepare a correction.
+`POST /api/public/custom-metric-imports/file`
 
-For a CSV file, use the multipart prepare route with the current template. A signed upload grant provides another CSV path for clients that cannot use multipart. Upload prepares the task; it does not commit it.
+Send the current CSV template with rows as multipart form data. The account and idempotency key are form fields.
 
-## Query values
+**Request**
 
-Send `ad_account_id`, `entity_level`, `metric_refs`, `date_from`, and `date_to` to `POST /api/public/metrics/query`. Use `custom:<metric_uuid>` for a custom metric. You can include supported provider metrics in the same request. Select `daily` or `period` grain. Follow the response cursor for more rows.
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-imports/file' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --form 'ad_account_id=10000000-0000-4000-8000-000000000001' \
+  --form 'idempotency_key=crm-csv-2026-10-23' \
+  --form 'file=@custom-metrics.csv;type=text/csv'
+```
 
-A query reads current stored values. It can include some corrections from an active or failed import. A missing value stays null. The query checks current account and read access.
+**Response — HTTP 200**
+
+```json
+{
+  "task_id": "30000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "status": "prepared",
+  "counts": {
+    "total": 1,
+    "added": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "zeros": 0,
+    "errors": 0
+  },
+  "expected_versions": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "preview_rows": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "date": "2026-10-23",
+      "value": "30",
+      "previous_value": null,
+      "previous_updated_at": null,
+      "change": "added"
+    }
+  ],
+  "errors": [],
+  "next_error_cursor": null,
+  "expires_at": "2026-10-25T10:00:00Z",
+  "created_at": "2026-10-24T10:00:00Z",
+  "updated_at": "2026-10-24T10:00:00Z"
+}
+```
+
+Review the returned preview before you commit the task.
+
+## List imports
+
+`GET /api/public/custom-metric-imports`
+
+Set `ad_account_id`. Use `limit` (1–100, default 50) and `cursor` to read more tasks.
+
+**Request**
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/custom-metric-imports?ad_account_id=10000000-0000-4000-8000-000000000001&limit=50' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "items": [
+    {
+      "task_id": "30000000-0000-4000-8000-000000000001",
+      "ad_account_id": "10000000-0000-4000-8000-000000000001",
+      "status": "prepared",
+      "counts": {
+        "total": 1,
+        "added": 1,
+        "changed": 0,
+        "unchanged": 0,
+        "zeros": 0,
+        "errors": 0
+      },
+      "expected_versions": [
+        {
+          "metric_id": "20000000-0000-4000-8000-000000000001",
+          "updated_at": "2026-10-24T10:00:00Z"
+        }
+      ],
+      "preview_rows": [
+        {
+          "metric_id": "20000000-0000-4000-8000-000000000001",
+          "entity_level": "campaign",
+          "entity_id": "120000000001",
+          "date": "2026-10-23",
+          "value": "30",
+          "previous_value": null,
+          "previous_updated_at": null,
+          "change": "added"
+        }
+      ],
+      "errors": [],
+      "next_error_cursor": null,
+      "expires_at": "2026-10-25T10:00:00Z",
+      "created_at": "2026-10-24T10:00:00Z",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "next_cursor": null,
+  "complete": true
+}
+```
+
+## Get an import
+
+`GET /api/public/custom-metric-imports/{import_id}`
+
+Use the `task_id` from a prepare response as `import_id`. Set `ad_account_id`. You can send `error_cursor` to read more validation errors.
+
+**Request**
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/custom-metric-imports/30000000-0000-4000-8000-000000000001?ad_account_id=10000000-0000-4000-8000-000000000001' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "task_id": "30000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "status": "prepared",
+  "counts": {
+    "total": 1,
+    "added": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "zeros": 0,
+    "errors": 0
+  },
+  "expected_versions": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "preview_rows": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "date": "2026-10-23",
+      "value": "30",
+      "previous_value": null,
+      "previous_updated_at": null,
+      "change": "added"
+    }
+  ],
+  "errors": [],
+  "next_error_cursor": null,
+  "expires_at": "2026-10-25T10:00:00Z",
+  "created_at": "2026-10-24T10:00:00Z",
+  "updated_at": "2026-10-24T10:00:00Z"
+}
+```
+
+Poll this route after you commit until `status` is `completed` or `failed`. A failed task can have some values applied; check `counts` and `progress`.
+
+## Commit an import
+
+`POST /api/public/custom-metric-imports/{import_id}/commit`
+
+Commit a valid prepared task after you check its preview. Set `ad_account_id` in the query.
+
+**Request**
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-imports/30000000-0000-4000-8000-000000000001/commit?ad_account_id=10000000-0000-4000-8000-000000000001' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
+
+**Response — HTTP 202**
+
+```json
+{
+  "task_id": "30000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "status": "queued",
+  "counts": {
+    "total": 1,
+    "added": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "zeros": 0,
+    "errors": 0
+  },
+  "expected_versions": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "preview_rows": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "date": "2026-10-23",
+      "value": "30",
+      "previous_value": null,
+      "previous_updated_at": null,
+      "change": "added"
+    }
+  ],
+  "errors": [],
+  "next_error_cursor": null,
+  "expires_at": "2026-10-25T10:00:00Z",
+  "created_at": "2026-10-24T10:00:00Z",
+  "updated_at": "2026-10-24T10:01:00Z"
+}
+```
+
+A new accepted task returns HTTP 202. A replay can return HTTP 200. Use **Get an import** to check the final status.
+
+## Create a CSV upload grant
+
+`POST /api/public/custom-metric-upload-grants`
+
+Use this route if your client cannot send a multipart file. Send the file name, exact byte size, content type, account, and idempotency key.
+
+**Request**
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/public/custom-metric-upload-grants' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "idempotency_key": "crm-upload-2026-10-23",
+  "file_name": "custom-metrics.csv",
+  "content_type": "text/csv",
+  "size_bytes": 256
+}'
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "upload_id": "40000000-0000-4000-8000-000000000001",
+  "upload_url": "https://api.superlaunch.pro/api/public/custom-metric-uploads/40000000-0000-4000-8000-000000000001",
+  "method": "PUT",
+  "authorization": "Bearer <one-time-upload-token>",
+  "expires_at": "2026-10-24T10:15:00Z"
+}
+```
+
+The grant has a short expiry. Keep its `authorization` value out of logs. Use the returned URL and header for the upload.
+
+## Upload CSV bytes
+
+`PUT /api/public/custom-metric-uploads/{upload_id}`
+
+Send raw CSV bytes to the exact `upload_url` from the grant. Use its `authorization` value, not the team API key. The uploaded file prepares an import task.
+
+**Request**
+
+```bash
+curl --request PUT 'https://api.superlaunch.pro/api/public/custom-metric-uploads/40000000-0000-4000-8000-000000000001' \
+  --header 'Authorization: Bearer <one-time-upload-token>' \
+  --header 'Content-Type: text/csv' \
+  --data-binary '@custom-metrics.csv'
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "task_id": "30000000-0000-4000-8000-000000000001",
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "status": "prepared",
+  "counts": {
+    "total": 1,
+    "added": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "zeros": 0,
+    "errors": 0
+  },
+  "expected_versions": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "preview_rows": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "date": "2026-10-23",
+      "value": "30",
+      "previous_value": null,
+      "previous_updated_at": null,
+      "change": "added"
+    }
+  ],
+  "errors": [],
+  "next_error_cursor": null,
+  "expires_at": "2026-10-25T10:00:00Z",
+  "created_at": "2026-10-24T10:00:00Z",
+  "updated_at": "2026-10-24T10:00:00Z"
+}
+```
+
+Replace the URL and upload token with the values from **Create a CSV upload grant**. Commit the returned task after you check its preview.
+
+## Query metric values
+
+`POST /api/public/metrics/query`
+
+Send an account UUID, entity level, metric references, and date range. Use `custom:<metric_uuid>` for a custom metric. `grain` is `daily` or `period`. The response can also include supported provider metrics.
+
+**Request**
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/public/metrics/query' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "ad_account_id": "10000000-0000-4000-8000-000000000001",
+  "entity_level": "campaign",
+  "metric_refs": [
+    "custom:20000000-0000-4000-8000-000000000001"
+  ],
+  "date_from": "2026-10-23",
+  "date_to": "2026-10-23",
+  "grain": "daily"
+}'
+```
+
+**Response — HTTP 200**
+
+```json
+{
+  "rows": [
+    {
+      "ad_account_id": "10000000-0000-4000-8000-000000000001",
+      "provider": "meta",
+      "provider_account_id": "act_120000000001",
+      "entity_level": "campaign",
+      "entity_id": "120000000001",
+      "entity_name": "Example campaign",
+      "date_from": "2026-10-23",
+      "date_to": "2026-10-23",
+      "timezone": "America/New_York",
+      "metrics": [
+        {
+          "metric_ref": "custom:20000000-0000-4000-8000-000000000001",
+          "value": "30",
+          "unit": "count",
+          "currency": null,
+          "quality": "ready",
+          "import_ids": [
+            "30000000-0000-4000-8000-000000000001"
+          ],
+          "created_at": "2026-10-24T10:00:00Z",
+          "updated_at": "2026-10-24T10:00:00Z"
+        }
+      ]
+    }
+  ],
+  "definitions": [
+    {
+      "metric_id": "20000000-0000-4000-8000-000000000001",
+      "updated_at": "2026-10-24T10:00:00Z"
+    }
+  ],
+  "next_cursor": null,
+  "complete": true
+}
+```
+
+Use `cursor` and `limit` for more rows. A missing metric value stays null. Reads can include corrections from an active or failed import.
 
 See [Import custom metrics](/guides/custom-metrics) for the app flow and [Custom metric MCP tools](/mcp/reference/custom-metrics) for agent calls.
