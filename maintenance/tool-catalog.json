@@ -19164,5 +19164,2784 @@
         "tags": []
       }
     }
+  },
+  {
+    "name": "custom_metrics_list",
+    "title": "List custom metrics",
+    "description": "List definitions for one permitted account. Follow next_cursor until\ncomplete.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "query": {
+          "default": "",
+          "type": "string"
+        },
+        "status": {
+          "default": "active",
+          "enum": [
+            "active",
+            "archived",
+            "all"
+          ],
+          "type": "string"
+        },
+        "entity_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "account",
+                "campaign",
+                "adset",
+                "ad"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limit": {
+          "default": 50,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ad_account_id"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "A catalog page; archived definitions retain their identities.",
+      "properties": {
+        "items": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "complete"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "List custom metrics",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_get",
+    "title": "Read a custom metric",
+    "description": "Read one definition and its readable enabled rule dependencies.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "metric_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "metric_id"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "Definition plus readable enabled dependencies.",
+      "properties": {
+        "metric": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "enabled_rule_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "metric",
+        "enabled_rule_ids"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Read a custom metric",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_create",
+    "title": "Create a custom metric",
+    "description": "Create a metric. Currency and timezone come from the account. Retry with\nthe same idempotency key.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "supported_input_levels": {
+          "items": {
+            "enum": [
+              "account",
+              "campaign",
+              "adset",
+              "ad"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "idempotency_key": {
+          "type": "string"
+        },
+        "value_type": {
+          "enum": [
+            "integer",
+            "decimal"
+          ],
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "count",
+            "currency",
+            "seconds",
+            "ratio",
+            "percent"
+          ],
+          "type": "string"
+        },
+        "allow_negative": {
+          "default": false,
+          "type": "boolean"
+        },
+        "formula": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "A fixed ratio of compatible components.",
+              "properties": {
+                "template": {
+                  "enum": [
+                    "amount_per_count",
+                    "amount_per_spend"
+                  ],
+                  "type": "string"
+                },
+                "numerator": {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "denominator": {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "template",
+                "numerator",
+                "denominator"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "key",
+        "label",
+        "description",
+        "supported_input_levels",
+        "idempotency_key",
+        "value_type",
+        "unit"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Create a custom metric",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_update",
+    "title": "Update a custom metric",
+    "description": "Edit text or supported levels using the current updated_at timestamp.\nSemantic fields stay fixed.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "metric_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supported_input_levels": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "account",
+                  "campaign",
+                  "adset",
+                  "ad"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "metric_id",
+        "updated_at"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Update a custom metric",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_archive",
+    "title": "Archive a custom metric",
+    "description": "Archive a metric while keeping values. Pause or edit enabled dependent\nrules first.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "metric_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "metric_id",
+        "updated_at"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Archive a custom metric",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_import_prepare",
+    "title": "Prepare custom metric values",
+    "description": "Validate up to 100 complete daily values. Preview does not publish values.\nUse a CSV grant for larger imports.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        },
+        "rows": {
+          "items": {
+            "additionalProperties": false,
+            "description": "One complete daily value; no caller storage timestamps.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "entity_level": {
+                "enum": [
+                  "account",
+                  "campaign",
+                  "adset",
+                  "ad"
+                ],
+                "type": "string"
+              },
+              "entity_id": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "date": {
+                "format": "date",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^-?(0|[1-9][0-9]{0,19})(\\.[0-9]{1,8})?$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "entity_level",
+              "entity_id",
+              "date",
+              "value"
+            ],
+            "type": "object"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "idempotency_key",
+        "rows"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "Saved import task state and confirmed progress.",
+      "properties": {
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "invalid",
+            "prepared",
+            "queued",
+            "processing",
+            "completed",
+            "failed",
+            "expired"
+          ],
+          "type": "string"
+        },
+        "submitted_by_user_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "submitted_by_email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "input_interface": {
+          "anyOf": [
+            {
+              "enum": [
+                "browser",
+                "public_api",
+                "mcp"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "file_size_bytes": {
+          "anyOf": [
+            {
+              "maximum": 10485760,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "counts": {
+          "additionalProperties": false,
+          "description": "Preview totals; zero counts overlap change counts.",
+          "properties": {
+            "total": {
+              "type": "integer"
+            },
+            "added": {
+              "default": 0,
+              "type": "integer"
+            },
+            "changed": {
+              "default": 0,
+              "type": "integer"
+            },
+            "unchanged": {
+              "default": 0,
+              "type": "integer"
+            },
+            "zeros": {
+              "default": 0,
+              "type": "integer"
+            },
+            "errors": {
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "total"
+          ],
+          "type": "object"
+        },
+        "expected_versions": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Captured definition modification time.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "updated_at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "preview_rows": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Current and proposed values before explicit publication.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "entity_level": {
+                "enum": [
+                  "account",
+                  "campaign",
+                  "adset",
+                  "ad"
+                ],
+                "type": "string"
+              },
+              "entity_id": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "date": {
+                "format": "date",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^-?(0|[1-9][0-9]{0,19})(\\.[0-9]{1,8})?$",
+                "type": "string"
+              },
+              "previous_value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "previous_updated_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "change": {
+                "enum": [
+                  "added",
+                  "changed",
+                  "unchanged"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "entity_level",
+              "entity_id",
+              "date",
+              "value",
+              "change"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "errors": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Safe bounded row validation detail.",
+            "properties": {
+              "row_number": {
+                "type": "integer"
+              },
+              "field": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "row_number",
+              "field",
+              "code",
+              "message"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "next_error_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "progress": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Report only progress known by the server.",
+              "properties": {
+                "total_rows": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "processed_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "written_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "unchanged_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "total_rows"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Full validated input scope for the Open in Insights action.",
+              "properties": {
+                "entity_levels": {
+                  "items": {
+                    "enum": [
+                      "account",
+                      "campaign",
+                      "adset",
+                      "ad"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metric_refs": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "date_from": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "date_to": {
+                  "format": "date",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "entity_levels",
+                "metric_refs",
+                "date_from",
+                "date_to"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Safe recovery text for a failed import.",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "task_id",
+        "ad_account_id",
+        "status",
+        "counts",
+        "expected_versions",
+        "preview_rows",
+        "errors",
+        "expires_at",
+        "created_at",
+        "updated_at"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Prepare custom metric values",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_upload_create",
+    "title": "Create a metric CSV upload",
+    "description": "Create a short-lived CSV grant. PUT bytes with its Authorization header.\nNo remote file is fetched.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        },
+        "file_name": {
+          "type": "string"
+        },
+        "content_type": {
+          "const": "text/csv",
+          "type": "string"
+        },
+        "size_bytes": {
+          "maximum": 10485760,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "idempotency_key",
+        "file_name",
+        "content_type",
+        "size_bytes"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "Transfer instructions; redact authorization from logs and telemetry.",
+      "properties": {
+        "upload_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "upload_url": {
+          "type": "string"
+        },
+        "method": {
+          "const": "PUT",
+          "default": "PUT",
+          "type": "string"
+        },
+        "authorization": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "upload_id",
+        "upload_url",
+        "authorization",
+        "expires_at"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Create a metric CSV upload",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_import_get",
+    "title": "Read a metric import",
+    "description": "Read import status, progress, timestamps, and safe errors.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "error_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "task_id"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "Saved import task state and confirmed progress.",
+      "properties": {
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "invalid",
+            "prepared",
+            "queued",
+            "processing",
+            "completed",
+            "failed",
+            "expired"
+          ],
+          "type": "string"
+        },
+        "submitted_by_user_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "submitted_by_email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "input_interface": {
+          "anyOf": [
+            {
+              "enum": [
+                "browser",
+                "public_api",
+                "mcp"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "file_size_bytes": {
+          "anyOf": [
+            {
+              "maximum": 10485760,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "counts": {
+          "additionalProperties": false,
+          "description": "Preview totals; zero counts overlap change counts.",
+          "properties": {
+            "total": {
+              "type": "integer"
+            },
+            "added": {
+              "default": 0,
+              "type": "integer"
+            },
+            "changed": {
+              "default": 0,
+              "type": "integer"
+            },
+            "unchanged": {
+              "default": 0,
+              "type": "integer"
+            },
+            "zeros": {
+              "default": 0,
+              "type": "integer"
+            },
+            "errors": {
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "total"
+          ],
+          "type": "object"
+        },
+        "expected_versions": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Captured definition modification time.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "updated_at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "preview_rows": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Current and proposed values before explicit publication.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "entity_level": {
+                "enum": [
+                  "account",
+                  "campaign",
+                  "adset",
+                  "ad"
+                ],
+                "type": "string"
+              },
+              "entity_id": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "date": {
+                "format": "date",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^-?(0|[1-9][0-9]{0,19})(\\.[0-9]{1,8})?$",
+                "type": "string"
+              },
+              "previous_value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "previous_updated_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "change": {
+                "enum": [
+                  "added",
+                  "changed",
+                  "unchanged"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "entity_level",
+              "entity_id",
+              "date",
+              "value",
+              "change"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "errors": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Safe bounded row validation detail.",
+            "properties": {
+              "row_number": {
+                "type": "integer"
+              },
+              "field": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "row_number",
+              "field",
+              "code",
+              "message"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "next_error_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "progress": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Report only progress known by the server.",
+              "properties": {
+                "total_rows": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "processed_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "written_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "unchanged_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "total_rows"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Full validated input scope for the Open in Insights action.",
+              "properties": {
+                "entity_levels": {
+                  "items": {
+                    "enum": [
+                      "account",
+                      "campaign",
+                      "adset",
+                      "ad"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metric_refs": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "date_from": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "date_to": {
+                  "format": "date",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "entity_levels",
+                "metric_refs",
+                "date_from",
+                "date_to"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Safe recovery text for a failed import.",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "task_id",
+        "ad_account_id",
+        "status",
+        "counts",
+        "expected_versions",
+        "preview_rows",
+        "errors",
+        "expires_at",
+        "created_at",
+        "updated_at"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Read a metric import",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_import_list",
+    "title": "List metric imports",
+    "description": "Read account import history with task status and progress.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "limit": {
+          "default": 50,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ad_account_id"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "A bounded page of import control records.",
+      "properties": {
+        "items": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Saved import task state and confirmed progress.",
+            "properties": {
+              "task_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "ad_account_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "invalid",
+                  "prepared",
+                  "queued",
+                  "processing",
+                  "completed",
+                  "failed",
+                  "expired"
+                ],
+                "type": "string"
+              },
+              "submitted_by_user_id": {
+                "anyOf": [
+                  {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "submitted_by_email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "input_interface": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "browser",
+                      "public_api",
+                      "mcp"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "filename": {
+                "anyOf": [
+                  {
+                    "maxLength": 255,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "file_size_bytes": {
+                "anyOf": [
+                  {
+                    "maximum": 10485760,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "counts": {
+                "additionalProperties": false,
+                "description": "Preview totals; zero counts overlap change counts.",
+                "properties": {
+                  "total": {
+                    "type": "integer"
+                  },
+                  "added": {
+                    "default": 0,
+                    "type": "integer"
+                  },
+                  "changed": {
+                    "default": 0,
+                    "type": "integer"
+                  },
+                  "unchanged": {
+                    "default": 0,
+                    "type": "integer"
+                  },
+                  "zeros": {
+                    "default": 0,
+                    "type": "integer"
+                  },
+                  "errors": {
+                    "default": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "total"
+                ],
+                "type": "object"
+              },
+              "expected_versions": {
+                "items": {
+                  "additionalProperties": false,
+                  "description": "Captured definition modification time.",
+                  "properties": {
+                    "metric_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "metric_id",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "preview_rows": {
+                "items": {
+                  "additionalProperties": false,
+                  "description": "Current and proposed values before explicit publication.",
+                  "properties": {
+                    "metric_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    "entity_level": {
+                      "enum": [
+                        "account",
+                        "campaign",
+                        "adset",
+                        "ad"
+                      ],
+                      "type": "string"
+                    },
+                    "entity_id": {
+                      "maxLength": 300,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "date": {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "value": {
+                      "pattern": "^-?(0|[1-9][0-9]{0,19})(\\.[0-9]{1,8})?$",
+                      "type": "string"
+                    },
+                    "previous_value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "previous_updated_at": {
+                      "anyOf": [
+                        {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "change": {
+                      "enum": [
+                        "added",
+                        "changed",
+                        "unchanged"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "metric_id",
+                    "entity_level",
+                    "entity_id",
+                    "date",
+                    "value",
+                    "change"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "errors": {
+                "items": {
+                  "additionalProperties": false,
+                  "description": "Safe bounded row validation detail.",
+                  "properties": {
+                    "row_number": {
+                      "type": "integer"
+                    },
+                    "field": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "row_number",
+                    "field",
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "next_error_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "expires_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "finished_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "created_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "progress": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Report only progress known by the server.",
+                    "properties": {
+                      "total_rows": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "processed_rows": {
+                        "default": 0,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "written_rows": {
+                        "default": 0,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "unchanged_rows": {
+                        "default": 0,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "total_rows"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "scope": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Full validated input scope for the Open in Insights action.",
+                    "properties": {
+                      "entity_levels": {
+                        "items": {
+                          "enum": [
+                            "account",
+                            "campaign",
+                            "adset",
+                            "ad"
+                          ],
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "metric_refs": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "date_from": {
+                        "format": "date",
+                        "type": "string"
+                      },
+                      "date_to": {
+                        "format": "date",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "entity_levels",
+                      "metric_refs",
+                      "date_from",
+                      "date_to"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "error": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "description": "Safe recovery text for a failed import.",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "message"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "task_id",
+              "ad_account_id",
+              "status",
+              "counts",
+              "expected_versions",
+              "preview_rows",
+              "errors",
+              "expires_at",
+              "created_at",
+              "updated_at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor",
+        "complete"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "List metric imports",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "custom_metrics_import_commit",
+    "title": "Commit a metric import",
+    "description": "Queue an import task. Poll until completed or failed.\n\nRepeated calls return saved status.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "task_id"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "Saved import task state and confirmed progress.",
+      "properties": {
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "invalid",
+            "prepared",
+            "queued",
+            "processing",
+            "completed",
+            "failed",
+            "expired"
+          ],
+          "type": "string"
+        },
+        "submitted_by_user_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "submitted_by_email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "input_interface": {
+          "anyOf": [
+            {
+              "enum": [
+                "browser",
+                "public_api",
+                "mcp"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "file_size_bytes": {
+          "anyOf": [
+            {
+              "maximum": 10485760,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "counts": {
+          "additionalProperties": false,
+          "description": "Preview totals; zero counts overlap change counts.",
+          "properties": {
+            "total": {
+              "type": "integer"
+            },
+            "added": {
+              "default": 0,
+              "type": "integer"
+            },
+            "changed": {
+              "default": 0,
+              "type": "integer"
+            },
+            "unchanged": {
+              "default": 0,
+              "type": "integer"
+            },
+            "zeros": {
+              "default": 0,
+              "type": "integer"
+            },
+            "errors": {
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "total"
+          ],
+          "type": "object"
+        },
+        "expected_versions": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Captured definition modification time.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "updated_at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "preview_rows": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Current and proposed values before explicit publication.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "entity_level": {
+                "enum": [
+                  "account",
+                  "campaign",
+                  "adset",
+                  "ad"
+                ],
+                "type": "string"
+              },
+              "entity_id": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              "date": {
+                "format": "date",
+                "type": "string"
+              },
+              "value": {
+                "pattern": "^-?(0|[1-9][0-9]{0,19})(\\.[0-9]{1,8})?$",
+                "type": "string"
+              },
+              "previous_value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "previous_updated_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "change": {
+                "enum": [
+                  "added",
+                  "changed",
+                  "unchanged"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "entity_level",
+              "entity_id",
+              "date",
+              "value",
+              "change"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "errors": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Safe bounded row validation detail.",
+            "properties": {
+              "row_number": {
+                "type": "integer"
+              },
+              "field": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "row_number",
+              "field",
+              "code",
+              "message"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "next_error_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "progress": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Report only progress known by the server.",
+              "properties": {
+                "total_rows": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "processed_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "written_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "unchanged_rows": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "total_rows"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Full validated input scope for the Open in Insights action.",
+              "properties": {
+                "entity_levels": {
+                  "items": {
+                    "enum": [
+                      "account",
+                      "campaign",
+                      "adset",
+                      "ad"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "metric_refs": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "date_from": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "date_to": {
+                  "format": "date",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "entity_levels",
+                "metric_refs",
+                "date_from",
+                "date_to"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Safe recovery text for a failed import.",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "task_id",
+        "ad_account_id",
+        "status",
+        "counts",
+        "expected_versions",
+        "preview_rows",
+        "errors",
+        "expires_at",
+        "created_at",
+        "updated_at"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Commit a metric import",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "metrics_query",
+    "title": "Query provider and custom metrics",
+    "description": "Read provider and custom values at one level. Missing is unknown; zero is\na supplied value. Follow next_cursor.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ad_account_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "entity_level": {
+          "enum": [
+            "account",
+            "campaign",
+            "adset",
+            "ad"
+          ],
+          "type": "string"
+        },
+        "metric_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "date_from": {
+          "format": "date",
+          "type": "string"
+        },
+        "date_to": {
+          "format": "date",
+          "type": "string"
+        },
+        "entity_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "grain": {
+          "default": "daily",
+          "enum": [
+            "daily",
+            "period"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sort_by": {
+          "default": "entity_id",
+          "type": "string"
+        },
+        "sort_direction": {
+          "default": "asc",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        },
+        "native_action_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "native_attribution_window": {
+          "default": "value",
+          "enum": [
+            "value",
+            "1d_click",
+            "7d_click",
+            "1d_view"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "ad_account_id",
+        "entity_level",
+        "metric_refs",
+        "date_from",
+        "date_to"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "additionalProperties": false,
+      "description": "One report page with captured definition timestamps.",
+      "properties": {
+        "rows": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Provider and custom values share one analytical output key.",
+            "properties": {
+              "ad_account_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "provider_account_id": {
+                "type": "string"
+              },
+              "entity_level": {
+                "enum": [
+                  "account",
+                  "campaign",
+                  "adset",
+                  "ad"
+                ],
+                "type": "string"
+              },
+              "entity_id": {
+                "type": "string"
+              },
+              "date_from": {
+                "format": "date",
+                "type": "string"
+              },
+              "date_to": {
+                "format": "date",
+                "type": "string"
+              },
+              "timezone": {
+                "type": "string"
+              },
+              "metrics": {
+                "items": {
+                  "additionalProperties": false,
+                  "description": "One exact value and its input quality/evidence metadata.",
+                  "properties": {
+                    "metric_ref": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "components": {
+                      "items": {
+                        "additionalProperties": false,
+                        "description": "Exact ratio component captured with a resolved result.",
+                        "properties": {
+                          "metric_ref": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "metric_ref",
+                          "value"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "unit": {
+                      "enum": [
+                        "count",
+                        "currency",
+                        "ratio",
+                        "percent",
+                        "text",
+                        "seconds"
+                      ],
+                      "type": "string"
+                    },
+                    "currency": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "quality": {
+                      "enum": [
+                        "ready",
+                        "missing",
+                        "incomplete",
+                        "invalid_denominator",
+                        "archived"
+                      ],
+                      "type": "string"
+                    },
+                    "import_ids": {
+                      "items": {
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "created_at": {
+                      "anyOf": [
+                        {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "updated_at": {
+                      "anyOf": [
+                        {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "metric_ref",
+                    "value",
+                    "unit",
+                    "currency",
+                    "quality",
+                    "import_ids",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "ad_account_id",
+              "provider",
+              "provider_account_id",
+              "entity_level",
+              "entity_id",
+              "date_from",
+              "date_to",
+              "timezone",
+              "metrics"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "definitions": {
+          "items": {
+            "additionalProperties": false,
+            "description": "Captured definition modification time.",
+            "properties": {
+              "metric_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "updated_at": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "metric_id",
+              "updated_at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "rows",
+        "definitions",
+        "next_cursor",
+        "complete"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Query provider and custom metrics",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
   }
 ]

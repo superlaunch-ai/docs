@@ -3,8 +3,876 @@ title: "Custom metric tools"
 description: "Create definitions, import values, check tasks, and query metrics through MCP."
 ---
 
-Use these tools after you connect an authorized MCP client. Reads need `mcp:read`. Writes also need `mcp:write` and the account permission for the operation.
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
 
-Import preparation returns a task ID and preview. It does not change daily values. Commit the task to start the import. Use `custom_metrics_import_get` to check its status. A failed task can have some values applied.
+<span id="custom-metrics-list" />
 
-The exact input schemas follow below.
+## custom_metrics_list
+
+List definitions for one permitted account. Follow next_cursor until complete.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `query` | string | `""` |
+| `status` | active, archived, all | `"active"` |
+| `entity_level` | account, campaign, adset, ad or null | `null` |
+| `limit` | integer | `50` |
+| `cursor` | string or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "query": {
+      "default": "",
+      "type": "string"
+    },
+    "status": {
+      "default": "active",
+      "enum": [
+        "active",
+        "archived",
+        "all"
+      ],
+      "type": "string"
+    },
+    "entity_level": {
+      "anyOf": [
+        {
+          "enum": [
+            "account",
+            "campaign",
+            "adset",
+            "ad"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-get" />
+
+## custom_metrics_get
+
+Read one definition and its readable enabled rule dependencies.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `metric_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "metric_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "metric_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-create" />
+
+## custom_metrics_create
+
+Create a metric. Currency and timezone come from the account. Retry with the same idempotency key.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `key` | string | Required |
+| `label` | string | Required |
+| `description` | string | Required |
+| `supported_input_levels` | array | Required |
+| `idempotency_key` | string | Required |
+| `value_type` | integer, decimal | Required |
+| `unit` | count, currency, seconds, ratio, percent | Required |
+| `allow_negative` | boolean | `false` |
+| `formula` | object or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "supported_input_levels": {
+      "items": {
+        "enum": [
+          "account",
+          "campaign",
+          "adset",
+          "ad"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "value_type": {
+      "enum": [
+        "integer",
+        "decimal"
+      ],
+      "type": "string"
+    },
+    "unit": {
+      "enum": [
+        "count",
+        "currency",
+        "seconds",
+        "ratio",
+        "percent"
+      ],
+      "type": "string"
+    },
+    "allow_negative": {
+      "default": false,
+      "type": "boolean"
+    },
+    "formula": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "description": "A fixed ratio of compatible components.",
+          "properties": {
+            "template": {
+              "enum": [
+                "amount_per_count",
+                "amount_per_spend"
+              ],
+              "type": "string"
+            },
+            "numerator": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "denominator": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "template",
+            "numerator",
+            "denominator"
+          ],
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "key",
+    "label",
+    "description",
+    "supported_input_levels",
+    "idempotency_key",
+    "value_type",
+    "unit"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-update" />
+
+## custom_metrics_update
+
+Edit text or supported levels using the current updated_at timestamp. Semantic fields stay fixed.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `metric_id` | uuid | Required |
+| `updated_at` | date-time | Required |
+| `label` | string or null | `null` |
+| `description` | string or null | `null` |
+| `supported_input_levels` | array or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "metric_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "label": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "supported_input_levels": {
+      "anyOf": [
+        {
+          "items": {
+            "enum": [
+              "account",
+              "campaign",
+              "adset",
+              "ad"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "metric_id",
+    "updated_at"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-archive" />
+
+## custom_metrics_archive
+
+Archive a metric while keeping values. Pause or edit enabled dependent rules first.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `metric_id` | uuid | Required |
+| `updated_at` | date-time | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "metric_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "metric_id",
+    "updated_at"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-import-prepare" />
+
+## custom_metrics_import_prepare
+
+Validate up to 100 complete daily values. Preview does not publish values. Use a CSV grant for larger imports.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `idempotency_key` | string | Required |
+| `rows` | array | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "rows": {
+      "items": {
+        "additionalProperties": false,
+        "description": "One complete daily value; no caller storage timestamps.",
+        "properties": {
+          "metric_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "entity_level": {
+            "enum": [
+              "account",
+              "campaign",
+              "adset",
+              "ad"
+            ],
+            "type": "string"
+          },
+          "entity_id": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^-?(0|[1-9][0-9]{0,19})(\\.[0-9]{1,8})?$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_id",
+          "entity_level",
+          "entity_id",
+          "date",
+          "value"
+        ],
+        "type": "object"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "idempotency_key",
+    "rows"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-upload-create" />
+
+## custom_metrics_upload_create
+
+Create a short-lived CSV grant. PUT bytes with its Authorization header. No remote file is fetched.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `idempotency_key` | string | Required |
+| `file_name` | string | Required |
+| `content_type` | text/csv | Required |
+| `size_bytes` | integer | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "content_type": {
+      "const": "text/csv",
+      "type": "string"
+    },
+    "size_bytes": {
+      "maximum": 10485760,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "idempotency_key",
+    "file_name",
+    "content_type",
+    "size_bytes"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-import-get" />
+
+## custom_metrics_import_get
+
+Read import status, progress, timestamps, and safe errors.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `task_id` | uuid | Required |
+| `error_cursor` | string or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "error_cursor": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "task_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-import-list" />
+
+## custom_metrics_import_list
+
+Read account import history with task status and progress.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `limit` | integer | `50` |
+| `cursor` | string or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "limit": {
+      "default": 50,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="custom-metrics-import-commit" />
+
+## custom_metrics_import_commit
+
+Queue an import task. Poll until completed or failed. Repeated calls return saved status.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `task_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "task_id"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
+
+<span id="metrics-query" />
+
+## metrics_query
+
+Read provider and custom values at one level. Missing is unknown; zero is a supplied value. Follow next_cursor.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `ad_account_id` | uuid | Required |
+| `entity_level` | account, campaign, adset, ad | Required |
+| `metric_refs` | array | Required |
+| `date_from` | date | Required |
+| `date_to` | date | Required |
+| `entity_ids` | array or null | `null` |
+| `grain` | daily, period | `"daily"` |
+| `limit` | integer | `25` |
+| `cursor` | string or null | `null` |
+| `sort_by` | string | `"entity_id"` |
+| `sort_direction` | asc, desc | `"asc"` |
+| `native_action_type` | string or null | `null` |
+| `native_attribution_window` | value, 1d_click, 7d_click, 1d_view | `"value"` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+<Accordion title="Full input schema">
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "entity_level": {
+      "enum": [
+        "account",
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "string"
+    },
+    "metric_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "date_from": {
+      "format": "date",
+      "type": "string"
+    },
+    "date_to": {
+      "format": "date",
+      "type": "string"
+    },
+    "entity_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "grain": {
+      "default": "daily",
+      "enum": [
+        "daily",
+        "period"
+      ],
+      "type": "string"
+    },
+    "limit": {
+      "default": 25,
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sort_by": {
+      "default": "entity_id",
+      "type": "string"
+    },
+    "sort_direction": {
+      "default": "asc",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "type": "string"
+    },
+    "native_action_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "native_attribution_window": {
+      "default": "value",
+      "enum": [
+        "value",
+        "1d_click",
+        "7d_click",
+        "1d_view"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "ad_account_id",
+    "entity_level",
+    "metric_refs",
+    "date_from",
+    "date_to"
+  ],
+  "type": "object"
+}
+```
+
+</Accordion>
