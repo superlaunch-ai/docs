@@ -19,11 +19,14 @@
 
 - [Analyze performance](https://docs.superlaunch.pro/guides/insights.md): Choose comparable dates, metrics, attribution, and reporting levels.
 - [Import custom metrics](https://docs.superlaunch.pro/guides/custom-metrics.md): Add daily values from a CSV file, then use them in Insights and Rules.
-- [Public metrics API](https://docs.superlaunch.pro/reference/custom-metrics-api.md): Create metric definitions, import values, check tasks, and query results with a team API key.
 - [Create and run rules](https://docs.superlaunch.pro/guides/rules.md): Define targets, conditions, actions, schedules, and dry-run checks.
 - [Review activity and results](https://docs.superlaunch.pro/guides/activity.md): Trace tool calls, provider actions, and rule runs to their outcomes.
 - [Brand profiles and kits](https://docs.superlaunch.pro/guides/brands.md): Give your team and agent the brand guidance they need.
 - [Save and manage memory](https://docs.superlaunch.pro/guides/memory.md): Save facts for later conversations and choose who can use them.
+
+## API
+
+- [Public metrics API](https://docs.superlaunch.pro/reference/custom-metrics-api.md): Create metric definitions, import values, check tasks, and query results with a team API key.
 
 ## Launcher
 

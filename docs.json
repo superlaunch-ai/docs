@@ -21,12 +21,6 @@
         ]
       },
       {
-        "group": "API",
-        "pages": [
-          "reference/custom-metrics-api"
-        ]
-      },
-      {
         "group": "Workspace",
         "pages": [
           "workspace/connections",
@@ -42,6 +36,12 @@
           "guides/activity",
           "guides/brands",
           "guides/memory"
+        ]
+      },
+      {
+        "group": "API",
+        "pages": [
+          "reference/custom-metrics-api"
         ]
       },
       {
