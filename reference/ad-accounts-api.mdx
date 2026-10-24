@@ -1,0 +1,42 @@
+---
+title: "Ad accounts"
+description: "List the ad accounts that a team API key can access."
+---
+
+Use this route to find the internal account UUID for [Custom metrics](/reference/custom-metrics-api). [Get an API key](/reference/api-keys) and read [Authorization](/reference/api-authorization) first.
+
+## List ad accounts
+
+`GET /api/public/ad-accounts`
+
+The route returns accounts allowed by both the key and the key issuer's current access. Use `query` to search. Use `provider` or `external_account_id` to filter. `limit` is 1 to 100 and defaults to 50. Use the opaque `cursor` from a response to get the next page. Keep the filters the same.
+
+**Request**
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/ad-accounts?provider=meta&limit=50' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
+
+**Response: HTTP 200**
+
+```json
+{
+  "items": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "provider": "meta",
+      "external_account_id": "act_120000000001",
+      "name": "Example account",
+      "currency": "USD",
+      "timezone": "America/New_York"
+    }
+  ],
+  "next_cursor": null,
+  "complete": true
+}
+```
+
+Use `id` as `ad_account_id` in other public API requests. For an account-level imported value, use the provider account ID as `entity_id`. `name`, `currency`, and `timezone` can be null. Follow `next_cursor` until `complete` is `true`.
+
+See [Import custom metrics](/guides/custom-metrics) for the app workflow.

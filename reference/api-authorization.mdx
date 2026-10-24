@@ -1,0 +1,27 @@
+---
+title: "Authorization"
+description: "Send a team API key and understand public API access checks."
+---
+
+The public API uses a team API key. [Get an API key](/reference/api-keys) before you send requests.
+
+Send the secret in the `Authorization` header. Use the `Bearer` scheme:
+
+```http
+Authorization: Bearer <metric_api_key>
+```
+
+For example, this request lists the ad accounts that the key can access:
+
+```bash
+curl --request GET 'https://api.superlaunch.pro/api/public/ad-accounts' \
+  --header "Authorization: Bearer $SUPERLAUNCH_API_KEY"
+```
+
+Set `SUPERLAUNCH_API_KEY` in your shell or secret store. Do not put the secret in the command text that you share.
+
+A key can use only its selected ad accounts and permissions. The user who created the key must still have access to each account. A revoked or expired key cannot make new requests. The key cannot call unrelated API routes or manage API keys.
+
+For account-scoped routes, use the internal `id` UUID from [Ad accounts](/reference/ad-accounts-api) as `ad_account_id`. This is different from the provider's `external_account_id`.
+
+API errors use a JSON `error` object with `code` and `message`. A missing or invalid key returns HTTP 401. An access failure returns HTTP 403. Check the response `code` before you retry.
