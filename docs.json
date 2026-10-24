@@ -71,6 +71,7 @@
           "mcp/reference/accounts-brands",
           "mcp/reference/insights",
           "mcp/reference/rules",
+          "mcp/reference/custom-metrics",
           "mcp/reference/actions",
           "mcp/reference/activity",
           "mcp/reference/memory",

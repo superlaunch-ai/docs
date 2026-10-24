@@ -1,0 +1,10 @@
+---
+title: "Custom metric tools"
+description: "Create definitions, import values, check tasks, and query metrics through MCP."
+---
+
+Use these tools after you connect an authorized MCP client. Reads need `mcp:read`. Writes also need `mcp:write` and the account permission for the operation.
+
+Import preparation returns a task ID and preview. It does not change daily values. Commit the task to start the import. Use `custom_metrics_import_get` to check its status. A failed task can have some values applied.
+
+The exact input schemas follow below.

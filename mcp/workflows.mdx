@@ -14,6 +14,10 @@ Start a workflow by discovering accessible objects and capabilities. Resolve req
 
 Set a minimum spend or conversion count to exclude results with too little data. For cost metrics such as CPA, lower values can be better.
 
+## Import custom values
+
+Call `custom_metrics_list` to find an account metric. Prepare a small set of values with `custom_metrics_import_prepare`. For a CSV file, use `custom_metrics_upload_create` and upload the bytes with its signed grant. Read the preview with `custom_metrics_import_get`. Commit a valid task with `custom_metrics_import_commit`, then poll the same task ID. A failed task can leave some values applied. See [Import custom metrics](/guides/custom-metrics) and [Custom metric tools](/mcp/reference/custom-metrics).
+
 ## Create a draft rule
 
 Call `rules_schema`, resolve accounts, and build the full rule definition. Supply a target filter, tasks with actions and optional conditions, and a schedule with time zone. Save as a draft with `dry_run: true`.
