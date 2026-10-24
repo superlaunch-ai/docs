@@ -1,0 +1,35 @@
+---
+title: "Ad accounts"
+description: "Find the account IDs and settings that public metrics API requests need."
+---
+
+Use the public ad account route to find an account before you create a metric, import values, or query results. This route returns accounts allowed by the team API key and the key issuer's current access.
+
+## Request accounts
+
+Send a team API key with `Authorization: Bearer <metric_api_key>`.
+
+```http
+GET /api/public/ad-accounts
+Authorization: Bearer <metric_api_key>
+```
+
+You can use these query parameters:
+
+| Parameter | Use |
+| --- | --- |
+| `query` | Search the available accounts. |
+| `provider` | Filter by provider. |
+| `external_account_id` | Filter by the provider account ID. |
+| `limit` | Set the page size, from 1 to 100. The default is 50. |
+| `cursor` | Request the next page. |
+
+The response has `items`, `next_cursor`, and `complete`. Follow `next_cursor` until `complete` is true. Keep the same filters on each page.
+
+Each item has an internal `id` UUID, `provider`, `external_account_id`, `name`, `currency`, and `timezone`. The last three fields can be null. Use the internal `id` as `ad_account_id` in [Custom metrics](/reference/custom-metrics-api) requests. Keep it separate from the provider account ID. For an account-level imported value, use the provider account ID as `entity_id`.
+
+## Access
+
+Create a key in **Team → API keys** with an explicit list of allowed accounts and the needed read permission. The issuer must still belong to the team and have access to the requested account. A revoked or expired key cannot list accounts. The route does not return accounts outside the key's allowed list.
+
+See [Import custom metrics](/guides/custom-metrics) for the app workflow.

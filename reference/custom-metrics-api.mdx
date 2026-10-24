@@ -1,5 +1,5 @@
 ---
-title: "Public metrics API"
+title: "Custom metrics"
 description: "Create metric definitions, import values, check tasks, and query results with a team API key."
 ---
 
@@ -11,13 +11,12 @@ In **Team → API keys**, create a key. Select its allowed ad accounts, permissi
 
 Send `Authorization: Bearer <metric_api_key>` on public requests. A key can act only on its explicit account list. The issuer must still have access to each account. Expiry, revocation, or loss of access stops new requests. A key cannot call unrelated API routes or manage API keys.
 
-Use `GET /api/public/ad-accounts` to find the internal ad account UUID. Keep it separate from the provider account ID.
+Use [Ad accounts](/reference/ad-accounts-api) to find the internal ad account UUID. Keep it separate from the provider account ID.
 
 ## Routes
 
 | Task | Route |
 | --- | --- |
-| Find allowed accounts | `GET /api/public/ad-accounts` |
 | List or create metrics | `GET /api/public/custom-metrics` or `POST /api/public/custom-metrics` |
 | Read or edit one metric | `GET /api/public/custom-metrics/{metric_id}` or `PATCH /api/public/custom-metrics/{metric_id}` |
 | Download the current CSV template | `GET /api/public/custom-metrics/template.csv` |
