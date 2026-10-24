@@ -26,7 +26,10 @@
 
 ## API
 
-- [Public metrics API](https://docs.superlaunch.pro/reference/custom-metrics-api.md): Create metric definitions, import values, check tasks, and query results with a team API key.
+- [Custom metrics](https://docs.superlaunch.pro/reference/custom-metrics-api.md): Create metric definitions, prepare and commit imports, and query values with the public API.
+- [Ad accounts](https://docs.superlaunch.pro/reference/ad-accounts-api.md): List the ad accounts that a team API key can access.
+- [Get an API key](https://docs.superlaunch.pro/reference/api-keys.md): Create and store a team API key for public API requests.
+- [Authorization](https://docs.superlaunch.pro/reference/api-authorization.md): Send a team API key and understand public API access checks.
 
 ## Launcher
 
