@@ -54,6 +54,12 @@ Use `campaigns_update`, `adsets_update`, or `ads_update` for supported partial c
 
 Ad content edits require `creative_policy: "replace"`. New creative content can trigger provider review and does not preserve the existing post engagement. Inspect the returned verification state: `simulation`, `confirmed`, or `reconciliation_required`. Read results before retrying an uncertain write.
 
+## Set and check Guardrails
+
+Call `guardrails_capabilities` for current permission grants and settings schemas. Read existing policies with `guardrails_list` before creating another policy. Preview a draft with `guardrails_targets_preview`, then use a stable command request UUID for a policy write. Read the current policy version before `guardrails_update` or `guardrails_delete`.
+
+Direct action and AutoRules execution checks enabled policies again. A denial returns a structured receipt; read it with `actions_get` before a new write. See [Set Guardrails](/guides/guardrails), [Guardrails tools](/mcp/reference/guardrails), and [Activity](/guides/activity).
+
 ## Save a confirmed fact
 
 Resolve the scope, then call `memory_remember` only after an explicit save request or focused approval. Report the returned persistence state. Use `memory_recall` for relevant context and `memory_get` for an exact record.

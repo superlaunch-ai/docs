@@ -1,0 +1,99 @@
+---
+title: "Set Guardrails"
+description: "Set budget limits and protect campaign or ad-set changes across MCP and AutoRules."
+---
+
+Use **Guardrails** to check supported Superlaunch actions before they change Meta objects. A policy can limit a budget, limit an increase, or block a protected operation. The same saved policies apply to MCP and AutoRules actions.
+
+You need `guardrails.read` to view policies and `guardrails.manage` to create, edit, or delete them. The workspace owner has both permissions. Account access still applies. See [Team access](/workspace/permissions).
+
+## Create a policy
+
+1. Open **Guardrails** and create a guardrail.
+2. Enter a name and select the policy type.
+3. Select the accounts and target levels. Add filters when you need a narrower selection.
+4. Set the limits or protected operations. Check the budget type and currency.
+5. Review the target preview. Enable the policy and select **Create guardrail**.
+6. Test a planned action in dry-run mode. Open its [Activity record](/guides/activity) to check the decision.
+
+To edit a policy, open it, change its settings, and select **Save guardrail**. A saved edit applies to the next action check. A preview does not reserve capacity or grant permission to execute. Superlaunch checks current policies and provider facts again before a write.
+
+## Choose a policy type
+
+| Policy type | Check |
+| --- | --- |
+| `MaximumBudget` | Limit each budget owner or the selected budget total for each account. |
+| `MaximumBudgetIncrease` | Limit one positive increase by amount, percentage, or both. |
+| `CumulativeBudgetIncrease` | Limit the sum of positive increases within a rolling time window. |
+| `MinimumIncreaseInterval` | Require a minimum time between positive increases for the same budget owner. |
+| `ProtectedTarget` | Block activation, pause, or budget changes for matching direct targets and action sources. |
+
+You can enable more than one policy. An action must pass each applicable check.
+
+### Maximum budget
+
+Choose **Each budget** to check a campaign or ad-set budget on its own. Choose **Account total** to check the total across matching budget owners in each account. Separate accounts have separate totals. Daily and lifetime budgets have separate totals. Superlaunch does not convert currencies.
+
+By default, a proposed budget must stay below the limit. Turn on **Allow equality with the limit** if the proposed value may equal it. For example, with a USD 100 limit, equality off blocks USD 100; equality on allows USD 100 and blocks USD 100.01.
+
+For account totals, choose active budgets or all budgets. Active means the owner's configured status and its parent campaign's configured status are `ACTIVE`. A temporary delivery restriction does not release capacity. All budgets includes paused owners and paused parent campaigns. Archived or deleted objects do not contribute.
+
+### Increase amount, percentage, or both
+
+With an amount limit of USD 20, an increase from USD 100 to USD 120 passes; USD 120.01 fails. With a 10% limit, USD 100 to USD 110 passes; USD 110.01 fails. Equality passes for increase limits.
+
+When you set both limits, the increase must pass both. The percentage uses the current budget before the action. An unavailable or nonpositive baseline cannot pass a percentage check. API and MCP percentages use decimal strings, such as `"10"` or `"2.5"`.
+
+### Cumulative increase and minimum interval
+
+A cumulative policy adds positive increases for the same account, budget owner, and budget type during its rolling window. Decreases do not cancel earlier increases. Equality with the cumulative amount passes.
+
+A minimum-interval policy blocks another positive increase until its interval has passed. An increase at the exact interval boundary can pass. Superlaunch includes pending reservations when it checks these policies, so concurrent requests cannot each spend the same available capacity. A replay of the same request does not add another increase.
+
+Windows and intervals range from 1 second to 30 days. These histories track Superlaunch actions. They do not provide a complete history of changes made in Meta or other tools.
+
+## Understand budget ownership
+
+A campaign with campaign budget optimization (CBO) owns the budget. Its ad sets do not add the same budget to an account total again. With ad-set budget optimization (ABO), each ad set owns its budget. A campaign without its own budget adds no separate campaign budget.
+
+Choose `campaign`, `adset`, or both as needed. An ad-set-only budget selection covers ad-set-owned budgets; select campaign owners when you need CBO coverage. The ownership level and the budget type are independent: a campaign or an ad set can own a daily or lifetime budget. Budget checks resolve the actual owner, even when the action targets a child object.
+
+A pure pause or a decrease can reduce exposure and can pass budget-limit policies. A `ProtectedTarget` policy can still block it. A patch that pauses a target and changes its budget is a budget change, so a protected pause or budget-change rule can block that patch.
+
+## Select current and future targets
+
+Filters describe a selection, rather than a saved list of object IDs. New objects that match the selection can fall under the policy. Superlaunch checks metadata before and after a proposed change. Renaming an object out of a protected selection does not bypass that check.
+
+Supported fields are `id`, `name`, `status`, and `effective_status`. ID and name support equality, inequality, contains, not-contains, starts-with, and ends-with. Status fields support equality and inequality. Combine filters with AND or OR. An empty root AND group selects the whole chosen level.
+
+For ad-set-only selections, you can filter the parent campaign through the ancestor scope. Use the [capabilities tool](/mcp/reference/guardrails#guardrails-capabilities) for supported status values and exact filter bounds.
+
+Only the workspace owner can select all accounts through an empty `account_ids` list. Other policy managers must select explicit accounts that they can read. A policy preview shows authorized account scope and may lag provider changes. Treat it as a selection check, not execution approval.
+
+## Protect operations and action sources
+
+For `ProtectedTarget`, select **Blocked operations**:
+
+- `activate`: block activation.
+- `pause`: block pausing.
+- `change_budget`: block budget writes, including decreases and patches that change both status and budget.
+
+Choose **All sources** to cover current and future Superlaunch action sources. Choose **Selected sources** to select MCP (`mcp`), Rules (`rule`), or Automation (`automation`). Superlaunch determines the source from the execution context. An agent cannot set its own source in a direct action request.
+
+Protected selections apply to direct campaign or ad-set targets. Budget-limit policies use budget owners. Check both when you need protection for a hierarchy.
+
+## Review a blocked action
+
+In **Activity**, a guardrail rejection has status **Denied**. Open the record to inspect the policy ID and version, reason code, observed and required values, action target, and budget-owner or account subject.
+
+MCP returns `isError: true` with a structured receipt. A blocked write has `status: "denied"`, `provider_side_effects: false`, and a `guardrails` decision. Read it through `actions_get` using `activity_id`. The receipt read succeeds even when the original action was denied. See [MCP Guardrails reference](/mcp/reference/guardrails).
+
+A denied action with no provider side effect does not consume an action charge. Its retry with the same request ID returns the saved receipt. Use a new request ID only for a new action after you resolve the cause. For partial or uncertain provider results, inspect the child results and reconciliation state before another write.
+
+## Limits
+
+Guardrails check supported actions executed through Superlaunch. They do not impose a Meta account spending limit, measure actual spend, or stop changes made outside Superlaunch. Provider changes can affect the current facts used by the next check.
+
+When Superlaunch cannot obtain facts needed for an applicable policy, it blocks the write. Disabling a policy stops its future checks; it does not undo earlier provider changes. Keep Meta permissions, budget settings, and account monitoring in place.
+
+For integrations, use the [workspace HTTP API](/reference/guardrails-api) or the [seven MCP tools](/mcp/reference/guardrails).

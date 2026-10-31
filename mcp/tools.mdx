@@ -1,9 +1,9 @@
 ---
 title: "MCP tool index"
-description: "Find all 115 documented MCP tools by task, access requirement, and exact input schema."
+description: "Find all 122 documented MCP tools by task, access requirement, and exact input schema."
 ---
 
-This reference covers 115 tools from the reviewed deployed MCP source. Your access, client settings, and enabled features determine which tools you can use. See the [capability overview](/reference/capabilities) for product workflows.
+This reference covers 122 tools from the reviewed deployed MCP source. Your access, client settings, and enabled features determine which tools you can use. See the [capability overview](/reference/capabilities) for product workflows.
 
 Use an MCP client with [OAuth authorization](/mcp/authentication). Read tools require `mcp:read`. Write tools also require `mcp:write` and the relevant workspace and target permissions. Preserve argument nesting such as `payload`, `request`, `data`, `family`, and `content`.
 
@@ -178,3 +178,15 @@ Read the [argument examples](/mcp/examples) and [IDs and retries](/concepts/ids-
 | [`custom_metrics_import_list`](/mcp/reference/custom-metrics#custom-metrics-import-list) | Read | Read account import history with task status and progress. |
 | [`custom_metrics_import_commit`](/mcp/reference/custom-metrics#custom-metrics-import-commit) | Write | Queue an import task. |
 | [`metrics_query`](/mcp/reference/custom-metrics#metrics-query) | Read | Read provider and custom values at one level. |
+
+## Guardrails tools
+
+| Tool | Access | Purpose |
+| --- | --- | --- |
+| [`guardrails_capabilities`](/mcp/reference/guardrails#guardrails-capabilities) | Read | Read Guardrails settings schemas, selection bounds, and current grants. |
+| [`guardrails_list`](/mcp/reference/guardrails#guardrails-list) | Read | Read authorized policies with a signed cursor in stable creation order. |
+| [`guardrails_get`](/mcp/reference/guardrails#guardrails-get) | Read | Read one current policy after complete account scope authorization. |
+| [`guardrails_create`](/mcp/reference/guardrails#guardrails-create) | Write | Create a policy. |
+| [`guardrails_update`](/mcp/reference/guardrails#guardrails-update) | Write | Replace all writable fields. |
+| [`guardrails_delete`](/mcp/reference/guardrails#guardrails-delete) | Write | Archive a policy. |
+| [`guardrails_targets_preview`](/mcp/reference/guardrails#guardrails-targets-preview) | Read | Preview authorized targets and totals without an execution grant. |

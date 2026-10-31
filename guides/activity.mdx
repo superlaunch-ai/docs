@@ -28,3 +28,11 @@ The `rule_activity_*` tools return rule-specific activity. They do not replace t
 5. Resolve authorization or input errors before retrying.
 
 After a timeout, read the result before submitting another provider write. For a Launcher batch, inspect [operation-level results](/launcher/recovery) so that you retry only eligible failed work.
+
+## Review a Guardrails decision
+
+A blocked action appears as **Denied**. Its details show the policy and version, reason, observed and required values, and the action target or budget subject. A dry-run receipt also shows that the decision is a preview. See [Set Guardrails](/guides/guardrails).
+
+Through MCP, inspect `guardrail_blocked` or `guardrail_evaluation_unavailable` in the structured action receipt. `isError: true` signals the denied action. Reading it through `actions_get` is a successful read and leaves the original action's denied status unchanged.
+
+A confirmed denial with `provider_side_effects: false` means that action made no provider write. Partial or uncertain results need child-result and reconciliation review before another write.
