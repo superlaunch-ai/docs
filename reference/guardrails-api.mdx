@@ -1,0 +1,142 @@
+---
+title: "Guardrails API"
+description: "Read, preview, create, replace, and delete workspace Guardrails with version checks."
+---
+
+These workspace routes start with `/api/guardrails`. Authenticate with your signed-in user's Firebase ID token and send `X-Team-ID` with the workspace UUID. Metric API keys do not authorize these routes. The server checks current membership, Guardrails permissions, and account visibility for each request.
+
+Use `guardrails.read` for reads and preview, and `guardrails.manage` for writes. A manager can also read. Call capabilities to check your current `can_read` and `can_manage` values. [Set Guardrails](/guides/guardrails) explains the policy behavior.
+
+## Routes
+
+| Method and path | Result |
+| --- | --- |
+| `GET /api/guardrails/capabilities` | Settings schemas, filter limits, status values, and current permissions. |
+| `GET /api/guardrails` | A page of visible policies. |
+| `GET /api/guardrails/{guardrail_id}` | One policy and a strong version `ETag`. |
+| `POST /api/guardrails/targets/preview` | A draft's target page and account-summary page. No provider write. |
+| `POST /api/guardrails` | Create a policy. Returns HTTP 201, `ETag`, and `Location`. |
+| `PUT /api/guardrails/{guardrail_id}` | Replace the complete writable definition. Returns HTTP 200 and a new `ETag`. |
+| `DELETE /api/guardrails/{guardrail_id}` | Archive a policy. Returns HTTP 204 and preserves its history. |
+
+### Request headers
+
+| Header | Requirement |
+| --- | --- |
+| `Authorization: Bearer $SUPERLAUNCH_ID_TOKEN` | Required signed-in user token. |
+| `X-Team-ID: $SUPERLAUNCH_TEAM_ID` | Required workspace UUID. |
+| `Content-Type: application/json` | Use for JSON request bodies. |
+| `Idempotency-Key: <UUID>` | Required for create, update, and delete. |
+| `If-Match: "<version>"` | Required for update and delete. Use one strong positive-integer ETag from the current policy. |
+
+Keep the same idempotency UUID and request content when you retry a command. A reused key with different content conflicts. Policy replacement must keep the policy type. Create a new policy if you need another type.
+
+## Read policies
+
+```bash
+curl 'https://api.superlaunch.pro/api/guardrails?limit=25&enabled=true' \
+  --header "Authorization: Bearer $SUPERLAUNCH_ID_TOKEN" \
+  --header "X-Team-ID: $SUPERLAUNCH_TEAM_ID"
+```
+
+List filters are `q` (name search, at most 120 characters), `enabled`, `type`, `account_id`, and `target_level`. `target_level` is `campaign` or `adset`. `limit` ranges from 1 to 100 and defaults to 25. The response has `items` and `next_cursor`. A null cursor marks the last page.
+
+Keep the workspace, principal, filters, and page size unchanged when you send `cursor`. Cursors expire after one hour. Policy pages sort by creation time and ID, descending.
+
+## Policy body
+
+The writable fields are `name`, `type`, `enabled`, `selection`, and `settings`. Money uses integer minor units and an ISO currency code. For USD, `10000` means USD 100.00. Select accounts with the same currency for an amount-based policy. Percent-only policies have no currency amount.
+
+This sample allows a daily budget increase of at most 10% and USD 20. Replace the sample account UUID before you use it.
+
+```json
+{
+  "name": "Daily increase limit",
+  "type": "MaximumBudgetIncrease",
+  "enabled": true,
+  "selection": {
+    "account_ids": ["10000000-0000-4000-8000-000000000001"],
+    "target_levels": ["campaign", "adset"],
+    "target_filter": {"kind": "group", "combinator": "and", "children": []}
+  },
+  "settings": {
+    "budget_type": "daily",
+    "max_increase": {"amount_minor": 2000, "currency": "USD"},
+    "max_increase_percent": "10"
+  }
+}
+```
+
+| Type | Settings |
+| --- | --- |
+| `MaximumBudget` | `budget_type`, `max_budget`, optional `inclusive` (default false), and `aggregation` (`per_owner` by default or `account`). Account aggregation requires `budget_activity` (`active` or `all`); per-owner aggregation forbids it. |
+| `MaximumBudgetIncrease` | `budget_type` and at least one of `max_increase` or `max_increase_percent`. Both means both checks must pass. |
+| `CumulativeBudgetIncrease` | `budget_type`, `max_increase`, and `window_seconds`. |
+| `MinimumIncreaseInterval` | `budget_type` and `interval_seconds`. |
+| `ProtectedTarget` | `operations` from `activate`, `pause`, and `change_budget`; optional `initiator_types` from `mcp`, `rule`, and `automation`. Omit the source list to cover all sources. |
+
+Budget types are `daily` and `lifetime`. Time values range from 1 to 2592000 seconds. Percentage strings allow up to six fractional digits and 18 digits in total. Request bodies have a 64 KiB limit. Unknown fields fail validation. Use capabilities or the [MCP schemas](/mcp/reference/guardrails) for complete bounds.
+
+## Create and replace
+
+Save your policy JSON as `guardrail.json`. Use a fresh UUID in `Idempotency-Key` for this create command. These examples describe requests; the documentation does not create a production policy.
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/guardrails' \
+  --header "Authorization: Bearer $SUPERLAUNCH_ID_TOKEN" \
+  --header "X-Team-ID: $SUPERLAUNCH_TEAM_ID" \
+  --header 'Content-Type: application/json' \
+  --header "Idempotency-Key: $REQUEST_ID" \
+  --data @guardrail.json
+```
+
+The response includes the policy UUID, version, workspace and creator IDs, and timestamps. Read the policy before a replacement. Send the complete writable body, a new command UUID, and the ETag returned by that read:
+
+```bash
+curl --request PUT "https://api.superlaunch.pro/api/guardrails/$GUARDRAIL_ID" \
+  --header "Authorization: Bearer $SUPERLAUNCH_ID_TOKEN" \
+  --header "X-Team-ID: $SUPERLAUNCH_TEAM_ID" \
+  --header 'Content-Type: application/json' \
+  --header "Idempotency-Key: $REQUEST_ID" \
+  --header 'If-Match: "1"' \
+  --data @guardrail.json
+```
+
+The quoted version above is a sample. If another writer saved a change, read the new version and review it before another command. Do not remove the version check.
+
+## Preview targets
+
+Send `policy`, `page`, and optional `summary_page` to `POST /api/guardrails/targets/preview`. Each page object has `limit` and optional `cursor`.
+
+The response separates target items from account totals. It reports `authoritative: false`, authorized account scope, and a selection basis of `budget_owner`, `account_total`, or `direct_target`. Target and summary pages have independent cursors. Keep the draft and page settings unchanged while paging. A change in the analytical data can invalidate a preview cursor.
+
+A preview does not create a policy or authorize a provider action. Execution uses current policies and fresh required facts.
+
+## Errors
+
+Errors use this envelope:
+
+```json
+{
+  "error": {
+    "code": "precondition_failed",
+    "message": "Guardrail version has changed",
+    "details": null
+  }
+}
+```
+
+| HTTP status | Code and next step |
+| --- | --- |
+| 400 | `team_required`: supply `X-Team-ID`. |
+| 401 | Authentication error: supply a valid signed-in user token. |
+| 403 | `permission_denied` or another access code: check membership, Guardrails grants, and account access. |
+| 404 | `not_found`: the requested policy is unavailable to you. |
+| 409 | `conflict`: check command-key reuse or concurrent changes. |
+| 412 | `precondition_failed`: read the current policy version before a replacement or deletion. |
+| 413 | Request body exceeds the 64 KiB bound. |
+| 422 | `validation_error`: correct fields, filters, UUIDs, currency, or version-header format. |
+| 428 | `precondition_required`: supply `If-Match` for update or delete. |
+| 503 | `service_unavailable`: required Guardrails data is unavailable. Retry a read; preserve the command UUID when you retry a write. |
+
+A policy-management error differs from an action denial. For `guardrail_blocked`, `guardrail_evaluation_unavailable`, partial results, and saved action receipts, see [Set Guardrails](/guides/guardrails).

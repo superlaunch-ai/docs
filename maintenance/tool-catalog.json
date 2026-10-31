@@ -9265,8 +9265,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Create Meta creative",
@@ -9458,8 +9740,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Create Meta campaign",
@@ -9690,8 +10254,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Create Meta ad set",
@@ -9795,8 +10641,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Create Meta ad",
@@ -9871,8 +10999,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Set Meta asset status",
@@ -10019,8 +11429,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Update Meta campaign",
@@ -11237,8 +12929,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Update Meta adset",
@@ -11560,8 +13534,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Update Meta ad",
@@ -11653,8 +13909,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Duplicate Meta campaign",
@@ -11730,8 +14268,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Duplicate Meta ad set",
@@ -11823,8 +14643,290 @@
       "type": "object"
     },
     "outputSchema": {
-      "additionalProperties": true,
-      "type": "object"
+      "additionalProperties": false,
+      "type": "object",
+      "$defs": {
+        "GuardrailCheckResult": {
+          "additionalProperties": false,
+          "description": "Safe evidence without private policy names or definitions.",
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "reason_code": {
+              "title": "Reason Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "observed": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Observed",
+              "type": "object"
+            },
+            "required": {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "title": "Required",
+              "type": "object"
+            },
+            "owner_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Owner Subject"
+            },
+            "account_subject": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Account Subject"
+            },
+            "action_target": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/JsonValue"
+                  },
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Action Target"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "outcome",
+            "reason_code",
+            "message"
+          ],
+          "title": "GuardrailCheckResult",
+          "type": "object"
+        },
+        "GuardrailEvaluationResult": {
+          "additionalProperties": false,
+          "description": "Current or preview evaluation recorded with the action.",
+          "properties": {
+            "outcome": {
+              "enum": [
+                "ALLOW",
+                "BLOCK"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "preview": {
+              "title": "Preview",
+              "type": "boolean"
+            },
+            "evaluated_at": {
+              "format": "date-time",
+              "title": "Evaluated At",
+              "type": "string"
+            },
+            "checks": {
+              "items": {
+                "$ref": "#/$defs/GuardrailCheckResult"
+              },
+              "title": "Checks",
+              "type": "array"
+            }
+          },
+          "required": [
+            "outcome",
+            "preview",
+            "evaluated_at",
+            "checks"
+          ],
+          "title": "GuardrailEvaluationResult",
+          "type": "object"
+        },
+        "JsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Safe action result with its Activity identifier.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "action_name": {
+          "title": "Action Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "succeeded",
+          "enum": [
+            "succeeded",
+            "reconciliation_required",
+            "denied",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "dry_run": {
+          "title": "Dry Run",
+          "type": "boolean"
+        },
+        "provider_side_effects": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Side Effects"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "guardrail_blocked",
+                "guardrail_evaluation_unavailable",
+                "guardrail_partial_block"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "guardrails": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuardrailEvaluationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "child_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Child Results",
+          "type": "array"
+        },
+        "compensation_results": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Compensation Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "action_name",
+        "dry_run",
+        "provider_side_effects",
+        "before",
+        "after",
+        "details"
+      ],
+      "title": "ActionExecutionResult"
     },
     "annotations": {
       "title": "Duplicate Meta ad",
@@ -15980,6 +19082,12 @@
               "maximum": 365,
               "minimum": 1,
               "type": "integer"
+            },
+            "end_offset_days": {
+              "default": 0,
+              "maximum": 365,
+              "minimum": 0,
+              "type": "integer"
             }
           },
           "required": [
@@ -16154,99 +19262,106 @@
           "type": "object"
         },
         "RuleMetricId": {
-          "enum": [
-            "spend",
-            "impressions",
-            "frequency",
-            "cpm",
-            "inline_link_clicks",
-            "meta.action:landing_page_view",
-            "ctr",
-            "cpc",
-            "leads",
-            "add_to_carts",
-            "meta.action:initiate_checkout",
-            "purchases",
-            "start_trials",
-            "purchase_value",
-            "cpa",
-            "roas",
-            "cost_per_start_trial",
-            "content_views",
-            "cost_per_content_view",
-            "content_view_value",
-            "searches",
-            "cost_per_search",
-            "search_value",
-            "wishlist_adds",
-            "cost_per_wishlist_add",
-            "wishlist_add_value",
-            "cost_per_add_to_cart",
-            "add_to_cart_value",
-            "checkouts",
-            "cost_per_checkout",
-            "checkout_value",
-            "payment_info_adds",
-            "cost_per_payment_info_add",
-            "payment_info_add_value",
-            "cost_per_lead",
-            "lead_value",
-            "registrations",
-            "cost_per_registration",
-            "registration_value",
-            "contacts",
-            "cost_per_contact",
-            "contact_value",
-            "scheduled_events",
-            "cost_per_scheduled_event",
-            "scheduled_event_value",
-            "submitted_applications",
-            "cost_per_submitted_application",
-            "submitted_application_value",
-            "start_trial_value",
-            "subscriptions",
-            "cost_per_subscription",
-            "subscription_value",
-            "product_customizations",
-            "cost_per_product_customization",
-            "product_customization_value",
-            "donations",
-            "cost_per_donation",
-            "donation_value",
-            "location_searches",
-            "cost_per_location_search",
-            "location_search_value",
-            "app_installs",
-            "cost_per_app_install",
-            "app_activations",
-            "cost_per_app_activation",
-            "app_activation_value",
-            "tutorial_completions",
-            "cost_per_tutorial_completion",
-            "tutorial_completion_value",
-            "levels_achieved",
-            "cost_per_level_achieved",
-            "level_achieved_value",
-            "achievements_unlocked",
-            "cost_per_achievement_unlocked",
-            "achievement_unlocked_value",
-            "ratings",
-            "cost_per_rating",
-            "rating_value",
-            "credits_spent",
-            "cost_per_credits_spent",
-            "credits_spent_value",
-            "app_ad_impressions",
-            "cost_per_app_ad_impression",
-            "app_ad_clicks",
-            "cost_per_app_ad_click",
-            "day_2_retention_events",
-            "cost_per_day_2_retention_event",
-            "day_7_retention_events",
-            "cost_per_day_7_retention_event"
-          ],
           "minLength": 1,
-          "type": "string"
+          "type": "string",
+          "anyOf": [
+            {
+              "enum": [
+                "spend",
+                "impressions",
+                "frequency",
+                "cpm",
+                "inline_link_clicks",
+                "meta.action:landing_page_view",
+                "ctr",
+                "cpc",
+                "leads",
+                "add_to_carts",
+                "meta.action:initiate_checkout",
+                "purchases",
+                "start_trials",
+                "purchase_value",
+                "cpa",
+                "roas",
+                "cost_per_start_trial",
+                "content_views",
+                "cost_per_content_view",
+                "content_view_value",
+                "searches",
+                "cost_per_search",
+                "search_value",
+                "wishlist_adds",
+                "cost_per_wishlist_add",
+                "wishlist_add_value",
+                "cost_per_add_to_cart",
+                "add_to_cart_value",
+                "checkouts",
+                "cost_per_checkout",
+                "checkout_value",
+                "payment_info_adds",
+                "cost_per_payment_info_add",
+                "payment_info_add_value",
+                "cost_per_lead",
+                "lead_value",
+                "registrations",
+                "cost_per_registration",
+                "registration_value",
+                "contacts",
+                "cost_per_contact",
+                "contact_value",
+                "scheduled_events",
+                "cost_per_scheduled_event",
+                "scheduled_event_value",
+                "submitted_applications",
+                "cost_per_submitted_application",
+                "submitted_application_value",
+                "start_trial_value",
+                "subscriptions",
+                "cost_per_subscription",
+                "subscription_value",
+                "product_customizations",
+                "cost_per_product_customization",
+                "product_customization_value",
+                "donations",
+                "cost_per_donation",
+                "donation_value",
+                "location_searches",
+                "cost_per_location_search",
+                "location_search_value",
+                "app_installs",
+                "cost_per_app_install",
+                "app_activations",
+                "cost_per_app_activation",
+                "app_activation_value",
+                "tutorial_completions",
+                "cost_per_tutorial_completion",
+                "tutorial_completion_value",
+                "levels_achieved",
+                "cost_per_level_achieved",
+                "level_achieved_value",
+                "achievements_unlocked",
+                "cost_per_achievement_unlocked",
+                "achievement_unlocked_value",
+                "ratings",
+                "cost_per_rating",
+                "rating_value",
+                "credits_spent",
+                "cost_per_credits_spent",
+                "credits_spent_value",
+                "app_ad_impressions",
+                "cost_per_app_ad_impression",
+                "app_ad_clicks",
+                "cost_per_app_ad_click",
+                "day_2_retention_events",
+                "cost_per_day_2_retention_event",
+                "day_7_retention_events",
+                "cost_per_day_7_retention_event"
+              ]
+            },
+            {
+              "pattern": "^custom:[0-9a-fA-F-]{36}$"
+            }
+          ]
         },
         "RuleSchedule": {
           "additionalProperties": false,
@@ -16759,6 +19874,12 @@
               "maximum": 365,
               "minimum": 1,
               "type": "integer"
+            },
+            "end_offset_days": {
+              "default": 0,
+              "maximum": 365,
+              "minimum": 0,
+              "type": "integer"
             }
           },
           "required": [
@@ -16848,99 +19969,106 @@
           "type": "object"
         },
         "RuleMetricId": {
-          "enum": [
-            "spend",
-            "impressions",
-            "frequency",
-            "cpm",
-            "inline_link_clicks",
-            "meta.action:landing_page_view",
-            "ctr",
-            "cpc",
-            "leads",
-            "add_to_carts",
-            "meta.action:initiate_checkout",
-            "purchases",
-            "start_trials",
-            "purchase_value",
-            "cpa",
-            "roas",
-            "cost_per_start_trial",
-            "content_views",
-            "cost_per_content_view",
-            "content_view_value",
-            "searches",
-            "cost_per_search",
-            "search_value",
-            "wishlist_adds",
-            "cost_per_wishlist_add",
-            "wishlist_add_value",
-            "cost_per_add_to_cart",
-            "add_to_cart_value",
-            "checkouts",
-            "cost_per_checkout",
-            "checkout_value",
-            "payment_info_adds",
-            "cost_per_payment_info_add",
-            "payment_info_add_value",
-            "cost_per_lead",
-            "lead_value",
-            "registrations",
-            "cost_per_registration",
-            "registration_value",
-            "contacts",
-            "cost_per_contact",
-            "contact_value",
-            "scheduled_events",
-            "cost_per_scheduled_event",
-            "scheduled_event_value",
-            "submitted_applications",
-            "cost_per_submitted_application",
-            "submitted_application_value",
-            "start_trial_value",
-            "subscriptions",
-            "cost_per_subscription",
-            "subscription_value",
-            "product_customizations",
-            "cost_per_product_customization",
-            "product_customization_value",
-            "donations",
-            "cost_per_donation",
-            "donation_value",
-            "location_searches",
-            "cost_per_location_search",
-            "location_search_value",
-            "app_installs",
-            "cost_per_app_install",
-            "app_activations",
-            "cost_per_app_activation",
-            "app_activation_value",
-            "tutorial_completions",
-            "cost_per_tutorial_completion",
-            "tutorial_completion_value",
-            "levels_achieved",
-            "cost_per_level_achieved",
-            "level_achieved_value",
-            "achievements_unlocked",
-            "cost_per_achievement_unlocked",
-            "achievement_unlocked_value",
-            "ratings",
-            "cost_per_rating",
-            "rating_value",
-            "credits_spent",
-            "cost_per_credits_spent",
-            "credits_spent_value",
-            "app_ad_impressions",
-            "cost_per_app_ad_impression",
-            "app_ad_clicks",
-            "cost_per_app_ad_click",
-            "day_2_retention_events",
-            "cost_per_day_2_retention_event",
-            "day_7_retention_events",
-            "cost_per_day_7_retention_event"
-          ],
           "minLength": 1,
-          "type": "string"
+          "type": "string",
+          "anyOf": [
+            {
+              "enum": [
+                "spend",
+                "impressions",
+                "frequency",
+                "cpm",
+                "inline_link_clicks",
+                "meta.action:landing_page_view",
+                "ctr",
+                "cpc",
+                "leads",
+                "add_to_carts",
+                "meta.action:initiate_checkout",
+                "purchases",
+                "start_trials",
+                "purchase_value",
+                "cpa",
+                "roas",
+                "cost_per_start_trial",
+                "content_views",
+                "cost_per_content_view",
+                "content_view_value",
+                "searches",
+                "cost_per_search",
+                "search_value",
+                "wishlist_adds",
+                "cost_per_wishlist_add",
+                "wishlist_add_value",
+                "cost_per_add_to_cart",
+                "add_to_cart_value",
+                "checkouts",
+                "cost_per_checkout",
+                "checkout_value",
+                "payment_info_adds",
+                "cost_per_payment_info_add",
+                "payment_info_add_value",
+                "cost_per_lead",
+                "lead_value",
+                "registrations",
+                "cost_per_registration",
+                "registration_value",
+                "contacts",
+                "cost_per_contact",
+                "contact_value",
+                "scheduled_events",
+                "cost_per_scheduled_event",
+                "scheduled_event_value",
+                "submitted_applications",
+                "cost_per_submitted_application",
+                "submitted_application_value",
+                "start_trial_value",
+                "subscriptions",
+                "cost_per_subscription",
+                "subscription_value",
+                "product_customizations",
+                "cost_per_product_customization",
+                "product_customization_value",
+                "donations",
+                "cost_per_donation",
+                "donation_value",
+                "location_searches",
+                "cost_per_location_search",
+                "location_search_value",
+                "app_installs",
+                "cost_per_app_install",
+                "app_activations",
+                "cost_per_app_activation",
+                "app_activation_value",
+                "tutorial_completions",
+                "cost_per_tutorial_completion",
+                "tutorial_completion_value",
+                "levels_achieved",
+                "cost_per_level_achieved",
+                "level_achieved_value",
+                "achievements_unlocked",
+                "cost_per_achievement_unlocked",
+                "achievement_unlocked_value",
+                "ratings",
+                "cost_per_rating",
+                "rating_value",
+                "credits_spent",
+                "cost_per_credits_spent",
+                "credits_spent_value",
+                "app_ad_impressions",
+                "cost_per_app_ad_impression",
+                "app_ad_clicks",
+                "cost_per_app_ad_click",
+                "day_2_retention_events",
+                "cost_per_day_2_retention_event",
+                "day_7_retention_events",
+                "cost_per_day_7_retention_event"
+              ]
+            },
+            {
+              "pattern": "^custom:[0-9a-fA-F-]{36}$"
+            }
+          ]
         },
         "RuleSchedule": {
           "additionalProperties": false,
@@ -19276,7 +22404,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -19333,7 +22461,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -19460,7 +22588,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -19558,7 +22686,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -19602,7 +22730,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -19821,7 +22949,7 @@
         "preview_rows": {
           "items": {
             "additionalProperties": false,
-            "description": "Current and proposed values before explicit publication.",
+            "description": "Current and proposed values before explicit import acceptance.",
             "properties": {
               "metric_id": {
                 "format": "uuid",
@@ -20094,7 +23222,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -20175,7 +23303,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -20364,7 +23492,7 @@
         "preview_rows": {
           "items": {
             "additionalProperties": false,
-            "description": "Current and proposed values before explicit publication.",
+            "description": "Current and proposed values before explicit import acceptance.",
             "properties": {
               "metric_id": {
                 "format": "uuid",
@@ -20637,7 +23765,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -20832,7 +23960,7 @@
               "preview_rows": {
                 "items": {
                   "additionalProperties": false,
-                  "description": "Current and proposed values before explicit publication.",
+                  "description": "Current and proposed values before explicit import acceptance.",
                   "properties": {
                     "metric_id": {
                       "format": "uuid",
@@ -21128,7 +24256,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -21302,7 +24430,7 @@
         "preview_rows": {
           "items": {
             "additionalProperties": false,
-            "description": "Current and proposed values before explicit publication.",
+            "description": "Current and proposed values before explicit import acceptance.",
             "properties": {
               "metric_id": {
                 "format": "uuid",
@@ -21575,7 +24703,7 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
       "fastmcp": {
         "tags": []
       }
@@ -21870,6 +24998,17 @@
                   "type": "object"
                 },
                 "type": "array"
+              },
+              "entity_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
               }
             },
             "required": [
@@ -21938,7 +25077,2076 @@
       "idempotentHint": true,
       "openWorldHint": false
     },
-    "meta": {
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_capabilities",
+    "title": "Read Guardrails capabilities",
+    "description": "Read Guardrails settings schemas, selection bounds, and current grants.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Read Guardrails capabilities",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_list",
+    "title": "List Guardrails policies",
+    "description": "Read authorized policies with a signed cursor in stable creation order.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "additionalProperties": false,
+          "description": "Bounded cursor page request.",
+          "properties": {
+            "limit": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "cursor": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "type": "object"
+        },
+        "q": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "type": {
+          "anyOf": [
+            {
+              "enum": [
+                "MaximumBudget",
+                "MaximumBudgetIncrease",
+                "CumulativeBudgetIncrease",
+                "MinimumIncreaseInterval",
+                "ProtectedTarget"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "account_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "campaign",
+                "adset"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "page"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "List Guardrails policies",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_get",
+    "title": "Read a Guardrails policy",
+    "description": "Read one current policy after complete account scope authorization.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "guardrail_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "guardrail_id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Read a Guardrails policy",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_create",
+    "title": "Create a Guardrails policy",
+    "description": "Create a policy. Exact authorized request retries return the saved result.",
+    "inputSchema": {
+      "$defs": {
+        "BudgetType": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "CumulativeBudgetIncreaseSettings": {
+          "additionalProperties": false,
+          "description": "Rolling positive increase ceiling.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_increase": {
+              "$ref": "#/$defs/Money"
+            },
+            "window_seconds": {
+              "$ref": "#/$defs/Seconds"
+            }
+          },
+          "required": [
+            "budget_type",
+            "max_increase",
+            "window_seconds"
+          ],
+          "type": "object"
+        },
+        "DecimalString": {
+          "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,6})?$",
+          "type": "string"
+        },
+        "GuardrailTargetFilter": {
+          "additionalProperties": false,
+          "description": "One supported metadata predicate.",
+          "properties": {
+            "kind": {
+              "const": "filter",
+              "type": "string"
+            },
+            "attribute": {
+              "enum": [
+                "id",
+                "name",
+                "status",
+                "effective_status"
+              ],
+              "type": "string"
+            },
+            "operator": {
+              "enum": [
+                "=",
+                "!=",
+                "contains",
+                "not_contains",
+                "starts_with",
+                "ends_with"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scope": {
+              "default": "self",
+              "enum": [
+                "self",
+                "ancestor"
+              ],
+              "type": "string"
+            },
+            "level": {
+              "anyOf": [
+                {
+                  "const": "campaign",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "kind",
+            "attribute",
+            "operator",
+            "value"
+          ],
+          "type": "object"
+        },
+        "GuardrailTargetFilterGroup": {
+          "additionalProperties": false,
+          "description": "Recursive bounded metadata expression.",
+          "properties": {
+            "kind": {
+              "const": "group",
+              "type": "string"
+            },
+            "combinator": {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string"
+            },
+            "children": {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "filter": "#/$defs/GuardrailTargetFilter",
+                    "group": "#/$defs/GuardrailTargetFilterGroup"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/GuardrailTargetFilter"
+                  },
+                  {
+                    "$ref": "#/$defs/GuardrailTargetFilterGroup"
+                  }
+                ]
+              },
+              "maxItems": 50,
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "combinator",
+            "children"
+          ],
+          "type": "object"
+        },
+        "GuardrailWrite": {
+          "additionalProperties": false,
+          "description": "Full writable definition shared by HTTP and MCP.",
+          "properties": {
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/$defs/PolicyType"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "selection": {
+              "$ref": "#/$defs/Selection"
+            },
+            "settings": {
+              "$ref": "#/$defs/Settings"
+            }
+          },
+          "required": [
+            "name",
+            "type",
+            "enabled",
+            "selection",
+            "settings"
+          ],
+          "type": "object"
+        },
+        "Level": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "MaximumBudgetIncreaseSettings": {
+          "additionalProperties": false,
+          "description": "Positive absolute and percentage increase ceilings.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_increase": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "max_increase_percent": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DecimalString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "budget_type"
+          ],
+          "type": "object"
+        },
+        "MaximumBudgetSettings": {
+          "additionalProperties": false,
+          "description": "An absolute owner or account budget bound.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_budget": {
+              "$ref": "#/$defs/Money"
+            },
+            "inclusive": {
+              "default": false,
+              "type": "boolean"
+            },
+            "aggregation": {
+              "default": "per_owner",
+              "enum": [
+                "per_owner",
+                "account"
+              ],
+              "type": "string"
+            },
+            "budget_activity": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "all"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "budget_type",
+            "max_budget"
+          ],
+          "type": "object"
+        },
+        "MinimumIncreaseIntervalSettings": {
+          "additionalProperties": false,
+          "description": "Minimum time between owner increases.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "interval_seconds": {
+              "$ref": "#/$defs/Seconds"
+            }
+          },
+          "required": [
+            "budget_type",
+            "interval_seconds"
+          ],
+          "type": "object"
+        },
+        "Money": {
+          "additionalProperties": false,
+          "description": "An exact positive amount in integer minor units.",
+          "properties": {
+            "amount_minor": {
+              "$ref": "#/$defs/PositiveMoney"
+            },
+            "currency": {
+              "enum": [
+                "AED",
+                "AFN",
+                "ALL",
+                "AMD",
+                "ANG",
+                "AOA",
+                "ARS",
+                "AUD",
+                "AWG",
+                "AZN",
+                "BAM",
+                "BBD",
+                "BDT",
+                "BGN",
+                "BHD",
+                "BIF",
+                "BMD",
+                "BND",
+                "BOB",
+                "BRL",
+                "BSD",
+                "BTN",
+                "BWP",
+                "BYN",
+                "BZD",
+                "CAD",
+                "CDF",
+                "CHF",
+                "CLP",
+                "CNY",
+                "COP",
+                "CRC",
+                "CUP",
+                "CVE",
+                "CZK",
+                "DJF",
+                "DKK",
+                "DOP",
+                "DZD",
+                "EGP",
+                "ERN",
+                "ETB",
+                "EUR",
+                "FJD",
+                "FKP",
+                "GBP",
+                "GEL",
+                "GHS",
+                "GIP",
+                "GMD",
+                "GNF",
+                "GTQ",
+                "GYD",
+                "HKD",
+                "HNL",
+                "HTG",
+                "HUF",
+                "IDR",
+                "ILS",
+                "INR",
+                "IQD",
+                "IRR",
+                "ISK",
+                "JMD",
+                "JOD",
+                "JPY",
+                "KES",
+                "KGS",
+                "KHR",
+                "KMF",
+                "KPW",
+                "KRW",
+                "KWD",
+                "KYD",
+                "KZT",
+                "LAK",
+                "LBP",
+                "LKR",
+                "LRD",
+                "LSL",
+                "LYD",
+                "MAD",
+                "MDL",
+                "MGA",
+                "MKD",
+                "MMK",
+                "MNT",
+                "MOP",
+                "MRU",
+                "MUR",
+                "MVR",
+                "MWK",
+                "MXN",
+                "MYR",
+                "MZN",
+                "NAD",
+                "NGN",
+                "NIO",
+                "NOK",
+                "NPR",
+                "NZD",
+                "OMR",
+                "PAB",
+                "PEN",
+                "PGK",
+                "PHP",
+                "PKR",
+                "PLN",
+                "PYG",
+                "QAR",
+                "RON",
+                "RSD",
+                "RUB",
+                "RWF",
+                "SAR",
+                "SBD",
+                "SCR",
+                "SDG",
+                "SEK",
+                "SGD",
+                "SHP",
+                "SLE",
+                "SOS",
+                "SRD",
+                "SSP",
+                "STN",
+                "SVC",
+                "SYP",
+                "SZL",
+                "THB",
+                "TJS",
+                "TMT",
+                "TND",
+                "TOP",
+                "TRY",
+                "TTD",
+                "TWD",
+                "TZS",
+                "UAH",
+                "UGX",
+                "USD",
+                "UYU",
+                "UZS",
+                "VED",
+                "VES",
+                "VND",
+                "VUV",
+                "WST",
+                "XAF",
+                "XCD",
+                "XOF",
+                "XPF",
+                "YER",
+                "ZAR",
+                "ZMW",
+                "ZWG"
+              ],
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "amount_minor",
+            "currency"
+          ],
+          "type": "object"
+        },
+        "PolicyType": {
+          "enum": [
+            "MaximumBudget",
+            "MaximumBudgetIncrease",
+            "CumulativeBudgetIncrease",
+            "MinimumIncreaseInterval",
+            "ProtectedTarget"
+          ],
+          "type": "string"
+        },
+        "PositiveMoney": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "ProtectedTargetSettings": {
+          "additionalProperties": false,
+          "description": "Protected operations and optional trusted initiators.",
+          "properties": {
+            "operations": {
+              "items": {
+                "enum": [
+                  "activate",
+                  "pause",
+                  "change_budget"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "type": "array"
+            },
+            "initiator_types": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "mcp",
+                      "rule",
+                      "automation"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "operations"
+          ],
+          "type": "object"
+        },
+        "Seconds": {
+          "maximum": 2592000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "Selection": {
+          "additionalProperties": false,
+          "description": "Dynamic owner or direct-target scope within a team.",
+          "properties": {
+            "account_ids": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "type": "array"
+            },
+            "target_levels": {
+              "items": {
+                "$ref": "#/$defs/Level"
+              },
+              "maxItems": 2,
+              "minItems": 1,
+              "type": "array"
+            },
+            "target_filter": {
+              "$ref": "#/$defs/GuardrailTargetFilterGroup"
+            }
+          },
+          "required": [
+            "account_ids",
+            "target_levels",
+            "target_filter"
+          ],
+          "type": "object"
+        },
+        "Settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaximumBudgetSettings"
+            },
+            {
+              "$ref": "#/$defs/MaximumBudgetIncreaseSettings"
+            },
+            {
+              "$ref": "#/$defs/CumulativeBudgetIncreaseSettings"
+            },
+            {
+              "$ref": "#/$defs/MinimumIncreaseIntervalSettings"
+            },
+            {
+              "$ref": "#/$defs/ProtectedTargetSettings"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/GuardrailWrite",
+          "type": "object"
+        }
+      },
+      "required": [
+        "request_id",
+        "policy"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Create a Guardrails policy",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_update",
+    "title": "Replace a Guardrails policy",
+    "description": "Replace all writable fields. Read first. Preserve unchanged fields.",
+    "inputSchema": {
+      "$defs": {
+        "BudgetType": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "CumulativeBudgetIncreaseSettings": {
+          "additionalProperties": false,
+          "description": "Rolling positive increase ceiling.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_increase": {
+              "$ref": "#/$defs/Money"
+            },
+            "window_seconds": {
+              "$ref": "#/$defs/Seconds"
+            }
+          },
+          "required": [
+            "budget_type",
+            "max_increase",
+            "window_seconds"
+          ],
+          "type": "object"
+        },
+        "DecimalString": {
+          "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,6})?$",
+          "type": "string"
+        },
+        "GuardrailTargetFilter": {
+          "additionalProperties": false,
+          "description": "One supported metadata predicate.",
+          "properties": {
+            "kind": {
+              "const": "filter",
+              "type": "string"
+            },
+            "attribute": {
+              "enum": [
+                "id",
+                "name",
+                "status",
+                "effective_status"
+              ],
+              "type": "string"
+            },
+            "operator": {
+              "enum": [
+                "=",
+                "!=",
+                "contains",
+                "not_contains",
+                "starts_with",
+                "ends_with"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scope": {
+              "default": "self",
+              "enum": [
+                "self",
+                "ancestor"
+              ],
+              "type": "string"
+            },
+            "level": {
+              "anyOf": [
+                {
+                  "const": "campaign",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "kind",
+            "attribute",
+            "operator",
+            "value"
+          ],
+          "type": "object"
+        },
+        "GuardrailTargetFilterGroup": {
+          "additionalProperties": false,
+          "description": "Recursive bounded metadata expression.",
+          "properties": {
+            "kind": {
+              "const": "group",
+              "type": "string"
+            },
+            "combinator": {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string"
+            },
+            "children": {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "filter": "#/$defs/GuardrailTargetFilter",
+                    "group": "#/$defs/GuardrailTargetFilterGroup"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/GuardrailTargetFilter"
+                  },
+                  {
+                    "$ref": "#/$defs/GuardrailTargetFilterGroup"
+                  }
+                ]
+              },
+              "maxItems": 50,
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "combinator",
+            "children"
+          ],
+          "type": "object"
+        },
+        "GuardrailWrite": {
+          "additionalProperties": false,
+          "description": "Full writable definition shared by HTTP and MCP.",
+          "properties": {
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/$defs/PolicyType"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "selection": {
+              "$ref": "#/$defs/Selection"
+            },
+            "settings": {
+              "$ref": "#/$defs/Settings"
+            }
+          },
+          "required": [
+            "name",
+            "type",
+            "enabled",
+            "selection",
+            "settings"
+          ],
+          "type": "object"
+        },
+        "Level": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "MaximumBudgetIncreaseSettings": {
+          "additionalProperties": false,
+          "description": "Positive absolute and percentage increase ceilings.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_increase": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "max_increase_percent": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DecimalString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "budget_type"
+          ],
+          "type": "object"
+        },
+        "MaximumBudgetSettings": {
+          "additionalProperties": false,
+          "description": "An absolute owner or account budget bound.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_budget": {
+              "$ref": "#/$defs/Money"
+            },
+            "inclusive": {
+              "default": false,
+              "type": "boolean"
+            },
+            "aggregation": {
+              "default": "per_owner",
+              "enum": [
+                "per_owner",
+                "account"
+              ],
+              "type": "string"
+            },
+            "budget_activity": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "all"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "budget_type",
+            "max_budget"
+          ],
+          "type": "object"
+        },
+        "MinimumIncreaseIntervalSettings": {
+          "additionalProperties": false,
+          "description": "Minimum time between owner increases.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "interval_seconds": {
+              "$ref": "#/$defs/Seconds"
+            }
+          },
+          "required": [
+            "budget_type",
+            "interval_seconds"
+          ],
+          "type": "object"
+        },
+        "Money": {
+          "additionalProperties": false,
+          "description": "An exact positive amount in integer minor units.",
+          "properties": {
+            "amount_minor": {
+              "$ref": "#/$defs/PositiveMoney"
+            },
+            "currency": {
+              "enum": [
+                "AED",
+                "AFN",
+                "ALL",
+                "AMD",
+                "ANG",
+                "AOA",
+                "ARS",
+                "AUD",
+                "AWG",
+                "AZN",
+                "BAM",
+                "BBD",
+                "BDT",
+                "BGN",
+                "BHD",
+                "BIF",
+                "BMD",
+                "BND",
+                "BOB",
+                "BRL",
+                "BSD",
+                "BTN",
+                "BWP",
+                "BYN",
+                "BZD",
+                "CAD",
+                "CDF",
+                "CHF",
+                "CLP",
+                "CNY",
+                "COP",
+                "CRC",
+                "CUP",
+                "CVE",
+                "CZK",
+                "DJF",
+                "DKK",
+                "DOP",
+                "DZD",
+                "EGP",
+                "ERN",
+                "ETB",
+                "EUR",
+                "FJD",
+                "FKP",
+                "GBP",
+                "GEL",
+                "GHS",
+                "GIP",
+                "GMD",
+                "GNF",
+                "GTQ",
+                "GYD",
+                "HKD",
+                "HNL",
+                "HTG",
+                "HUF",
+                "IDR",
+                "ILS",
+                "INR",
+                "IQD",
+                "IRR",
+                "ISK",
+                "JMD",
+                "JOD",
+                "JPY",
+                "KES",
+                "KGS",
+                "KHR",
+                "KMF",
+                "KPW",
+                "KRW",
+                "KWD",
+                "KYD",
+                "KZT",
+                "LAK",
+                "LBP",
+                "LKR",
+                "LRD",
+                "LSL",
+                "LYD",
+                "MAD",
+                "MDL",
+                "MGA",
+                "MKD",
+                "MMK",
+                "MNT",
+                "MOP",
+                "MRU",
+                "MUR",
+                "MVR",
+                "MWK",
+                "MXN",
+                "MYR",
+                "MZN",
+                "NAD",
+                "NGN",
+                "NIO",
+                "NOK",
+                "NPR",
+                "NZD",
+                "OMR",
+                "PAB",
+                "PEN",
+                "PGK",
+                "PHP",
+                "PKR",
+                "PLN",
+                "PYG",
+                "QAR",
+                "RON",
+                "RSD",
+                "RUB",
+                "RWF",
+                "SAR",
+                "SBD",
+                "SCR",
+                "SDG",
+                "SEK",
+                "SGD",
+                "SHP",
+                "SLE",
+                "SOS",
+                "SRD",
+                "SSP",
+                "STN",
+                "SVC",
+                "SYP",
+                "SZL",
+                "THB",
+                "TJS",
+                "TMT",
+                "TND",
+                "TOP",
+                "TRY",
+                "TTD",
+                "TWD",
+                "TZS",
+                "UAH",
+                "UGX",
+                "USD",
+                "UYU",
+                "UZS",
+                "VED",
+                "VES",
+                "VND",
+                "VUV",
+                "WST",
+                "XAF",
+                "XCD",
+                "XOF",
+                "XPF",
+                "YER",
+                "ZAR",
+                "ZMW",
+                "ZWG"
+              ],
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "amount_minor",
+            "currency"
+          ],
+          "type": "object"
+        },
+        "PolicyType": {
+          "enum": [
+            "MaximumBudget",
+            "MaximumBudgetIncrease",
+            "CumulativeBudgetIncrease",
+            "MinimumIncreaseInterval",
+            "ProtectedTarget"
+          ],
+          "type": "string"
+        },
+        "PositiveMoney": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "ProtectedTargetSettings": {
+          "additionalProperties": false,
+          "description": "Protected operations and optional trusted initiators.",
+          "properties": {
+            "operations": {
+              "items": {
+                "enum": [
+                  "activate",
+                  "pause",
+                  "change_budget"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "type": "array"
+            },
+            "initiator_types": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "mcp",
+                      "rule",
+                      "automation"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "operations"
+          ],
+          "type": "object"
+        },
+        "Seconds": {
+          "maximum": 2592000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "Selection": {
+          "additionalProperties": false,
+          "description": "Dynamic owner or direct-target scope within a team.",
+          "properties": {
+            "account_ids": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "type": "array"
+            },
+            "target_levels": {
+              "items": {
+                "$ref": "#/$defs/Level"
+              },
+              "maxItems": 2,
+              "minItems": 1,
+              "type": "array"
+            },
+            "target_filter": {
+              "$ref": "#/$defs/GuardrailTargetFilterGroup"
+            }
+          },
+          "required": [
+            "account_ids",
+            "target_levels",
+            "target_filter"
+          ],
+          "type": "object"
+        },
+        "Settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaximumBudgetSettings"
+            },
+            {
+              "$ref": "#/$defs/MaximumBudgetIncreaseSettings"
+            },
+            {
+              "$ref": "#/$defs/CumulativeBudgetIncreaseSettings"
+            },
+            {
+              "$ref": "#/$defs/MinimumIncreaseIntervalSettings"
+            },
+            {
+              "$ref": "#/$defs/ProtectedTargetSettings"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "guardrail_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/GuardrailWrite",
+          "type": "object"
+        }
+      },
+      "required": [
+        "guardrail_id",
+        "expected_version",
+        "request_id",
+        "policy"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Replace a Guardrails policy",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_delete",
+    "title": "Delete a Guardrails policy",
+    "description": "Archive a policy. Return its ID, final deletion version, and deleted=true.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "guardrail_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "request_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "guardrail_id",
+        "expected_version",
+        "request_id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Delete a Guardrails policy",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "guardrails_targets_preview",
+    "title": "Preview Guardrails targets",
+    "description": "Preview authorized targets and totals without an execution grant.",
+    "inputSchema": {
+      "$defs": {
+        "BudgetType": {
+          "enum": [
+            "daily",
+            "lifetime"
+          ],
+          "type": "string"
+        },
+        "CumulativeBudgetIncreaseSettings": {
+          "additionalProperties": false,
+          "description": "Rolling positive increase ceiling.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_increase": {
+              "$ref": "#/$defs/Money"
+            },
+            "window_seconds": {
+              "$ref": "#/$defs/Seconds"
+            }
+          },
+          "required": [
+            "budget_type",
+            "max_increase",
+            "window_seconds"
+          ],
+          "type": "object"
+        },
+        "DecimalString": {
+          "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,6})?$",
+          "type": "string"
+        },
+        "GuardrailTargetFilter": {
+          "additionalProperties": false,
+          "description": "One supported metadata predicate.",
+          "properties": {
+            "kind": {
+              "const": "filter",
+              "type": "string"
+            },
+            "attribute": {
+              "enum": [
+                "id",
+                "name",
+                "status",
+                "effective_status"
+              ],
+              "type": "string"
+            },
+            "operator": {
+              "enum": [
+                "=",
+                "!=",
+                "contains",
+                "not_contains",
+                "starts_with",
+                "ends_with"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scope": {
+              "default": "self",
+              "enum": [
+                "self",
+                "ancestor"
+              ],
+              "type": "string"
+            },
+            "level": {
+              "anyOf": [
+                {
+                  "const": "campaign",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "kind",
+            "attribute",
+            "operator",
+            "value"
+          ],
+          "type": "object"
+        },
+        "GuardrailTargetFilterGroup": {
+          "additionalProperties": false,
+          "description": "Recursive bounded metadata expression.",
+          "properties": {
+            "kind": {
+              "const": "group",
+              "type": "string"
+            },
+            "combinator": {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string"
+            },
+            "children": {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "filter": "#/$defs/GuardrailTargetFilter",
+                    "group": "#/$defs/GuardrailTargetFilterGroup"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/GuardrailTargetFilter"
+                  },
+                  {
+                    "$ref": "#/$defs/GuardrailTargetFilterGroup"
+                  }
+                ]
+              },
+              "maxItems": 50,
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "combinator",
+            "children"
+          ],
+          "type": "object"
+        },
+        "GuardrailWrite": {
+          "additionalProperties": false,
+          "description": "Full writable definition shared by HTTP and MCP.",
+          "properties": {
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/$defs/PolicyType"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "selection": {
+              "$ref": "#/$defs/Selection"
+            },
+            "settings": {
+              "$ref": "#/$defs/Settings"
+            }
+          },
+          "required": [
+            "name",
+            "type",
+            "enabled",
+            "selection",
+            "settings"
+          ],
+          "type": "object"
+        },
+        "Level": {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        "MaximumBudgetIncreaseSettings": {
+          "additionalProperties": false,
+          "description": "Positive absolute and percentage increase ceilings.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_increase": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "max_increase_percent": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DecimalString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "budget_type"
+          ],
+          "type": "object"
+        },
+        "MaximumBudgetSettings": {
+          "additionalProperties": false,
+          "description": "An absolute owner or account budget bound.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "max_budget": {
+              "$ref": "#/$defs/Money"
+            },
+            "inclusive": {
+              "default": false,
+              "type": "boolean"
+            },
+            "aggregation": {
+              "default": "per_owner",
+              "enum": [
+                "per_owner",
+                "account"
+              ],
+              "type": "string"
+            },
+            "budget_activity": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "all"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "budget_type",
+            "max_budget"
+          ],
+          "type": "object"
+        },
+        "MinimumIncreaseIntervalSettings": {
+          "additionalProperties": false,
+          "description": "Minimum time between owner increases.",
+          "properties": {
+            "budget_type": {
+              "$ref": "#/$defs/BudgetType"
+            },
+            "interval_seconds": {
+              "$ref": "#/$defs/Seconds"
+            }
+          },
+          "required": [
+            "budget_type",
+            "interval_seconds"
+          ],
+          "type": "object"
+        },
+        "Money": {
+          "additionalProperties": false,
+          "description": "An exact positive amount in integer minor units.",
+          "properties": {
+            "amount_minor": {
+              "$ref": "#/$defs/PositiveMoney"
+            },
+            "currency": {
+              "enum": [
+                "AED",
+                "AFN",
+                "ALL",
+                "AMD",
+                "ANG",
+                "AOA",
+                "ARS",
+                "AUD",
+                "AWG",
+                "AZN",
+                "BAM",
+                "BBD",
+                "BDT",
+                "BGN",
+                "BHD",
+                "BIF",
+                "BMD",
+                "BND",
+                "BOB",
+                "BRL",
+                "BSD",
+                "BTN",
+                "BWP",
+                "BYN",
+                "BZD",
+                "CAD",
+                "CDF",
+                "CHF",
+                "CLP",
+                "CNY",
+                "COP",
+                "CRC",
+                "CUP",
+                "CVE",
+                "CZK",
+                "DJF",
+                "DKK",
+                "DOP",
+                "DZD",
+                "EGP",
+                "ERN",
+                "ETB",
+                "EUR",
+                "FJD",
+                "FKP",
+                "GBP",
+                "GEL",
+                "GHS",
+                "GIP",
+                "GMD",
+                "GNF",
+                "GTQ",
+                "GYD",
+                "HKD",
+                "HNL",
+                "HTG",
+                "HUF",
+                "IDR",
+                "ILS",
+                "INR",
+                "IQD",
+                "IRR",
+                "ISK",
+                "JMD",
+                "JOD",
+                "JPY",
+                "KES",
+                "KGS",
+                "KHR",
+                "KMF",
+                "KPW",
+                "KRW",
+                "KWD",
+                "KYD",
+                "KZT",
+                "LAK",
+                "LBP",
+                "LKR",
+                "LRD",
+                "LSL",
+                "LYD",
+                "MAD",
+                "MDL",
+                "MGA",
+                "MKD",
+                "MMK",
+                "MNT",
+                "MOP",
+                "MRU",
+                "MUR",
+                "MVR",
+                "MWK",
+                "MXN",
+                "MYR",
+                "MZN",
+                "NAD",
+                "NGN",
+                "NIO",
+                "NOK",
+                "NPR",
+                "NZD",
+                "OMR",
+                "PAB",
+                "PEN",
+                "PGK",
+                "PHP",
+                "PKR",
+                "PLN",
+                "PYG",
+                "QAR",
+                "RON",
+                "RSD",
+                "RUB",
+                "RWF",
+                "SAR",
+                "SBD",
+                "SCR",
+                "SDG",
+                "SEK",
+                "SGD",
+                "SHP",
+                "SLE",
+                "SOS",
+                "SRD",
+                "SSP",
+                "STN",
+                "SVC",
+                "SYP",
+                "SZL",
+                "THB",
+                "TJS",
+                "TMT",
+                "TND",
+                "TOP",
+                "TRY",
+                "TTD",
+                "TWD",
+                "TZS",
+                "UAH",
+                "UGX",
+                "USD",
+                "UYU",
+                "UZS",
+                "VED",
+                "VES",
+                "VND",
+                "VUV",
+                "WST",
+                "XAF",
+                "XCD",
+                "XOF",
+                "XPF",
+                "YER",
+                "ZAR",
+                "ZMW",
+                "ZWG"
+              ],
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "amount_minor",
+            "currency"
+          ],
+          "type": "object"
+        },
+        "Page": {
+          "additionalProperties": false,
+          "description": "Bounded cursor page request.",
+          "properties": {
+            "limit": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "cursor": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "type": "object"
+        },
+        "PolicyType": {
+          "enum": [
+            "MaximumBudget",
+            "MaximumBudgetIncrease",
+            "CumulativeBudgetIncrease",
+            "MinimumIncreaseInterval",
+            "ProtectedTarget"
+          ],
+          "type": "string"
+        },
+        "PositiveMoney": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "ProtectedTargetSettings": {
+          "additionalProperties": false,
+          "description": "Protected operations and optional trusted initiators.",
+          "properties": {
+            "operations": {
+              "items": {
+                "enum": [
+                  "activate",
+                  "pause",
+                  "change_budget"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "type": "array"
+            },
+            "initiator_types": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "mcp",
+                      "rule",
+                      "automation"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "operations"
+          ],
+          "type": "object"
+        },
+        "Seconds": {
+          "maximum": 2592000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "Selection": {
+          "additionalProperties": false,
+          "description": "Dynamic owner or direct-target scope within a team.",
+          "properties": {
+            "account_ids": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "type": "array"
+            },
+            "target_levels": {
+              "items": {
+                "$ref": "#/$defs/Level"
+              },
+              "maxItems": 2,
+              "minItems": 1,
+              "type": "array"
+            },
+            "target_filter": {
+              "$ref": "#/$defs/GuardrailTargetFilterGroup"
+            }
+          },
+          "required": [
+            "account_ids",
+            "target_levels",
+            "target_filter"
+          ],
+          "type": "object"
+        },
+        "Settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MaximumBudgetSettings"
+            },
+            {
+              "$ref": "#/$defs/MaximumBudgetIncreaseSettings"
+            },
+            {
+              "$ref": "#/$defs/CumulativeBudgetIncreaseSettings"
+            },
+            {
+              "$ref": "#/$defs/MinimumIncreaseIntervalSettings"
+            },
+            {
+              "$ref": "#/$defs/ProtectedTargetSettings"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "policy": {
+          "$ref": "#/$defs/GuardrailWrite",
+          "type": "object"
+        },
+        "page": {
+          "$ref": "#/$defs/Page",
+          "type": "object"
+        },
+        "summary_page": {
+          "$ref": "#/$defs/Page",
+          "default": {
+            "limit": 25,
+            "cursor": null
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "policy",
+        "page"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Preview Guardrails targets",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
       "fastmcp": {
         "tags": []
       }

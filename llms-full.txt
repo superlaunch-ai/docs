@@ -25,6 +25,7 @@ Superlaunch is for performance marketers, agencies, in-house user acquisition te
 | Pause ads or adjust budgets when conditions match | [Create and run rules](https://docs.superlaunch.pro/guides/rules) |
 | Promote successful tests or duplicate a setup | [Launch types](https://docs.superlaunch.pro/launcher/launch) and [MCP workflows](https://docs.superlaunch.pro/mcp/workflows) |
 | Save brand guidance and account notes | [Brand kits](https://docs.superlaunch.pro/guides/brands) and [Memory](https://docs.superlaunch.pro/guides/memory) |
+| Limit budget changes or protect campaigns | [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails) |
 | Control access and review changes | [Team permissions](https://docs.superlaunch.pro/workspace/permissions) and [Activity](https://docs.superlaunch.pro/guides/activity) |
 
 ## Current capabilities
@@ -33,9 +34,9 @@ See the [capability overview](https://docs.superlaunch.pro/reference/capabilitie
 
 ## MCP reference
 
-Developers can browse [all 104 tools](https://docs.superlaunch.pro/mcp/tools), their parameters, and [JSON examples](https://docs.superlaunch.pro/mcp/examples).
+Developers can browse [all 122 tools](https://docs.superlaunch.pro/mcp/tools), their parameters, and [JSON examples](https://docs.superlaunch.pro/mcp/examples).
 
-To give an assistant the documentation, use the [page index](https://docs.superlaunch.pro/llms.txt?v=20261020) or [full text](https://docs.superlaunch.pro/llms-full.txt?v=20261020).
+To give an assistant the documentation, use the [page index](https://docs.superlaunch.pro/llms.txt?v=20261031) or [full text](https://docs.superlaunch.pro/llms-full.txt?v=20261031).
 
 # Current product capabilities
 
@@ -43,7 +44,7 @@ Source: https://docs.superlaunch.pro/reference/capabilities
 
 Find reporting, AutoRules, Launcher, Meta actions, memory, team access, and their MCP discovery tools.
 
-Use this map to find supported workflows. The current reference covers 104 MCP tools. Your workspace access, enabled features, provider permissions, and account eligibility determine which operations you can use. Call the relevant discovery tool before preparing a write.
+Use this map to find supported workflows. The current reference covers 122 MCP tools. Your workspace access, enabled features, provider permissions, and account eligibility determine which operations you can use. Call the relevant discovery tool before preparing a write.
 
 ## Analyze advertising performance
 
@@ -52,6 +53,10 @@ Compare accounts, campaigns, ad sets, and ads. Select date ranges, daily rows or
 ## Automate decisions with AutoRules
 
 Create, edit, archive, and run rules. Use performance conditions or a condition-free timed action. Set recurring cron timing or one exact run time, an IANA time zone, dry-run mode, and optional execution limits. Supported actions include delivery status changes, budget changes, and duplication at supported levels. Check `rules_schema` and account-specific `rules_capabilities`. See [Rules](https://docs.superlaunch.pro/guides/rules).
+
+## Set shared Guardrails
+
+Set maximum budgets, single or cumulative increase limits, and minimum intervals. Protect campaign or ad-set activation, pause, and budget changes across MCP, Rules, or Automation sources. Check `guardrails_capabilities`, preview a selection, and review action decisions in Activity. See [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails) and the [MCP reference](https://docs.superlaunch.pro/mcp/reference/guardrails).
 
 ## Prepare and run Launcher batches
 
@@ -264,6 +269,10 @@ Launcher uses its own read, author, execution, scheduling, and control permissio
 
 Brand and memory access also depend on their scope. A private memory belongs to its author; team, brand, and ad-account memories follow their corresponding access rules.
 
+## Guardrails permissions
+
+`guardrails.read` permits policy reads and target previews. `guardrails.manage` permits creation, replacement, and deletion, and also permits reads. The workspace owner has both. These grants do not add account visibility. Only the owner can select all accounts through an empty account list; other managers must select explicit visible accounts. See [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails).
+
 ## MCP access
 
 An MCP connection uses the member who authorized it. `mcp:read` permits read tools; `mcp:write` permits write tools in addition to read access. These scopes do not expand the member's account or functional permissions.
@@ -414,9 +423,114 @@ Read the rule's current version before changing it. `rules_update` replaces the 
 
 To allow scheduled live changes, set the rule to **Active** and turn off **Dry run**. Review both settings before saving. A manual MCP `rules_run` defaults to dry-run mode.
 
+## Apply shared Guardrails
+
+Enabled [Guardrails](https://docs.superlaunch.pro/guides/guardrails) apply when a rule prepares a provider action. A rule can pass its performance conditions and still receive a guardrail denial. Guardrails check the resolved budget owner, current provider facts, policy limits, and trusted `rule` action source. They also apply during a dry run. Review the decision before a live run.
+
 ## Review results
 
 Open the run details or use `rule_runs_get`. Review [Activity](https://docs.superlaunch.pro/guides/activity) for decisions and provider actions. `rules_delete` archives the rule.
+
+# Set Guardrails
+
+Source: https://docs.superlaunch.pro/guides/guardrails
+
+Set budget limits and protect campaign or ad-set changes across MCP and AutoRules.
+
+Use **Guardrails** to check supported Superlaunch actions before they change Meta objects. A policy can limit a budget, limit an increase, or block a protected operation. The same saved policies apply to MCP and AutoRules actions.
+
+You need `guardrails.read` to view policies and `guardrails.manage` to create, edit, or delete them. The workspace owner has both permissions. Account access still applies. See [Team access](https://docs.superlaunch.pro/workspace/permissions).
+
+## Create a policy
+
+1. Open **Guardrails** and create a guardrail.
+2. Enter a name and select the policy type.
+3. Select the accounts and target levels. Add filters when you need a narrower selection.
+4. Set the limits or protected operations. Check the budget type and currency.
+5. Review the target preview. Enable the policy and select **Create guardrail**.
+6. Test a planned action in dry-run mode. Open its [Activity record](https://docs.superlaunch.pro/guides/activity) to check the decision.
+
+To edit a policy, open it, change its settings, and select **Save guardrail**. A saved edit applies to the next action check. A preview does not reserve capacity or grant permission to execute. Superlaunch checks current policies and provider facts again before a write.
+
+## Choose a policy type
+
+| Policy type | Check |
+| --- | --- |
+| `MaximumBudget` | Limit each budget owner or the selected budget total for each account. |
+| `MaximumBudgetIncrease` | Limit one positive increase by amount, percentage, or both. |
+| `CumulativeBudgetIncrease` | Limit the sum of positive increases within a rolling time window. |
+| `MinimumIncreaseInterval` | Require a minimum time between positive increases for the same budget owner. |
+| `ProtectedTarget` | Block activation, pause, or budget changes for matching direct targets and action sources. |
+
+You can enable more than one policy. An action must pass each applicable check.
+
+### Maximum budget
+
+Choose **Each budget** to check a campaign or ad-set budget on its own. Choose **Account total** to check the total across matching budget owners in each account. Separate accounts have separate totals. Daily and lifetime budgets have separate totals. Superlaunch does not convert currencies.
+
+By default, a proposed budget must stay below the limit. Turn on **Allow equality with the limit** if the proposed value may equal it. For example, with a USD 100 limit, equality off blocks USD 100; equality on allows USD 100 and blocks USD 100.01.
+
+For account totals, choose active budgets or all budgets. Active means the owner's configured status and its parent campaign's configured status are `ACTIVE`. A temporary delivery restriction does not release capacity. All budgets includes paused owners and paused parent campaigns. Archived or deleted objects do not contribute.
+
+### Increase amount, percentage, or both
+
+With an amount limit of USD 20, an increase from USD 100 to USD 120 passes; USD 120.01 fails. With a 10% limit, USD 100 to USD 110 passes; USD 110.01 fails. Equality passes for increase limits.
+
+When you set both limits, the increase must pass both. The percentage uses the current budget before the action. An unavailable or nonpositive baseline cannot pass a percentage check. API and MCP percentages use decimal strings, such as `"10"` or `"2.5"`.
+
+### Cumulative increase and minimum interval
+
+A cumulative policy adds positive increases for the same account, budget owner, and budget type during its rolling window. Decreases do not cancel earlier increases. Equality with the cumulative amount passes.
+
+A minimum-interval policy blocks another positive increase until its interval has passed. An increase at the exact interval boundary can pass. Superlaunch includes pending reservations when it checks these policies, so concurrent requests cannot each spend the same available capacity. A replay of the same request does not add another increase.
+
+Windows and intervals range from 1 second to 30 days. These histories track Superlaunch actions. They do not provide a complete history of changes made in Meta or other tools.
+
+## Understand budget ownership
+
+A campaign with campaign budget optimization (CBO) owns the budget. Its ad sets do not add the same budget to an account total again. With ad-set budget optimization (ABO), each ad set owns its budget. A campaign without its own budget adds no separate campaign budget.
+
+Choose `campaign`, `adset`, or both as needed. An ad-set-only budget selection covers ad-set-owned budgets; select campaign owners when you need CBO coverage. The ownership level and the budget type are independent: a campaign or an ad set can own a daily or lifetime budget. Budget checks resolve the actual owner, even when the action targets a child object.
+
+A pure pause or a decrease can reduce exposure and can pass budget-limit policies. A `ProtectedTarget` policy can still block it. A patch that pauses a target and changes its budget is a budget change, so a protected pause or budget-change rule can block that patch.
+
+## Select current and future targets
+
+Filters describe a selection, rather than a saved list of object IDs. New objects that match the selection can fall under the policy. Superlaunch checks metadata before and after a proposed change. Renaming an object out of a protected selection does not bypass that check.
+
+Supported fields are `id`, `name`, `status`, and `effective_status`. ID and name support equality, inequality, contains, not-contains, starts-with, and ends-with. Status fields support equality and inequality. Combine filters with AND or OR. An empty root AND group selects the whole chosen level.
+
+For ad-set-only selections, you can filter the parent campaign through the ancestor scope. Use the [capabilities tool](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-capabilities) for supported status values and exact filter bounds.
+
+Only the workspace owner can select all accounts through an empty `account_ids` list. Other policy managers must select explicit accounts that they can read. A policy preview shows authorized account scope and may lag provider changes. Treat it as a selection check, not execution approval.
+
+## Protect operations and action sources
+
+For `ProtectedTarget`, select **Blocked operations**:
+
+- `activate`: block activation.
+- `pause`: block pausing.
+- `change_budget`: block budget writes, including decreases and patches that change both status and budget.
+
+Choose **All sources** to cover current and future Superlaunch action sources. Choose **Selected sources** to select MCP (`mcp`), Rules (`rule`), or Automation (`automation`). Superlaunch determines the source from the execution context. An agent cannot set its own source in a direct action request.
+
+Protected selections apply to direct campaign or ad-set targets. Budget-limit policies use budget owners. Check both when you need protection for a hierarchy.
+
+## Review a blocked action
+
+In **Activity**, a guardrail rejection has status **Denied**. Open the record to inspect the policy ID and version, reason code, observed and required values, action target, and budget-owner or account subject.
+
+MCP returns `isError: true` with a structured receipt. A blocked write has `status: "denied"`, `provider_side_effects: false`, and a `guardrails` decision. Read it through `actions_get` using `activity_id`. The receipt read succeeds even when the original action was denied. See [MCP Guardrails reference](https://docs.superlaunch.pro/mcp/reference/guardrails).
+
+A denied action with no provider side effect does not consume an action charge. Its retry with the same request ID returns the saved receipt. Use a new request ID only for a new action after you resolve the cause. For partial or uncertain provider results, inspect the child results and reconciliation state before another write.
+
+## Limits
+
+Guardrails check supported actions executed through Superlaunch. They do not impose a Meta account spending limit, measure actual spend, or stop changes made outside Superlaunch. Provider changes can affect the current facts used by the next check.
+
+When Superlaunch cannot obtain facts needed for an applicable policy, it blocks the write. Disabling a policy stops its future checks; it does not undo earlier provider changes. Keep Meta permissions, budget settings, and account monitoring in place.
+
+For integrations, use the [workspace HTTP API](https://docs.superlaunch.pro/reference/guardrails-api) or the [seven MCP tools](https://docs.superlaunch.pro/mcp/reference/guardrails).
 
 # Review activity and results
 
@@ -449,6 +563,14 @@ The `rule_activity_*` tools return rule-specific activity. They do not replace t
 5. Resolve authorization or input errors before retrying.
 
 After a timeout, read the result before submitting another provider write. For a Launcher batch, inspect [operation-level results](https://docs.superlaunch.pro/launcher/recovery) so that you retry only eligible failed work.
+
+## Review a Guardrails decision
+
+A blocked action appears as **Denied**. Its details show the policy and version, reason, observed and required values, and the action target or budget subject. A dry-run receipt also shows that the decision is a preview. See [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails).
+
+Through MCP, inspect `guardrail_blocked` or `guardrail_evaluation_unavailable` in the structured action receipt. `isError: true` signals the denied action. Reading it through `actions_get` is a successful read and leaves the original action's denied status unchanged.
+
+A confirmed denial with `provider_side_effects: false` means that action made no provider write. Partial or uncertain results need child-result and reconciliation review before another write.
 
 # Brand profiles and kits
 
@@ -522,6 +644,150 @@ Read the current version before using `memory_update`, `memory_set_enabled`, or 
 ## Interpret recalled facts
 
 Review recalled facts if your plans or brand guidance have changed. Update outdated facts so that later conversations use the right information. Your current instructions take precedence over saved memory.
+
+# Guardrails API
+
+Source: https://docs.superlaunch.pro/reference/guardrails-api
+
+Read, preview, create, replace, and delete workspace Guardrails with version checks.
+
+These workspace routes start with `/api/guardrails`. Authenticate with your signed-in user's Firebase ID token and send `X-Team-ID` with the workspace UUID. Metric API keys do not authorize these routes. The server checks current membership, Guardrails permissions, and account visibility for each request.
+
+Use `guardrails.read` for reads and preview, and `guardrails.manage` for writes. A manager can also read. Call capabilities to check your current `can_read` and `can_manage` values. [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails) explains the policy behavior.
+
+## Routes
+
+| Method and path | Result |
+| --- | --- |
+| `GET /api/guardrails/capabilities` | Settings schemas, filter limits, status values, and current permissions. |
+| `GET /api/guardrails` | A page of visible policies. |
+| `GET /api/guardrails/{guardrail_id}` | One policy and a strong version `ETag`. |
+| `POST /api/guardrails/targets/preview` | A draft's target page and account-summary page. No provider write. |
+| `POST /api/guardrails` | Create a policy. Returns HTTP 201, `ETag`, and `Location`. |
+| `PUT /api/guardrails/{guardrail_id}` | Replace the complete writable definition. Returns HTTP 200 and a new `ETag`. |
+| `DELETE /api/guardrails/{guardrail_id}` | Archive a policy. Returns HTTP 204 and preserves its history. |
+
+### Request headers
+
+| Header | Requirement |
+| --- | --- |
+| `Authorization: Bearer $SUPERLAUNCH_ID_TOKEN` | Required signed-in user token. |
+| `X-Team-ID: $SUPERLAUNCH_TEAM_ID` | Required workspace UUID. |
+| `Content-Type: application/json` | Use for JSON request bodies. |
+| `Idempotency-Key: <UUID>` | Required for create, update, and delete. |
+| `If-Match: "<version>"` | Required for update and delete. Use one strong positive-integer ETag from the current policy. |
+
+Keep the same idempotency UUID and request content when you retry a command. A reused key with different content conflicts. Policy replacement must keep the policy type. Create a new policy if you need another type.
+
+## Read policies
+
+```bash
+curl 'https://api.superlaunch.pro/api/guardrails?limit=25&enabled=true' \
+  --header "Authorization: Bearer $SUPERLAUNCH_ID_TOKEN" \
+  --header "X-Team-ID: $SUPERLAUNCH_TEAM_ID"
+```
+
+List filters are `q` (name search, at most 120 characters), `enabled`, `type`, `account_id`, and `target_level`. `target_level` is `campaign` or `adset`. `limit` ranges from 1 to 100 and defaults to 25. The response has `items` and `next_cursor`. A null cursor marks the last page.
+
+Keep the workspace, principal, filters, and page size unchanged when you send `cursor`. Cursors expire after one hour. Policy pages sort by creation time and ID, descending.
+
+## Policy body
+
+The writable fields are `name`, `type`, `enabled`, `selection`, and `settings`. Money uses integer minor units and an ISO currency code. For USD, `10000` means USD 100.00. Select accounts with the same currency for an amount-based policy. Percent-only policies have no currency amount.
+
+This sample allows a daily budget increase of at most 10% and USD 20. Replace the sample account UUID before you use it.
+
+```json
+{
+  "name": "Daily increase limit",
+  "type": "MaximumBudgetIncrease",
+  "enabled": true,
+  "selection": {
+    "account_ids": ["10000000-0000-4000-8000-000000000001"],
+    "target_levels": ["campaign", "adset"],
+    "target_filter": {"kind": "group", "combinator": "and", "children": []}
+  },
+  "settings": {
+    "budget_type": "daily",
+    "max_increase": {"amount_minor": 2000, "currency": "USD"},
+    "max_increase_percent": "10"
+  }
+}
+```
+
+| Type | Settings |
+| --- | --- |
+| `MaximumBudget` | `budget_type`, `max_budget`, optional `inclusive` (default false), and `aggregation` (`per_owner` by default or `account`). Account aggregation requires `budget_activity` (`active` or `all`); per-owner aggregation forbids it. |
+| `MaximumBudgetIncrease` | `budget_type` and at least one of `max_increase` or `max_increase_percent`. Both means both checks must pass. |
+| `CumulativeBudgetIncrease` | `budget_type`, `max_increase`, and `window_seconds`. |
+| `MinimumIncreaseInterval` | `budget_type` and `interval_seconds`. |
+| `ProtectedTarget` | `operations` from `activate`, `pause`, and `change_budget`; optional `initiator_types` from `mcp`, `rule`, and `automation`. Omit the source list to cover all sources. |
+
+Budget types are `daily` and `lifetime`. Time values range from 1 to 2592000 seconds. Percentage strings allow up to six fractional digits and 18 digits in total. Request bodies have a 64 KiB limit. Unknown fields fail validation. Use capabilities or the [MCP schemas](https://docs.superlaunch.pro/mcp/reference/guardrails) for complete bounds.
+
+## Create and replace
+
+Save your policy JSON as `guardrail.json`. Use a fresh UUID in `Idempotency-Key` for this create command. These examples describe requests; the documentation does not create a production policy.
+
+```bash
+curl --request POST 'https://api.superlaunch.pro/api/guardrails' \
+  --header "Authorization: Bearer $SUPERLAUNCH_ID_TOKEN" \
+  --header "X-Team-ID: $SUPERLAUNCH_TEAM_ID" \
+  --header 'Content-Type: application/json' \
+  --header "Idempotency-Key: $REQUEST_ID" \
+  --data @guardrail.json
+```
+
+The response includes the policy UUID, version, workspace and creator IDs, and timestamps. Read the policy before a replacement. Send the complete writable body, a new command UUID, and the ETag returned by that read:
+
+```bash
+curl --request PUT "https://api.superlaunch.pro/api/guardrails/$GUARDRAIL_ID" \
+  --header "Authorization: Bearer $SUPERLAUNCH_ID_TOKEN" \
+  --header "X-Team-ID: $SUPERLAUNCH_TEAM_ID" \
+  --header 'Content-Type: application/json' \
+  --header "Idempotency-Key: $REQUEST_ID" \
+  --header 'If-Match: "1"' \
+  --data @guardrail.json
+```
+
+The quoted version above is a sample. If another writer saved a change, read the new version and review it before another command. Do not remove the version check.
+
+## Preview targets
+
+Send `policy`, `page`, and optional `summary_page` to `POST /api/guardrails/targets/preview`. Each page object has `limit` and optional `cursor`.
+
+The response separates target items from account totals. It reports `authoritative: false`, authorized account scope, and a selection basis of `budget_owner`, `account_total`, or `direct_target`. Target and summary pages have independent cursors. Keep the draft and page settings unchanged while paging. A change in the analytical data can invalidate a preview cursor.
+
+A preview does not create a policy or authorize a provider action. Execution uses current policies and fresh required facts.
+
+## Errors
+
+Errors use this envelope:
+
+```json
+{
+  "error": {
+    "code": "precondition_failed",
+    "message": "Guardrail version has changed",
+    "details": null
+  }
+}
+```
+
+| HTTP status | Code and next step |
+| --- | --- |
+| 400 | `team_required`: supply `X-Team-ID`. |
+| 401 | Authentication error: supply a valid signed-in user token. |
+| 403 | `permission_denied` or another access code: check membership, Guardrails grants, and account access. |
+| 404 | `not_found`: the requested policy is unavailable to you. |
+| 409 | `conflict`: check command-key reuse or concurrent changes. |
+| 412 | `precondition_failed`: read the current policy version before a replacement or deletion. |
+| 413 | Request body exceeds the 64 KiB bound. |
+| 422 | `validation_error`: correct fields, filters, UUIDs, currency, or version-header format. |
+| 428 | `precondition_required`: supply `If-Match` for update or delete. |
+| 503 | `service_unavailable`: required Guardrails data is unavailable. Retry a read; preserve the command UUID when you retry a write. |
+
+A policy-management error differs from an action denial. For `guardrail_blocked`, `guardrail_evaluation_unavailable`, partial results, and saved action receipts, see [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails).
 
 # Custom metrics
 
@@ -1807,6 +2073,12 @@ Use `campaigns_update`, `adsets_update`, or `ads_update` for supported partial c
 
 Ad content edits require `creative_policy: "replace"`. New creative content can trigger provider review and does not preserve the existing post engagement. Inspect the returned verification state: `simulation`, `confirmed`, or `reconciliation_required`. Read results before retrying an uncertain write.
 
+## Set and check Guardrails
+
+Call `guardrails_capabilities` for current permission grants and settings schemas. Read existing policies with `guardrails_list` before creating another policy. Preview a draft with `guardrails_targets_preview`, then use a stable command request UUID for a policy write. Read the current policy version before `guardrails_update` or `guardrails_delete`.
+
+Direct action and AutoRules execution checks enabled policies again. A denial returns a structured receipt; read it with `actions_get` before a new write. See [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails), [Guardrails tools](https://docs.superlaunch.pro/mcp/reference/guardrails), and [Activity](https://docs.superlaunch.pro/guides/activity).
+
 ## Save a confirmed fact
 
 Resolve the scope, then call `memory_remember` only after an explicit save request or focused approval. Report the returned persistence state. Use `memory_recall` for relevant context and `memory_get` for an exact record.
@@ -1857,9 +2129,9 @@ Include the client, approximate time, tool name, activity or run ID, and error c
 
 Source: https://docs.superlaunch.pro/mcp/tools
 
-Find all 115 documented MCP tools by task, access requirement, and exact input schema.
+Find all 122 documented MCP tools by task, access requirement, and exact input schema.
 
-This reference covers 115 tools from the reviewed deployed MCP source. Your access, client settings, and enabled features determine which tools you can use. See the [capability overview](https://docs.superlaunch.pro/reference/capabilities) for product workflows.
+This reference covers 122 tools from the reviewed deployed MCP source. Your access, client settings, and enabled features determine which tools you can use. See the [capability overview](https://docs.superlaunch.pro/reference/capabilities) for product workflows.
 
 Use an MCP client with [OAuth authorization](https://docs.superlaunch.pro/mcp/authentication). Read tools require `mcp:read`. Write tools also require `mcp:write` and the relevant workspace and target permissions. Preserve argument nesting such as `payload`, `request`, `data`, `family`, and `content`.
 
@@ -2034,6 +2306,18 @@ Read the [argument examples](https://docs.superlaunch.pro/mcp/examples) and [IDs
 | [`custom_metrics_import_list`](https://docs.superlaunch.pro/mcp/reference/custom-metrics#custom-metrics-import-list) | Read | Read account import history with task status and progress. |
 | [`custom_metrics_import_commit`](https://docs.superlaunch.pro/mcp/reference/custom-metrics#custom-metrics-import-commit) | Write | Queue an import task. |
 | [`metrics_query`](https://docs.superlaunch.pro/mcp/reference/custom-metrics#metrics-query) | Read | Read provider and custom values at one level. |
+
+## Guardrails tools
+
+| Tool | Access | Purpose |
+| --- | --- | --- |
+| [`guardrails_capabilities`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-capabilities) | Read | Read Guardrails settings schemas, selection bounds, and current grants. |
+| [`guardrails_list`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-list) | Read | Read authorized policies with a signed cursor in stable creation order. |
+| [`guardrails_get`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-get) | Read | Read one current policy after complete account scope authorization. |
+| [`guardrails_create`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-create) | Write | Create a policy. |
+| [`guardrails_update`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-update) | Write | Replace all writable fields. |
+| [`guardrails_delete`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-delete) | Write | Archive a policy. |
+| [`guardrails_targets_preview`](https://docs.superlaunch.pro/mcp/reference/guardrails#guardrails-targets-preview) | Read | Preview authorized targets and totals without an execution grant. |
 
 # MCP argument examples
 
@@ -3784,6 +4068,12 @@ Keep the argument nesting shown in the schema. Expand it for nested fields, allo
           "maximum": 365,
           "minimum": 1,
           "type": "integer"
+        },
+        "end_offset_days": {
+          "default": 0,
+          "maximum": 365,
+          "minimum": 0,
+          "type": "integer"
         }
       },
       "required": [
@@ -3958,99 +4248,106 @@ Keep the argument nesting shown in the schema. Expand it for nested fields, allo
       "type": "object"
     },
     "RuleMetricId": {
-      "enum": [
-        "spend",
-        "impressions",
-        "frequency",
-        "cpm",
-        "inline_link_clicks",
-        "meta.action:landing_page_view",
-        "ctr",
-        "cpc",
-        "leads",
-        "add_to_carts",
-        "meta.action:initiate_checkout",
-        "purchases",
-        "start_trials",
-        "purchase_value",
-        "cpa",
-        "roas",
-        "cost_per_start_trial",
-        "content_views",
-        "cost_per_content_view",
-        "content_view_value",
-        "searches",
-        "cost_per_search",
-        "search_value",
-        "wishlist_adds",
-        "cost_per_wishlist_add",
-        "wishlist_add_value",
-        "cost_per_add_to_cart",
-        "add_to_cart_value",
-        "checkouts",
-        "cost_per_checkout",
-        "checkout_value",
-        "payment_info_adds",
-        "cost_per_payment_info_add",
-        "payment_info_add_value",
-        "cost_per_lead",
-        "lead_value",
-        "registrations",
-        "cost_per_registration",
-        "registration_value",
-        "contacts",
-        "cost_per_contact",
-        "contact_value",
-        "scheduled_events",
-        "cost_per_scheduled_event",
-        "scheduled_event_value",
-        "submitted_applications",
-        "cost_per_submitted_application",
-        "submitted_application_value",
-        "start_trial_value",
-        "subscriptions",
-        "cost_per_subscription",
-        "subscription_value",
-        "product_customizations",
-        "cost_per_product_customization",
-        "product_customization_value",
-        "donations",
-        "cost_per_donation",
-        "donation_value",
-        "location_searches",
-        "cost_per_location_search",
-        "location_search_value",
-        "app_installs",
-        "cost_per_app_install",
-        "app_activations",
-        "cost_per_app_activation",
-        "app_activation_value",
-        "tutorial_completions",
-        "cost_per_tutorial_completion",
-        "tutorial_completion_value",
-        "levels_achieved",
-        "cost_per_level_achieved",
-        "level_achieved_value",
-        "achievements_unlocked",
-        "cost_per_achievement_unlocked",
-        "achievement_unlocked_value",
-        "ratings",
-        "cost_per_rating",
-        "rating_value",
-        "credits_spent",
-        "cost_per_credits_spent",
-        "credits_spent_value",
-        "app_ad_impressions",
-        "cost_per_app_ad_impression",
-        "app_ad_clicks",
-        "cost_per_app_ad_click",
-        "day_2_retention_events",
-        "cost_per_day_2_retention_event",
-        "day_7_retention_events",
-        "cost_per_day_7_retention_event"
-      ],
       "minLength": 1,
-      "type": "string"
+      "type": "string",
+      "anyOf": [
+        {
+          "enum": [
+            "spend",
+            "impressions",
+            "frequency",
+            "cpm",
+            "inline_link_clicks",
+            "meta.action:landing_page_view",
+            "ctr",
+            "cpc",
+            "leads",
+            "add_to_carts",
+            "meta.action:initiate_checkout",
+            "purchases",
+            "start_trials",
+            "purchase_value",
+            "cpa",
+            "roas",
+            "cost_per_start_trial",
+            "content_views",
+            "cost_per_content_view",
+            "content_view_value",
+            "searches",
+            "cost_per_search",
+            "search_value",
+            "wishlist_adds",
+            "cost_per_wishlist_add",
+            "wishlist_add_value",
+            "cost_per_add_to_cart",
+            "add_to_cart_value",
+            "checkouts",
+            "cost_per_checkout",
+            "checkout_value",
+            "payment_info_adds",
+            "cost_per_payment_info_add",
+            "payment_info_add_value",
+            "cost_per_lead",
+            "lead_value",
+            "registrations",
+            "cost_per_registration",
+            "registration_value",
+            "contacts",
+            "cost_per_contact",
+            "contact_value",
+            "scheduled_events",
+            "cost_per_scheduled_event",
+            "scheduled_event_value",
+            "submitted_applications",
+            "cost_per_submitted_application",
+            "submitted_application_value",
+            "start_trial_value",
+            "subscriptions",
+            "cost_per_subscription",
+            "subscription_value",
+            "product_customizations",
+            "cost_per_product_customization",
+            "product_customization_value",
+            "donations",
+            "cost_per_donation",
+            "donation_value",
+            "location_searches",
+            "cost_per_location_search",
+            "location_search_value",
+            "app_installs",
+            "cost_per_app_install",
+            "app_activations",
+            "cost_per_app_activation",
+            "app_activation_value",
+            "tutorial_completions",
+            "cost_per_tutorial_completion",
+            "tutorial_completion_value",
+            "levels_achieved",
+            "cost_per_level_achieved",
+            "level_achieved_value",
+            "achievements_unlocked",
+            "cost_per_achievement_unlocked",
+            "achievement_unlocked_value",
+            "ratings",
+            "cost_per_rating",
+            "rating_value",
+            "credits_spent",
+            "cost_per_credits_spent",
+            "credits_spent_value",
+            "app_ad_impressions",
+            "cost_per_app_ad_impression",
+            "app_ad_clicks",
+            "cost_per_app_ad_click",
+            "day_2_retention_events",
+            "cost_per_day_2_retention_event",
+            "day_7_retention_events",
+            "cost_per_day_7_retention_event"
+          ]
+        },
+        {
+          "pattern": "^custom:[0-9a-fA-F-]{36}$"
+        }
+      ]
     },
     "RuleSchedule": {
       "additionalProperties": false,
@@ -4564,6 +4861,12 @@ Keep the argument nesting shown in the schema. Expand it for nested fields, allo
           "maximum": 365,
           "minimum": 1,
           "type": "integer"
+        },
+        "end_offset_days": {
+          "default": 0,
+          "maximum": 365,
+          "minimum": 0,
+          "type": "integer"
         }
       },
       "required": [
@@ -4653,99 +4956,106 @@ Keep the argument nesting shown in the schema. Expand it for nested fields, allo
       "type": "object"
     },
     "RuleMetricId": {
-      "enum": [
-        "spend",
-        "impressions",
-        "frequency",
-        "cpm",
-        "inline_link_clicks",
-        "meta.action:landing_page_view",
-        "ctr",
-        "cpc",
-        "leads",
-        "add_to_carts",
-        "meta.action:initiate_checkout",
-        "purchases",
-        "start_trials",
-        "purchase_value",
-        "cpa",
-        "roas",
-        "cost_per_start_trial",
-        "content_views",
-        "cost_per_content_view",
-        "content_view_value",
-        "searches",
-        "cost_per_search",
-        "search_value",
-        "wishlist_adds",
-        "cost_per_wishlist_add",
-        "wishlist_add_value",
-        "cost_per_add_to_cart",
-        "add_to_cart_value",
-        "checkouts",
-        "cost_per_checkout",
-        "checkout_value",
-        "payment_info_adds",
-        "cost_per_payment_info_add",
-        "payment_info_add_value",
-        "cost_per_lead",
-        "lead_value",
-        "registrations",
-        "cost_per_registration",
-        "registration_value",
-        "contacts",
-        "cost_per_contact",
-        "contact_value",
-        "scheduled_events",
-        "cost_per_scheduled_event",
-        "scheduled_event_value",
-        "submitted_applications",
-        "cost_per_submitted_application",
-        "submitted_application_value",
-        "start_trial_value",
-        "subscriptions",
-        "cost_per_subscription",
-        "subscription_value",
-        "product_customizations",
-        "cost_per_product_customization",
-        "product_customization_value",
-        "donations",
-        "cost_per_donation",
-        "donation_value",
-        "location_searches",
-        "cost_per_location_search",
-        "location_search_value",
-        "app_installs",
-        "cost_per_app_install",
-        "app_activations",
-        "cost_per_app_activation",
-        "app_activation_value",
-        "tutorial_completions",
-        "cost_per_tutorial_completion",
-        "tutorial_completion_value",
-        "levels_achieved",
-        "cost_per_level_achieved",
-        "level_achieved_value",
-        "achievements_unlocked",
-        "cost_per_achievement_unlocked",
-        "achievement_unlocked_value",
-        "ratings",
-        "cost_per_rating",
-        "rating_value",
-        "credits_spent",
-        "cost_per_credits_spent",
-        "credits_spent_value",
-        "app_ad_impressions",
-        "cost_per_app_ad_impression",
-        "app_ad_clicks",
-        "cost_per_app_ad_click",
-        "day_2_retention_events",
-        "cost_per_day_2_retention_event",
-        "day_7_retention_events",
-        "cost_per_day_7_retention_event"
-      ],
       "minLength": 1,
-      "type": "string"
+      "type": "string",
+      "anyOf": [
+        {
+          "enum": [
+            "spend",
+            "impressions",
+            "frequency",
+            "cpm",
+            "inline_link_clicks",
+            "meta.action:landing_page_view",
+            "ctr",
+            "cpc",
+            "leads",
+            "add_to_carts",
+            "meta.action:initiate_checkout",
+            "purchases",
+            "start_trials",
+            "purchase_value",
+            "cpa",
+            "roas",
+            "cost_per_start_trial",
+            "content_views",
+            "cost_per_content_view",
+            "content_view_value",
+            "searches",
+            "cost_per_search",
+            "search_value",
+            "wishlist_adds",
+            "cost_per_wishlist_add",
+            "wishlist_add_value",
+            "cost_per_add_to_cart",
+            "add_to_cart_value",
+            "checkouts",
+            "cost_per_checkout",
+            "checkout_value",
+            "payment_info_adds",
+            "cost_per_payment_info_add",
+            "payment_info_add_value",
+            "cost_per_lead",
+            "lead_value",
+            "registrations",
+            "cost_per_registration",
+            "registration_value",
+            "contacts",
+            "cost_per_contact",
+            "contact_value",
+            "scheduled_events",
+            "cost_per_scheduled_event",
+            "scheduled_event_value",
+            "submitted_applications",
+            "cost_per_submitted_application",
+            "submitted_application_value",
+            "start_trial_value",
+            "subscriptions",
+            "cost_per_subscription",
+            "subscription_value",
+            "product_customizations",
+            "cost_per_product_customization",
+            "product_customization_value",
+            "donations",
+            "cost_per_donation",
+            "donation_value",
+            "location_searches",
+            "cost_per_location_search",
+            "location_search_value",
+            "app_installs",
+            "cost_per_app_install",
+            "app_activations",
+            "cost_per_app_activation",
+            "app_activation_value",
+            "tutorial_completions",
+            "cost_per_tutorial_completion",
+            "tutorial_completion_value",
+            "levels_achieved",
+            "cost_per_level_achieved",
+            "level_achieved_value",
+            "achievements_unlocked",
+            "cost_per_achievement_unlocked",
+            "achievement_unlocked_value",
+            "ratings",
+            "cost_per_rating",
+            "rating_value",
+            "credits_spent",
+            "cost_per_credits_spent",
+            "credits_spent_value",
+            "app_ad_impressions",
+            "cost_per_app_ad_impression",
+            "app_ad_clicks",
+            "cost_per_app_ad_click",
+            "day_2_retention_events",
+            "cost_per_day_2_retention_event",
+            "day_7_retention_events",
+            "cost_per_day_7_retention_event"
+          ]
+        },
+        {
+          "pattern": "^custom:[0-9a-fA-F-]{36}$"
+        }
+      ]
     },
     "RuleSchedule": {
       "additionalProperties": false,
@@ -5402,31 +5712,2144 @@ List authorized rule metrics and recorded event availability for one account. Ca
 Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
 
 
-  ```json
-  {
-    "additionalProperties": false,
-    "properties": {
-      "ad_account_id": {
-        "format": "uuid",
-        "type": "string"
-      },
-      "level": {
-        "description": "Advertising hierarchy levels that rules may target.",
-        "enum": [
-          "campaign",
-          "adset",
-          "ad"
-        ],
-        "type": "string",
-        "default": "ad"
-      }
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "ad_account_id": {
+      "format": "uuid",
+      "type": "string"
     },
-    "required": [
-      "ad_account_id"
-    ],
-    "type": "object"
-  }
-  ```
+    "level": {
+      "description": "Advertising hierarchy levels that rules may target.",
+      "enum": [
+        "campaign",
+        "adset",
+        "ad"
+      ],
+      "type": "string",
+      "default": "ad"
+    }
+  },
+  "required": [
+    "ad_account_id"
+  ],
+  "type": "object"
+}
+```
+
+# Guardrails tools
+
+Source: https://docs.superlaunch.pro/mcp/reference/guardrails
+
+Read capabilities, manage versioned Guardrails, and preview selections through MCP.
+
+Check capabilities and current access before a write. Use the exact tool arguments below. Read results before retrying an uncertain provider operation.
+
+
+
+## guardrails_capabilities
+
+Read Guardrails settings schemas, selection bounds, and current grants.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+**Arguments:** none.
+
+
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {},
+  "type": "object"
+}
+```
+
+
+
+
+
+## guardrails_list
+
+Read authorized policies with a signed cursor in stable creation order.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `page` | object | Required |
+| `q` | string or null | `null` |
+| `enabled` | boolean or null | `null` |
+| `type` | MaximumBudget, MaximumBudgetIncrease, CumulativeBudgetIncrease, MinimumIncreaseInterval, ProtectedTarget or null | `null` |
+| `account_id` | uuid or null | `null` |
+| `target_level` | campaign, adset or null | `null` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "page": {
+      "additionalProperties": false,
+      "description": "Bounded cursor page request.",
+      "properties": {
+        "limit": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "q": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "type": {
+      "anyOf": [
+        {
+          "enum": [
+            "MaximumBudget",
+            "MaximumBudgetIncrease",
+            "CumulativeBudgetIncrease",
+            "MinimumIncreaseInterval",
+            "ProtectedTarget"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "account_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_level": {
+      "anyOf": [
+        {
+          "enum": [
+            "campaign",
+            "adset"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "page"
+  ],
+  "type": "object"
+}
+```
+
+
+
+
+
+## guardrails_get
+
+Read one current policy after complete account scope authorization.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `guardrail_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "guardrail_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "guardrail_id"
+  ],
+  "type": "object"
+}
+```
+
+
+
+
+
+## guardrails_create
+
+Create a policy. Exact authorized request retries return the saved result.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `request_id` | uuid | Required |
+| `policy` | object | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+
+
+```json
+{
+  "$defs": {
+    "BudgetType": {
+      "enum": [
+        "daily",
+        "lifetime"
+      ],
+      "type": "string"
+    },
+    "CumulativeBudgetIncreaseSettings": {
+      "additionalProperties": false,
+      "description": "Rolling positive increase ceiling.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_increase": {
+          "$ref": "#/$defs/Money"
+        },
+        "window_seconds": {
+          "$ref": "#/$defs/Seconds"
+        }
+      },
+      "required": [
+        "budget_type",
+        "max_increase",
+        "window_seconds"
+      ],
+      "type": "object"
+    },
+    "DecimalString": {
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,6})?$",
+      "type": "string"
+    },
+    "GuardrailTargetFilter": {
+      "additionalProperties": false,
+      "description": "One supported metadata predicate.",
+      "properties": {
+        "kind": {
+          "const": "filter",
+          "type": "string"
+        },
+        "attribute": {
+          "enum": [
+            "id",
+            "name",
+            "status",
+            "effective_status"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "=",
+            "!=",
+            "contains",
+            "not_contains",
+            "starts_with",
+            "ends_with"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        "scope": {
+          "default": "self",
+          "enum": [
+            "self",
+            "ancestor"
+          ],
+          "type": "string"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "const": "campaign",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "attribute",
+        "operator",
+        "value"
+      ],
+      "type": "object"
+    },
+    "GuardrailTargetFilterGroup": {
+      "additionalProperties": false,
+      "description": "Recursive bounded metadata expression.",
+      "properties": {
+        "kind": {
+          "const": "group",
+          "type": "string"
+        },
+        "combinator": {
+          "enum": [
+            "and",
+            "or"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "filter": "#/$defs/GuardrailTargetFilter",
+                "group": "#/$defs/GuardrailTargetFilterGroup"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/GuardrailTargetFilter"
+              },
+              {
+                "$ref": "#/$defs/GuardrailTargetFilterGroup"
+              }
+            ]
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "combinator",
+        "children"
+      ],
+      "type": "object"
+    },
+    "GuardrailWrite": {
+      "additionalProperties": false,
+      "description": "Full writable definition shared by HTTP and MCP.",
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/PolicyType"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "selection": {
+          "$ref": "#/$defs/Selection"
+        },
+        "settings": {
+          "$ref": "#/$defs/Settings"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "enabled",
+        "selection",
+        "settings"
+      ],
+      "type": "object"
+    },
+    "Level": {
+      "enum": [
+        "campaign",
+        "adset"
+      ],
+      "type": "string"
+    },
+    "MaximumBudgetIncreaseSettings": {
+      "additionalProperties": false,
+      "description": "Positive absolute and percentage increase ceilings.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_increase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_increase_percent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecimalString"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "budget_type"
+      ],
+      "type": "object"
+    },
+    "MaximumBudgetSettings": {
+      "additionalProperties": false,
+      "description": "An absolute owner or account budget bound.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_budget": {
+          "$ref": "#/$defs/Money"
+        },
+        "inclusive": {
+          "default": false,
+          "type": "boolean"
+        },
+        "aggregation": {
+          "default": "per_owner",
+          "enum": [
+            "per_owner",
+            "account"
+          ],
+          "type": "string"
+        },
+        "budget_activity": {
+          "anyOf": [
+            {
+              "enum": [
+                "active",
+                "all"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "budget_type",
+        "max_budget"
+      ],
+      "type": "object"
+    },
+    "MinimumIncreaseIntervalSettings": {
+      "additionalProperties": false,
+      "description": "Minimum time between owner increases.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "interval_seconds": {
+          "$ref": "#/$defs/Seconds"
+        }
+      },
+      "required": [
+        "budget_type",
+        "interval_seconds"
+      ],
+      "type": "object"
+    },
+    "Money": {
+      "additionalProperties": false,
+      "description": "An exact positive amount in integer minor units.",
+      "properties": {
+        "amount_minor": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "enum": [
+            "AED",
+            "AFN",
+            "ALL",
+            "AMD",
+            "ANG",
+            "AOA",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BDT",
+            "BGN",
+            "BHD",
+            "BIF",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BTN",
+            "BWP",
+            "BYN",
+            "BZD",
+            "CAD",
+            "CDF",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CVE",
+            "CZK",
+            "DJF",
+            "DKK",
+            "DOP",
+            "DZD",
+            "EGP",
+            "ERN",
+            "ETB",
+            "EUR",
+            "FJD",
+            "FKP",
+            "GBP",
+            "GEL",
+            "GHS",
+            "GIP",
+            "GMD",
+            "GNF",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HTG",
+            "HUF",
+            "IDR",
+            "ILS",
+            "INR",
+            "IQD",
+            "IRR",
+            "ISK",
+            "JMD",
+            "JOD",
+            "JPY",
+            "KES",
+            "KGS",
+            "KHR",
+            "KMF",
+            "KPW",
+            "KRW",
+            "KWD",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LSL",
+            "LYD",
+            "MAD",
+            "MDL",
+            "MGA",
+            "MKD",
+            "MMK",
+            "MNT",
+            "MOP",
+            "MRU",
+            "MUR",
+            "MVR",
+            "MWK",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PGK",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "RWF",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SDG",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SLE",
+            "SOS",
+            "SRD",
+            "SSP",
+            "STN",
+            "SVC",
+            "SYP",
+            "SZL",
+            "THB",
+            "TJS",
+            "TMT",
+            "TND",
+            "TOP",
+            "TRY",
+            "TTD",
+            "TWD",
+            "TZS",
+            "UAH",
+            "UGX",
+            "USD",
+            "UYU",
+            "UZS",
+            "VED",
+            "VES",
+            "VND",
+            "VUV",
+            "WST",
+            "XAF",
+            "XCD",
+            "XOF",
+            "XPF",
+            "YER",
+            "ZAR",
+            "ZMW",
+            "ZWG"
+          ],
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "PolicyType": {
+      "enum": [
+        "MaximumBudget",
+        "MaximumBudgetIncrease",
+        "CumulativeBudgetIncrease",
+        "MinimumIncreaseInterval",
+        "ProtectedTarget"
+      ],
+      "type": "string"
+    },
+    "PositiveMoney": {
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "ProtectedTargetSettings": {
+      "additionalProperties": false,
+      "description": "Protected operations and optional trusted initiators.",
+      "properties": {
+        "operations": {
+          "items": {
+            "enum": [
+              "activate",
+              "pause",
+              "change_budget"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "type": "array"
+        },
+        "initiator_types": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "mcp",
+                  "rule",
+                  "automation"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "operations"
+      ],
+      "type": "object"
+    },
+    "Seconds": {
+      "maximum": 2592000,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "Selection": {
+      "additionalProperties": false,
+      "description": "Dynamic owner or direct-target scope within a team.",
+      "properties": {
+        "account_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "target_levels": {
+          "items": {
+            "$ref": "#/$defs/Level"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "type": "array"
+        },
+        "target_filter": {
+          "$ref": "#/$defs/GuardrailTargetFilterGroup"
+        }
+      },
+      "required": [
+        "account_ids",
+        "target_levels",
+        "target_filter"
+      ],
+      "type": "object"
+    },
+    "Settings": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MaximumBudgetSettings"
+        },
+        {
+          "$ref": "#/$defs/MaximumBudgetIncreaseSettings"
+        },
+        {
+          "$ref": "#/$defs/CumulativeBudgetIncreaseSettings"
+        },
+        {
+          "$ref": "#/$defs/MinimumIncreaseIntervalSettings"
+        },
+        {
+          "$ref": "#/$defs/ProtectedTargetSettings"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "policy": {
+      "$ref": "#/$defs/GuardrailWrite",
+      "type": "object"
+    }
+  },
+  "required": [
+    "request_id",
+    "policy"
+  ],
+  "type": "object"
+}
+```
+
+
+
+
+
+## guardrails_update
+
+Replace all writable fields. Read first. Preserve unchanged fields.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `guardrail_id` | uuid | Required |
+| `expected_version` | integer | Required |
+| `request_id` | uuid | Required |
+| `policy` | object | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+
+
+```json
+{
+  "$defs": {
+    "BudgetType": {
+      "enum": [
+        "daily",
+        "lifetime"
+      ],
+      "type": "string"
+    },
+    "CumulativeBudgetIncreaseSettings": {
+      "additionalProperties": false,
+      "description": "Rolling positive increase ceiling.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_increase": {
+          "$ref": "#/$defs/Money"
+        },
+        "window_seconds": {
+          "$ref": "#/$defs/Seconds"
+        }
+      },
+      "required": [
+        "budget_type",
+        "max_increase",
+        "window_seconds"
+      ],
+      "type": "object"
+    },
+    "DecimalString": {
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,6})?$",
+      "type": "string"
+    },
+    "GuardrailTargetFilter": {
+      "additionalProperties": false,
+      "description": "One supported metadata predicate.",
+      "properties": {
+        "kind": {
+          "const": "filter",
+          "type": "string"
+        },
+        "attribute": {
+          "enum": [
+            "id",
+            "name",
+            "status",
+            "effective_status"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "=",
+            "!=",
+            "contains",
+            "not_contains",
+            "starts_with",
+            "ends_with"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        "scope": {
+          "default": "self",
+          "enum": [
+            "self",
+            "ancestor"
+          ],
+          "type": "string"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "const": "campaign",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "attribute",
+        "operator",
+        "value"
+      ],
+      "type": "object"
+    },
+    "GuardrailTargetFilterGroup": {
+      "additionalProperties": false,
+      "description": "Recursive bounded metadata expression.",
+      "properties": {
+        "kind": {
+          "const": "group",
+          "type": "string"
+        },
+        "combinator": {
+          "enum": [
+            "and",
+            "or"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "filter": "#/$defs/GuardrailTargetFilter",
+                "group": "#/$defs/GuardrailTargetFilterGroup"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/GuardrailTargetFilter"
+              },
+              {
+                "$ref": "#/$defs/GuardrailTargetFilterGroup"
+              }
+            ]
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "combinator",
+        "children"
+      ],
+      "type": "object"
+    },
+    "GuardrailWrite": {
+      "additionalProperties": false,
+      "description": "Full writable definition shared by HTTP and MCP.",
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/PolicyType"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "selection": {
+          "$ref": "#/$defs/Selection"
+        },
+        "settings": {
+          "$ref": "#/$defs/Settings"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "enabled",
+        "selection",
+        "settings"
+      ],
+      "type": "object"
+    },
+    "Level": {
+      "enum": [
+        "campaign",
+        "adset"
+      ],
+      "type": "string"
+    },
+    "MaximumBudgetIncreaseSettings": {
+      "additionalProperties": false,
+      "description": "Positive absolute and percentage increase ceilings.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_increase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_increase_percent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecimalString"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "budget_type"
+      ],
+      "type": "object"
+    },
+    "MaximumBudgetSettings": {
+      "additionalProperties": false,
+      "description": "An absolute owner or account budget bound.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_budget": {
+          "$ref": "#/$defs/Money"
+        },
+        "inclusive": {
+          "default": false,
+          "type": "boolean"
+        },
+        "aggregation": {
+          "default": "per_owner",
+          "enum": [
+            "per_owner",
+            "account"
+          ],
+          "type": "string"
+        },
+        "budget_activity": {
+          "anyOf": [
+            {
+              "enum": [
+                "active",
+                "all"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "budget_type",
+        "max_budget"
+      ],
+      "type": "object"
+    },
+    "MinimumIncreaseIntervalSettings": {
+      "additionalProperties": false,
+      "description": "Minimum time between owner increases.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "interval_seconds": {
+          "$ref": "#/$defs/Seconds"
+        }
+      },
+      "required": [
+        "budget_type",
+        "interval_seconds"
+      ],
+      "type": "object"
+    },
+    "Money": {
+      "additionalProperties": false,
+      "description": "An exact positive amount in integer minor units.",
+      "properties": {
+        "amount_minor": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "enum": [
+            "AED",
+            "AFN",
+            "ALL",
+            "AMD",
+            "ANG",
+            "AOA",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BDT",
+            "BGN",
+            "BHD",
+            "BIF",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BTN",
+            "BWP",
+            "BYN",
+            "BZD",
+            "CAD",
+            "CDF",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CVE",
+            "CZK",
+            "DJF",
+            "DKK",
+            "DOP",
+            "DZD",
+            "EGP",
+            "ERN",
+            "ETB",
+            "EUR",
+            "FJD",
+            "FKP",
+            "GBP",
+            "GEL",
+            "GHS",
+            "GIP",
+            "GMD",
+            "GNF",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HTG",
+            "HUF",
+            "IDR",
+            "ILS",
+            "INR",
+            "IQD",
+            "IRR",
+            "ISK",
+            "JMD",
+            "JOD",
+            "JPY",
+            "KES",
+            "KGS",
+            "KHR",
+            "KMF",
+            "KPW",
+            "KRW",
+            "KWD",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LSL",
+            "LYD",
+            "MAD",
+            "MDL",
+            "MGA",
+            "MKD",
+            "MMK",
+            "MNT",
+            "MOP",
+            "MRU",
+            "MUR",
+            "MVR",
+            "MWK",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PGK",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "RWF",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SDG",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SLE",
+            "SOS",
+            "SRD",
+            "SSP",
+            "STN",
+            "SVC",
+            "SYP",
+            "SZL",
+            "THB",
+            "TJS",
+            "TMT",
+            "TND",
+            "TOP",
+            "TRY",
+            "TTD",
+            "TWD",
+            "TZS",
+            "UAH",
+            "UGX",
+            "USD",
+            "UYU",
+            "UZS",
+            "VED",
+            "VES",
+            "VND",
+            "VUV",
+            "WST",
+            "XAF",
+            "XCD",
+            "XOF",
+            "XPF",
+            "YER",
+            "ZAR",
+            "ZMW",
+            "ZWG"
+          ],
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "PolicyType": {
+      "enum": [
+        "MaximumBudget",
+        "MaximumBudgetIncrease",
+        "CumulativeBudgetIncrease",
+        "MinimumIncreaseInterval",
+        "ProtectedTarget"
+      ],
+      "type": "string"
+    },
+    "PositiveMoney": {
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "ProtectedTargetSettings": {
+      "additionalProperties": false,
+      "description": "Protected operations and optional trusted initiators.",
+      "properties": {
+        "operations": {
+          "items": {
+            "enum": [
+              "activate",
+              "pause",
+              "change_budget"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "type": "array"
+        },
+        "initiator_types": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "mcp",
+                  "rule",
+                  "automation"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "operations"
+      ],
+      "type": "object"
+    },
+    "Seconds": {
+      "maximum": 2592000,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "Selection": {
+      "additionalProperties": false,
+      "description": "Dynamic owner or direct-target scope within a team.",
+      "properties": {
+        "account_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "target_levels": {
+          "items": {
+            "$ref": "#/$defs/Level"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "type": "array"
+        },
+        "target_filter": {
+          "$ref": "#/$defs/GuardrailTargetFilterGroup"
+        }
+      },
+      "required": [
+        "account_ids",
+        "target_levels",
+        "target_filter"
+      ],
+      "type": "object"
+    },
+    "Settings": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MaximumBudgetSettings"
+        },
+        {
+          "$ref": "#/$defs/MaximumBudgetIncreaseSettings"
+        },
+        {
+          "$ref": "#/$defs/CumulativeBudgetIncreaseSettings"
+        },
+        {
+          "$ref": "#/$defs/MinimumIncreaseIntervalSettings"
+        },
+        {
+          "$ref": "#/$defs/ProtectedTargetSettings"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "guardrail_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "request_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "policy": {
+      "$ref": "#/$defs/GuardrailWrite",
+      "type": "object"
+    }
+  },
+  "required": [
+    "guardrail_id",
+    "expected_version",
+    "request_id",
+    "policy"
+  ],
+  "type": "object"
+}
+```
+
+
+
+
+
+## guardrails_delete
+
+Archive a policy. Return its ID, final deletion version, and deleted=true.
+
+**Access:** `mcp:read` and `mcp:write`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `guardrail_id` | uuid | Required |
+| `expected_version` | integer | Required |
+| `request_id` | uuid | Required |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "guardrail_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "request_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "guardrail_id",
+    "expected_version",
+    "request_id"
+  ],
+  "type": "object"
+}
+```
+
+
+
+
+
+## guardrails_targets_preview
+
+Preview authorized targets and totals without an execution grant.
+
+**Access:** `mcp:read`. Workspace and target permissions also apply.
+
+| Parameter | Type | Required / default |
+| --- | --- | --- |
+| `policy` | object | Required |
+| `page` | object | Required |
+| `summary_page` | object | `{"limit": 25, "cursor": null}` |
+
+Keep the argument nesting shown in the schema. Expand it for nested fields, allowed values, and limits.
+
+
+
+```json
+{
+  "$defs": {
+    "BudgetType": {
+      "enum": [
+        "daily",
+        "lifetime"
+      ],
+      "type": "string"
+    },
+    "CumulativeBudgetIncreaseSettings": {
+      "additionalProperties": false,
+      "description": "Rolling positive increase ceiling.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_increase": {
+          "$ref": "#/$defs/Money"
+        },
+        "window_seconds": {
+          "$ref": "#/$defs/Seconds"
+        }
+      },
+      "required": [
+        "budget_type",
+        "max_increase",
+        "window_seconds"
+      ],
+      "type": "object"
+    },
+    "DecimalString": {
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,6})?$",
+      "type": "string"
+    },
+    "GuardrailTargetFilter": {
+      "additionalProperties": false,
+      "description": "One supported metadata predicate.",
+      "properties": {
+        "kind": {
+          "const": "filter",
+          "type": "string"
+        },
+        "attribute": {
+          "enum": [
+            "id",
+            "name",
+            "status",
+            "effective_status"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "=",
+            "!=",
+            "contains",
+            "not_contains",
+            "starts_with",
+            "ends_with"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        "scope": {
+          "default": "self",
+          "enum": [
+            "self",
+            "ancestor"
+          ],
+          "type": "string"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "const": "campaign",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "attribute",
+        "operator",
+        "value"
+      ],
+      "type": "object"
+    },
+    "GuardrailTargetFilterGroup": {
+      "additionalProperties": false,
+      "description": "Recursive bounded metadata expression.",
+      "properties": {
+        "kind": {
+          "const": "group",
+          "type": "string"
+        },
+        "combinator": {
+          "enum": [
+            "and",
+            "or"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "filter": "#/$defs/GuardrailTargetFilter",
+                "group": "#/$defs/GuardrailTargetFilterGroup"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/GuardrailTargetFilter"
+              },
+              {
+                "$ref": "#/$defs/GuardrailTargetFilterGroup"
+              }
+            ]
+          },
+          "maxItems": 50,
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "combinator",
+        "children"
+      ],
+      "type": "object"
+    },
+    "GuardrailWrite": {
+      "additionalProperties": false,
+      "description": "Full writable definition shared by HTTP and MCP.",
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/PolicyType"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "selection": {
+          "$ref": "#/$defs/Selection"
+        },
+        "settings": {
+          "$ref": "#/$defs/Settings"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "enabled",
+        "selection",
+        "settings"
+      ],
+      "type": "object"
+    },
+    "Level": {
+      "enum": [
+        "campaign",
+        "adset"
+      ],
+      "type": "string"
+    },
+    "MaximumBudgetIncreaseSettings": {
+      "additionalProperties": false,
+      "description": "Positive absolute and percentage increase ceilings.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_increase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_increase_percent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecimalString"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "budget_type"
+      ],
+      "type": "object"
+    },
+    "MaximumBudgetSettings": {
+      "additionalProperties": false,
+      "description": "An absolute owner or account budget bound.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "max_budget": {
+          "$ref": "#/$defs/Money"
+        },
+        "inclusive": {
+          "default": false,
+          "type": "boolean"
+        },
+        "aggregation": {
+          "default": "per_owner",
+          "enum": [
+            "per_owner",
+            "account"
+          ],
+          "type": "string"
+        },
+        "budget_activity": {
+          "anyOf": [
+            {
+              "enum": [
+                "active",
+                "all"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "budget_type",
+        "max_budget"
+      ],
+      "type": "object"
+    },
+    "MinimumIncreaseIntervalSettings": {
+      "additionalProperties": false,
+      "description": "Minimum time between owner increases.",
+      "properties": {
+        "budget_type": {
+          "$ref": "#/$defs/BudgetType"
+        },
+        "interval_seconds": {
+          "$ref": "#/$defs/Seconds"
+        }
+      },
+      "required": [
+        "budget_type",
+        "interval_seconds"
+      ],
+      "type": "object"
+    },
+    "Money": {
+      "additionalProperties": false,
+      "description": "An exact positive amount in integer minor units.",
+      "properties": {
+        "amount_minor": {
+          "$ref": "#/$defs/PositiveMoney"
+        },
+        "currency": {
+          "enum": [
+            "AED",
+            "AFN",
+            "ALL",
+            "AMD",
+            "ANG",
+            "AOA",
+            "ARS",
+            "AUD",
+            "AWG",
+            "AZN",
+            "BAM",
+            "BBD",
+            "BDT",
+            "BGN",
+            "BHD",
+            "BIF",
+            "BMD",
+            "BND",
+            "BOB",
+            "BRL",
+            "BSD",
+            "BTN",
+            "BWP",
+            "BYN",
+            "BZD",
+            "CAD",
+            "CDF",
+            "CHF",
+            "CLP",
+            "CNY",
+            "COP",
+            "CRC",
+            "CUP",
+            "CVE",
+            "CZK",
+            "DJF",
+            "DKK",
+            "DOP",
+            "DZD",
+            "EGP",
+            "ERN",
+            "ETB",
+            "EUR",
+            "FJD",
+            "FKP",
+            "GBP",
+            "GEL",
+            "GHS",
+            "GIP",
+            "GMD",
+            "GNF",
+            "GTQ",
+            "GYD",
+            "HKD",
+            "HNL",
+            "HTG",
+            "HUF",
+            "IDR",
+            "ILS",
+            "INR",
+            "IQD",
+            "IRR",
+            "ISK",
+            "JMD",
+            "JOD",
+            "JPY",
+            "KES",
+            "KGS",
+            "KHR",
+            "KMF",
+            "KPW",
+            "KRW",
+            "KWD",
+            "KYD",
+            "KZT",
+            "LAK",
+            "LBP",
+            "LKR",
+            "LRD",
+            "LSL",
+            "LYD",
+            "MAD",
+            "MDL",
+            "MGA",
+            "MKD",
+            "MMK",
+            "MNT",
+            "MOP",
+            "MRU",
+            "MUR",
+            "MVR",
+            "MWK",
+            "MXN",
+            "MYR",
+            "MZN",
+            "NAD",
+            "NGN",
+            "NIO",
+            "NOK",
+            "NPR",
+            "NZD",
+            "OMR",
+            "PAB",
+            "PEN",
+            "PGK",
+            "PHP",
+            "PKR",
+            "PLN",
+            "PYG",
+            "QAR",
+            "RON",
+            "RSD",
+            "RUB",
+            "RWF",
+            "SAR",
+            "SBD",
+            "SCR",
+            "SDG",
+            "SEK",
+            "SGD",
+            "SHP",
+            "SLE",
+            "SOS",
+            "SRD",
+            "SSP",
+            "STN",
+            "SVC",
+            "SYP",
+            "SZL",
+            "THB",
+            "TJS",
+            "TMT",
+            "TND",
+            "TOP",
+            "TRY",
+            "TTD",
+            "TWD",
+            "TZS",
+            "UAH",
+            "UGX",
+            "USD",
+            "UYU",
+            "UZS",
+            "VED",
+            "VES",
+            "VND",
+            "VUV",
+            "WST",
+            "XAF",
+            "XCD",
+            "XOF",
+            "XPF",
+            "YER",
+            "ZAR",
+            "ZMW",
+            "ZWG"
+          ],
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount_minor",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "Page": {
+      "additionalProperties": false,
+      "description": "Bounded cursor page request.",
+      "properties": {
+        "limit": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "PolicyType": {
+      "enum": [
+        "MaximumBudget",
+        "MaximumBudgetIncrease",
+        "CumulativeBudgetIncrease",
+        "MinimumIncreaseInterval",
+        "ProtectedTarget"
+      ],
+      "type": "string"
+    },
+    "PositiveMoney": {
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "ProtectedTargetSettings": {
+      "additionalProperties": false,
+      "description": "Protected operations and optional trusted initiators.",
+      "properties": {
+        "operations": {
+          "items": {
+            "enum": [
+              "activate",
+              "pause",
+              "change_budget"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "type": "array"
+        },
+        "initiator_types": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "mcp",
+                  "rule",
+                  "automation"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "operations"
+      ],
+      "type": "object"
+    },
+    "Seconds": {
+      "maximum": 2592000,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "Selection": {
+      "additionalProperties": false,
+      "description": "Dynamic owner or direct-target scope within a team.",
+      "properties": {
+        "account_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "target_levels": {
+          "items": {
+            "$ref": "#/$defs/Level"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "type": "array"
+        },
+        "target_filter": {
+          "$ref": "#/$defs/GuardrailTargetFilterGroup"
+        }
+      },
+      "required": [
+        "account_ids",
+        "target_levels",
+        "target_filter"
+      ],
+      "type": "object"
+    },
+    "Settings": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MaximumBudgetSettings"
+        },
+        {
+          "$ref": "#/$defs/MaximumBudgetIncreaseSettings"
+        },
+        {
+          "$ref": "#/$defs/CumulativeBudgetIncreaseSettings"
+        },
+        {
+          "$ref": "#/$defs/MinimumIncreaseIntervalSettings"
+        },
+        {
+          "$ref": "#/$defs/ProtectedTargetSettings"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "policy": {
+      "$ref": "#/$defs/GuardrailWrite",
+      "type": "object"
+    },
+    "page": {
+      "$ref": "#/$defs/Page",
+      "type": "object"
+    },
+    "summary_page": {
+      "$ref": "#/$defs/Page",
+      "default": {
+        "limit": 25,
+        "cursor": null
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "policy",
+    "page"
+  ],
+  "type": "object"
+}
+```
 
 # Custom metric tools
 

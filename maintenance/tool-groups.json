@@ -135,5 +135,14 @@
     "custom_metrics_import_list",
     "custom_metrics_import_commit",
     "metrics_query"
+  ],
+  "mcp/reference/guardrails": [
+    "guardrails_capabilities",
+    "guardrails_list",
+    "guardrails_get",
+    "guardrails_create",
+    "guardrails_update",
+    "guardrails_delete",
+    "guardrails_targets_preview"
   ]
 }

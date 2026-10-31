@@ -45,6 +45,10 @@ Read the rule's current version before changing it. `rules_update` replaces the 
 
 To allow scheduled live changes, set the rule to **Active** and turn off **Dry run**. Review both settings before saving. A manual MCP `rules_run` defaults to dry-run mode.
 
+## Apply shared Guardrails
+
+Enabled [Guardrails](/guides/guardrails) apply when a rule prepares a provider action. A rule can pass its performance conditions and still receive a guardrail denial. Guardrails check the resolved budget owner, current provider facts, policy limits, and trusted `rule` action source. They also apply during a dry run. Review the decision before a live run.
+
 ## Review results
 
 Open the run details or use `rule_runs_get`. Review [Activity](/guides/activity) for decisions and provider actions. `rules_delete` archives the rule.

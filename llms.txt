@@ -20,12 +20,14 @@
 - [Analyze performance](https://docs.superlaunch.pro/guides/insights.md): Choose comparable dates, metrics, attribution, and reporting levels.
 - [Import custom metrics](https://docs.superlaunch.pro/guides/custom-metrics.md): Add daily values from a CSV file, then use them in Insights and Rules.
 - [Create and run rules](https://docs.superlaunch.pro/guides/rules.md): Define targets, conditions, actions, schedules, and dry-run checks.
+- [Set Guardrails](https://docs.superlaunch.pro/guides/guardrails.md): Set budget limits and protect campaign or ad-set changes across MCP and AutoRules.
 - [Review activity and results](https://docs.superlaunch.pro/guides/activity.md): Trace tool calls, provider actions, and rule runs to their outcomes.
 - [Brand profiles and kits](https://docs.superlaunch.pro/guides/brands.md): Give your team and agent the brand guidance they need.
 - [Save and manage memory](https://docs.superlaunch.pro/guides/memory.md): Save facts for later conversations and choose who can use them.
 
 ## API
 
+- [Guardrails API](https://docs.superlaunch.pro/reference/guardrails-api.md): Read, preview, create, replace, and delete workspace Guardrails with version checks.
 - [Custom metrics](https://docs.superlaunch.pro/reference/custom-metrics-api.md): Create metric definitions, prepare and commit imports, and query values with the public API.
 - [Ad accounts](https://docs.superlaunch.pro/reference/ad-accounts-api.md): List the ad accounts that a team API key can access.
 - [Get an API key](https://docs.superlaunch.pro/reference/api-keys.md): Create and store a team API key for public API requests.
@@ -50,7 +52,7 @@
 - [Your first MCP workflow](https://docs.superlaunch.pro/mcp/first-workflow.md): Verify access and ask your agent for a read-only performance check.
 - [MCP workflows](https://docs.superlaunch.pro/mcp/workflows.md): Use discovery, validation, writes, and result checks in the right order.
 - [MCP troubleshooting](https://docs.superlaunch.pro/mcp/troubleshooting.md): Resolve connection, permission, input, and result-completeness problems.
-- [MCP tool index](https://docs.superlaunch.pro/mcp/tools.md): Find all 115 documented MCP tools by task, access requirement, and exact input schema.
+- [MCP tool index](https://docs.superlaunch.pro/mcp/tools.md): Find all 122 documented MCP tools by task, access requirement, and exact input schema.
 - [MCP argument examples](https://docs.superlaunch.pro/mcp/examples.md): Valid argument shapes for discovery, reporting, campaign validation, memory, and launch polling.
 
 ## MCP reference
@@ -58,6 +60,7 @@
 - [Accounts, assets, and brands](https://docs.superlaunch.pro/mcp/reference/accounts-brands.md): Resolve Superlaunch account and brand IDs before reading or changing objects.
 - [Insights tools](https://docs.superlaunch.pro/mcp/reference/insights.md): Query reports and rank advertising performance.
 - [Rule tools](https://docs.superlaunch.pro/mcp/reference/rules.md): Create rules, edit their conditions, and inspect runs.
+- [Guardrails tools](https://docs.superlaunch.pro/mcp/reference/guardrails.md): Read capabilities, manage versioned Guardrails, and preview selections through MCP.
 - [Custom metric tools](https://docs.superlaunch.pro/mcp/reference/custom-metrics.md): Create definitions, import values, check tasks, and query metrics through MCP.
 - [Direct Meta actions](https://docs.superlaunch.pro/mcp/reference/actions.md): Upload media, create or update Meta objects, duplicate setups, and change delivery status.
 - [Activity tools](https://docs.superlaunch.pro/mcp/reference/activity.md): Use the unified log for tool calls, actions, and rule operations.

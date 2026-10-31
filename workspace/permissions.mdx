@@ -27,6 +27,10 @@ Launcher uses its own read, author, execution, scheduling, and control permissio
 
 Brand and memory access also depend on their scope. A private memory belongs to its author; team, brand, and ad-account memories follow their corresponding access rules.
 
+## Guardrails permissions
+
+`guardrails.read` permits policy reads and target previews. `guardrails.manage` permits creation, replacement, and deletion, and also permits reads. The workspace owner has both. These grants do not add account visibility. Only the owner can select all accounts through an empty account list; other managers must select explicit visible accounts. See [Set Guardrails](/guides/guardrails).
+
 ## MCP access
 
 An MCP connection uses the member who authorized it. `mcp:read` permits read tools; `mcp:write` permits write tools in addition to read access. These scopes do not expand the member's account or functional permissions.
