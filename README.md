@@ -39,3 +39,5 @@ The short index comes from navigation and page metadata through `scripts/generat
 - Page Markdown, such as https://docs.superlaunch.pro/mcp/overview.md
 
 Do not hand-edit exports. Regenerate the index after changing navigation or metadata. Check that exports contain the published guides and complete tool reference after deployment.
+
+Documentation checks require `python3 -m pip install -r requirements-checks.txt`. Run `python3 -m unittest discover -s tests -v` to check schema validation of copied tool examples.

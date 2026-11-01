@@ -2,6 +2,8 @@
 import json
 import re
 from pathlib import Path
+
+from jsonschema import Draft202012Validator, FormatChecker
 root = Path(__file__).resolve().parents[1]
 config = json.loads((root / "docs.json").read_text())
 catalog = json.loads((root / "maintenance/tool-catalog.json").read_text())
@@ -50,6 +52,11 @@ blocks = re.findall(r"\*\*Tool:\*\* `([^`]+)`.*?```json\n(.*?)\n```", (root / "m
 assert len(blocks) == len(examples)
 for (name, arguments), example in zip(blocks, examples):
     assert name == example["tool"] and json.loads(arguments) == example["args"], f"Example drift: {name}"
+    expected = next(tool["inputSchema"] for tool in catalog if tool["name"] == name)
+    Draft202012Validator.check_schema(expected)
+    validator = Draft202012Validator(expected, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(example["args"]), key=lambda error: str(error.path))
+    assert not errors, f"Invalid example for {name}: {errors[0].message if errors else ''}"
 failed_activity = next(e for e in examples if e["title"] == "Find failed tool activity")
 assert failed_activity["args"]["payload"]["status"] == "failed"
 
